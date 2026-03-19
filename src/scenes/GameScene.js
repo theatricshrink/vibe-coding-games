@@ -34,6 +34,10 @@ var GameScene = {
   create: function() {
     this._drawMap();
 
+    this._questionPool = new QuestionPool(QUESTIONS);
+    this._quizActive = false;
+    this._collectionActive = false;
+
     this._playerCol = 10;
     this._playerRow = 7;
     this._moving = false;
@@ -113,6 +117,43 @@ var GameScene = {
   },
 
   _onStep: function(tile) {
-    // placeholder — encounter logic in Task 7
+    if (tile !== 1) return; // only tall grass
+    if (Math.random() > 0.2) return; // 1-in-5 chance
+    var creature = weightedRandom(CREATURES);
+    this._startEncounter(creature);
+  },
+
+  _startEncounter: function(creature) {
+    this._quizActive = true;
+    var questionsNeeded = (creature.rarity === 'rare') ? 2 : 1;
+    var self = this;
+
+    var questions = [];
+    var categories = ['Mathe', 'Deutsch', 'Allgemeinwissen'];
+    for (var i = 0; i < questionsNeeded; i++) {
+      var cat = categories[Math.floor(Math.random() * categories.length)];
+      questions.push(this._questionPool.draw(cat));
+    }
+
+    this.scene.launch('QuizScene', {
+      creature: creature,
+      questions: questions,
+      onComplete: function(caught) {
+        self._quizActive = false;
+        if (caught) {
+          self._saveToCollection(creature);
+        }
+      }
+    });
+    this.scene.pause();
+  },
+
+  _saveToCollection: function(creature) {
+    var raw = localStorage.getItem('pgame_collection');
+    var collection = raw ? JSON.parse(raw) : {};
+    if (!collection[creature.id]) {
+      collection[creature.id] = { caughtAt: Date.now() };
+      localStorage.setItem('pgame_collection', JSON.stringify(collection));
+    }
   }
 };

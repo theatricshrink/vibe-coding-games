@@ -7,7 +7,8 @@ var CollectionScene = {
 
     // Load collection from localStorage
     var raw = localStorage.getItem('pgame_collection');
-    var collection = raw ? JSON.parse(raw) : {};
+    var collection = {};
+    try { if (raw) collection = JSON.parse(raw); } catch(e) {}
 
     // Background overlay
     this.add.rectangle(W / 2, H / 2, W, H, 0x0d0d1a, 0.92);
@@ -61,8 +62,8 @@ var CollectionScene = {
       } else {
         // Silhouette
         this.add.text(cx + cardW / 2, cy + 60, '❓', {
-          fontSize: '52px', alpha: 0.4
-        }).setOrigin(0.5);
+          fontSize: '52px'
+        }).setOrigin(0.5).setAlpha(0.4);
         this.add.text(cx + cardW / 2, cy + 120, '???', {
           fontSize: '20px', color: '#555555'
         }).setOrigin(0.5);

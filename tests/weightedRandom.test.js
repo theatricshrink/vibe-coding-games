@@ -30,4 +30,14 @@ for (var j = 0; j < 50; j++) {
 // Test 3: Single item always returned
 assert(weightedRandom([{ id: 'solo', weight: 10 }]).id === 'solo', 'single item always returned');
 
+// Test 4: Empty array throws
+var threw = false;
+try { weightedRandom([]); } catch(e) { threw = true; }
+assert(threw, 'empty array throws');
+
+// Test 5: All-zero weights throws
+threw = false;
+try { weightedRandom([{ id: 'z', weight: 0 }]); } catch(e) { threw = true; }
+assert(threw, 'all-zero weights throws');
+
 console.log('\nAll weightedRandom tests passed.');

@@ -34,4 +34,9 @@ assert(q4.category === 'Mathe', 'pool resets after exhaustion and draws again');
 var dq = pool.draw('Deutsch');
 assert(dq.category === 'Deutsch', 'Deutsch pool is independent');
 
+// Test 5: Unknown category throws
+threw = false;
+try { pool.draw('Science'); } catch(e) { threw = true; }
+assert(threw, 'unknown category throws descriptive error');
+
 console.log('\nAll questionPool tests passed.');

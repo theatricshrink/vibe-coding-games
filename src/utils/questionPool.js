@@ -5,6 +5,7 @@ function QuestionPool(allQuestions) {
 
 QuestionPool.prototype.draw = function(category) {
   var categoryQuestions = this._all.filter(function(q) { return q.category === category; });
+  if (categoryQuestions.length === 0) throw new Error('QuestionPool: no questions for category "' + category + '"');
   if (!this._used[category]) this._used[category] = [];
 
   // If all used, reset

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" id="html-root">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -71,23 +71,89 @@
       background: #3d7a25;
       border-color: #f5e642;
     }
+    .lang-toggle {
+      position: fixed;
+      top: 14px;
+      right: 16px;
+      display: flex;
+      gap: 6px;
+    }
+    .lang-btn {
+      background: #1b4332;
+      border: 1px solid #52b788;
+      border-radius: 5px;
+      color: #aed9b8;
+      font-size: 0.85rem;
+      padding: 4px 10px;
+      cursor: pointer;
+    }
+    .lang-btn.active {
+      background: #2c5f2e;
+      border-color: #f5e642;
+      color: #f5e642;
+      font-weight: bold;
+    }
+    .lang-btn:hover { border-color: #f5e642; color: #f5e642; }
   </style>
 </head>
 <body>
-  <h1>🎮 Wilmas Vibe Coding Spielesammlung</h1>
-  <p class="subtitle">Wähle ein Spiel!</p>
+
+  <div class="lang-toggle">
+    <button class="lang-btn" id="btn-de" onclick="setLang('de')">🇩🇪 DE</button>
+    <button class="lang-btn" id="btn-en" onclick="setLang('en')">🇬🇧 EN</button>
+  </div>
+
+  <h1 id="portal-heading"></h1>
+  <p class="subtitle" id="portal-subtitle"></p>
 
   <div class="grid">
-
     <a class="card" href="./pflanzenwelt/index.html">
       <div class="card-emoji">🌿</div>
-      <div class="card-title">Pflanzenwelt</div>
-      <div class="card-desc">Fange alle 8 Pflanzen-Kreaturen!</div>
-      <div class="card-btn">Spielen →</div>
+      <div class="card-title" id="card-pf-title"></div>
+      <div class="card-desc"  id="card-pf-desc"></div>
+      <div class="card-btn"   id="card-pf-btn"></div>
     </a>
-
     <!-- add more cards here -->
-
   </div>
+
+  <script>
+    var PORTAL_STRINGS = {
+      de: {
+        heading:  '🎮 Wilmas Vibe Coding Spielesammlung',
+        subtitle: 'Wähle ein Spiel!',
+        pfTitle:  'Pflanzenwelt',
+        pfDesc:   'Fange alle 8 Pflanzen-Kreaturen!',
+        play:     'Spielen →'
+      },
+      en: {
+        heading:  '🎮 Wilma\'s Vibe Coding Game Collection',
+        subtitle: 'Choose a game!',
+        pfTitle:  'Plant World',
+        pfDesc:   'Catch all 8 plant creatures!',
+        play:     'Play →'
+      }
+    };
+
+    function setLang(lang) {
+      localStorage.setItem('pgame_lang', lang);
+      render(lang);
+    }
+
+    function render(lang) {
+      var s = PORTAL_STRINGS[lang];
+      document.getElementById('html-root').lang          = lang;
+      document.getElementById('portal-heading').textContent  = s.heading;
+      document.getElementById('portal-subtitle').textContent = s.subtitle;
+      document.getElementById('card-pf-title').textContent   = s.pfTitle;
+      document.getElementById('card-pf-desc').textContent    = s.pfDesc;
+      document.getElementById('card-pf-btn').textContent     = s.play;
+      document.getElementById('btn-de').className = 'lang-btn' + (lang === 'de' ? ' active' : '');
+      document.getElementById('btn-en').className = 'lang-btn' + (lang === 'en' ? ' active' : '');
+    }
+
+    var currentLang = (localStorage.getItem('pgame_lang') === 'en') ? 'en' : 'de';
+    render(currentLang);
+  </script>
+
 </body>
 </html>

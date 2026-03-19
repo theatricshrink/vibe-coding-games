@@ -28,8 +28,12 @@ var TILE_COLORS = {
   3: 0x2980b9   // water
 };
 
-var GameScene = {
-  key: 'GameScene',
+var GameScene = new Phaser.Class({
+  Extends: Phaser.Scene,
+
+  initialize: function GameScene() {
+    Phaser.Scene.call(this, { key: 'GameScene' });
+  },
 
   create: function() {
     this._drawMap();
@@ -106,7 +110,7 @@ var GameScene = {
     var newRow = this._playerRow + dr;
     if (newCol < 0 || newCol >= COLS || newRow < 0 || newRow >= ROWS) return;
     var tile = MAP[newRow][newCol];
-    if (tile === 2 || tile === 3) return; // impassable
+    if (tile === 2 || tile === 3) return;
     this._playerCol = newCol;
     this._playerRow = newRow;
     this._drawPlayer();
@@ -117,8 +121,8 @@ var GameScene = {
   },
 
   _onStep: function(tile) {
-    if (tile !== 1) return; // only tall grass
-    if (Math.random() > 0.2) return; // 1-in-5 chance
+    if (tile !== 1) return;
+    if (Math.random() > 0.2) return;
     var creature = weightedRandom(CREATURES);
     this._startEncounter(creature);
   },
@@ -157,4 +161,4 @@ var GameScene = {
       localStorage.setItem('pgame_collection', JSON.stringify(collection));
     }
   }
-};
+});

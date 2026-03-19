@@ -90,13 +90,13 @@ var GameScene = {
     this.input.keyboard.on('keydown-D',     function() { self._tryMove( 1,  0); });
 
     var cKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
-    var self2 = this;
+    this._cKey = cKey;
     cKey.on('down', function() {
-      if (self2._quizActive) return;
-      if (self2._collectionActive) return;
-      self2._collectionActive = true;
-      self2.scene.launch('CollectionScene');
-      self2.scene.pause();
+      if (self._quizActive) return;
+      if (self._collectionActive) return;
+      self._collectionActive = true;
+      self.scene.launch('CollectionScene');
+      self.scene.pause();
     });
   },
 

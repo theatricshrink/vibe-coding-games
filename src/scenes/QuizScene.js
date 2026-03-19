@@ -6,6 +6,7 @@ var QuizScene = {
     this._questions = data.questions;
     this._onComplete = data.onComplete;
     this._currentQ = 0;
+    this._answered = false;
   },
 
   create: function() {
@@ -46,9 +47,7 @@ var QuizScene = {
         var label = self.add.text(positions[idx].x, positions[idx].y, '', {
           fontSize: '22px', color: '#ffffff', wordWrap: { width: 270 }, align: 'center'
         }).setOrigin(0.5);
-        btn.on('pointerover', function() { btn.setFillStyle(0x3d7a25); });
-        btn.on('pointerout',  function() { btn.setFillStyle(0x2c5f2e); });
-        btn.on('pointerdown', function() { self._onAnswer(self._buttonLabels[idx]); });
+        self._wireButton(btn, idx);
         self._buttons.push({ rect: btn, label: label });
       })(i);
     }
@@ -63,6 +62,14 @@ var QuizScene = {
     this._showQuestion();
   },
 
+  _wireButton: function(btn, idx) {
+    var self = this;
+    btn.removeAllListeners();
+    btn.on('pointerover', function() { btn.setFillStyle(0x3d7a25); });
+    btn.on('pointerout',  function() { btn.setFillStyle(0x2c5f2e); });
+    btn.on('pointerdown', function() { self._onAnswer(self._buttonLabels[idx]); });
+  },
+
   _showQuestion: function() {
     var q = this._questions[this._currentQ];
     this._questionText.setText(q.frage);
@@ -72,6 +79,8 @@ var QuizScene = {
   },
 
   _onAnswer: function(letter) {
+    if (this._answered) return;
+    this._answered = true;
     // Disable further input
     this.input.keyboard.removeAllListeners();
     for (var i = 0; i < this._buttons.length; i++) {
@@ -114,7 +123,9 @@ var QuizScene = {
             self.input.keyboard.on('keydown-D', function() { self._onAnswer('D'); });
             for (var i = 0; i < self._buttons.length; i++) {
               self._buttons[i].rect.setInteractive();
+              self._wireButton(self._buttons[i].rect, i);
             }
+            self._answered = false;
             self._showQuestion();
           } else {
             self._close(true);

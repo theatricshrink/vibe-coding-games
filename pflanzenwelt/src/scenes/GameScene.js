@@ -123,7 +123,12 @@ var GameScene = new Phaser.Class({
   _onStep: function(tile) {
     if (tile !== 1) return;
     if (Math.random() > 0.2) return;
-    var creature = weightedRandom(CREATURES);
+    var raw = localStorage.getItem('pgame_collection');
+    var collection = {};
+    try { if (raw) collection = JSON.parse(raw); } catch(e) {}
+    var available = CREATURES.filter(function(c) { return !collection[c.id]; });
+    if (available.length === 0) return;
+    var creature = weightedRandom(available);
     this._startEncounter(creature);
   },
 

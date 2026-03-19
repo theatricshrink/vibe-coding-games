@@ -18,7 +18,9 @@ var QuizScene = new Phaser.Class({
 
     this._bg = this.add.rectangle(W / 2, H / 2, W, H, 0x000000, 0.65);
 
-    this._creatureText = this.add.text(W / 2, 140, this._creature.emoji, {
+    this._panel = this.add.rectangle(W / 2, 440, 760, 360, 0x1a1a2e, 1);
+
+    this._creatureText = this.add.text(W / 2, 130, this._creature.emoji, {
       fontSize: '80px'
     }).setOrigin(0.5);
 
@@ -26,17 +28,15 @@ var QuizScene = new Phaser.Class({
       fontSize: '32px', color: '#ffffff', fontStyle: 'bold'
     }).setOrigin(0.5);
 
-    this._panel = this.add.rectangle(W / 2, 420, 760, 380, 0x1a1a2e, 1);
-
-    this._questionText = this.add.text(W / 2, 295, '', {
+    this._questionText = this.add.text(W / 2, 315, '', {
       fontSize: '26px', color: '#ffffff', wordWrap: { width: 700 }, align: 'center'
     }).setOrigin(0.5);
 
     this._buttons = [];
     this._buttonLabels = ['A', 'B', 'C', 'D'];
     var positions = [
-      { x: 310, y: 390 }, { x: 650, y: 390 },
-      { x: 310, y: 480 }, { x: 650, y: 480 }
+      { x: 310, y: 410 }, { x: 650, y: 410 },
+      { x: 310, y: 500 }, { x: 650, y: 500 }
     ];
     var self = this;
     for (var i = 0; i < 4; i++) {
@@ -96,13 +96,13 @@ var QuizScene = new Phaser.Class({
     this._panel.setFillStyle(0x1e7e34);
     var isLast = this._currentQ >= this._questions.length - 1;
     var feedbackText = isLast ? 'Gefangen! 🎉' : '✓ Richtig!';
-    var txt = this.add.text(480, 580, feedbackText, {
+    var txt = this.add.text(480, 610, feedbackText, {
       fontSize: '36px', color: '#ffffff', fontStyle: 'bold'
     }).setOrigin(0.5).setAlpha(0);
 
     this.tweens.add({
       targets: txt,
-      y: 550,
+      y: 580,
       alpha: 1,
       duration: 300,
       onComplete: function() {
@@ -132,7 +132,7 @@ var QuizScene = new Phaser.Class({
   _wrong: function() {
     var self = this;
     this._panel.setFillStyle(0x7b1e1e);
-    this.add.text(480, 580, 'Tschüss! 👋', {
+    this.add.text(480, 610, 'Tschüss! 👋', {
       fontSize: '36px', color: '#ffffff', fontStyle: 'bold'
     }).setOrigin(0.5);
 

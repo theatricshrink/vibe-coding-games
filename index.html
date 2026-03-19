@@ -3,23 +3,91 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pflanzenwelt</title>
+  <title>Spielesammlung</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { background: #1a1a2e; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+    body {
+      background: #0d1b0d;
+      color: #ffffff;
+      font-family: sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 48px 24px;
+    }
+    h1 {
+      font-size: 2.4rem;
+      color: #f5e642;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+    .subtitle {
+      font-size: 1rem;
+      color: #52b788;
+      margin-bottom: 48px;
+    }
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      justify-content: center;
+      max-width: 960px;
+      width: 100%;
+    }
+    .card {
+      background: #1b4332;
+      border: 2px solid #52b788;
+      border-radius: 12px;
+      width: 260px;
+      padding: 28px 24px 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: inherit;
+      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+    }
+    .card:hover {
+      background: #2c5f2e;
+      border-color: #f5e642;
+      transform: translateY(-3px);
+    }
+    .card-emoji { font-size: 3rem; line-height: 1; }
+    .card-title { font-size: 1.25rem; font-weight: bold; color: #f5e642; }
+    .card-desc  { font-size: 0.9rem; color: #aed9b8; text-align: center; }
+    .card-btn {
+      margin-top: 8px;
+      background: #2c5f2e;
+      border: 1px solid #52b788;
+      border-radius: 6px;
+      color: #ffffff;
+      font-size: 0.95rem;
+      padding: 7px 22px;
+      cursor: pointer;
+    }
+    .card:hover .card-btn {
+      background: #3d7a25;
+      border-color: #f5e642;
+    }
   </style>
 </head>
 <body>
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
-  <script src="src/data/creatures.js"></script>
-  <script src="src/data/questions.js"></script>
-  <script src="src/utils/weightedRandom.js"></script>
-  <script src="src/utils/questionPool.js"></script>
-  <script src="src/scenes/StartScene.js"></script>
-  <script src="src/scenes/GameScene.js"></script>
-  <script src="src/scenes/QuizScene.js"></script>
-  <script src="src/scenes/CollectionScene.js"></script>
-  <script src="src/scenes/WinScene.js"></script>
-  <script src="src/main.js"></script>
+  <h1>🎮 Spielesammlung</h1>
+  <p class="subtitle">Wähle ein Spiel!</p>
+
+  <div class="grid">
+
+    <a class="card" href="./pflanzenwelt/">
+      <div class="card-emoji">🌿</div>
+      <div class="card-title">Pflanzenwelt</div>
+      <div class="card-desc">Fange alle 8 Pflanzen-Kreaturen!</div>
+      <div class="card-btn">Spielen →</div>
+    </a>
+
+    <!-- add more cards here -->
+
+  </div>
 </body>
 </html>

@@ -33,6 +33,18 @@ var GameScene = {
 
   create: function() {
     this._drawMap();
+
+    this._playerCol = 10;
+    this._playerRow = 7;
+    this._moving = false;
+
+    this._playerGfx = this.add.graphics();
+    this._playerText = this.add.text(0, 0, '🧒', {
+      fontSize: '28px'
+    }).setDepth(1);
+
+    this._drawPlayer();
+    this._setupKeys();
   },
 
   _drawMap: function() {
@@ -44,5 +56,63 @@ var GameScene = {
         gfx.fillRect(col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE - 1, TILE_SIZE - 1);
       }
     }
+  },
+
+  _drawPlayer: function() {
+    this._playerGfx.clear();
+    this._playerGfx.fillStyle(0xf5a623, 1);
+    this._playerGfx.fillRect(
+      this._playerCol * TILE_SIZE + 6,
+      this._playerRow * TILE_SIZE + 6,
+      TILE_SIZE - 12,
+      TILE_SIZE - 12
+    );
+    this._playerText.setPosition(
+      this._playerCol * TILE_SIZE + 10,
+      this._playerRow * TILE_SIZE + 6
+    );
+  },
+
+  _setupKeys: function() {
+    var self = this;
+
+    this.input.keyboard.on('keydown-UP',    function() { self._tryMove( 0, -1); });
+    this.input.keyboard.on('keydown-DOWN',  function() { self._tryMove( 0,  1); });
+    this.input.keyboard.on('keydown-LEFT',  function() { self._tryMove(-1,  0); });
+    this.input.keyboard.on('keydown-RIGHT', function() { self._tryMove( 1,  0); });
+    this.input.keyboard.on('keydown-W',     function() { self._tryMove( 0, -1); });
+    this.input.keyboard.on('keydown-S',     function() { self._tryMove( 0,  1); });
+    this.input.keyboard.on('keydown-A',     function() { self._tryMove(-1,  0); });
+    this.input.keyboard.on('keydown-D',     function() { self._tryMove( 1,  0); });
+
+    var cKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
+    var self2 = this;
+    cKey.on('down', function() {
+      if (self2._quizActive) return;
+      if (self2._collectionActive) return;
+      self2._collectionActive = true;
+      self2.scene.launch('CollectionScene');
+      self2.scene.pause();
+    });
+  },
+
+  _tryMove: function(dc, dr) {
+    if (this._moving) return;
+    var newCol = this._playerCol + dc;
+    var newRow = this._playerRow + dr;
+    if (newCol < 0 || newCol >= COLS || newRow < 0 || newRow >= ROWS) return;
+    var tile = MAP[newRow][newCol];
+    if (tile === 2 || tile === 3) return; // impassable
+    this._playerCol = newCol;
+    this._playerRow = newRow;
+    this._drawPlayer();
+    this._moving = true;
+    var self = this;
+    this.time.delayedCall(150, function() { self._moving = false; });
+    this._onStep(tile);
+  },
+
+  _onStep: function(tile) {
+    // placeholder — encounter logic in Task 7
   }
 };

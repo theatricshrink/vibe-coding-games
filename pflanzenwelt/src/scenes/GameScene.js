@@ -138,7 +138,7 @@ var GameScene = new Phaser.Class({
     var self = this;
 
     var questions = [];
-    var categories = ['Mathe', 'Deutsch', 'Allgemeinwissen'];
+    var categories = STRINGS[LANG].categories;
     for (var i = 0; i < questionsNeeded; i++) {
       var cat = categories[Math.floor(Math.random() * categories.length)];
       questions.push(this._questionPool.draw(cat));

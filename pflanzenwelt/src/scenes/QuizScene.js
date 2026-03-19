@@ -24,7 +24,7 @@ var QuizScene = new Phaser.Class({
       fontSize: '80px'
     }).setOrigin(0.5);
 
-    this._creatureName = this.add.text(W / 2, 230, this._creature.name, {
+    this._creatureName = this.add.text(W / 2, 230, LANG === 'en' ? this._creature.nameEn : this._creature.name, {
       fontSize: '32px', color: '#ffffff', fontStyle: 'bold'
     }).setOrigin(0.5);
 
@@ -95,7 +95,7 @@ var QuizScene = new Phaser.Class({
     var self = this;
     this._panel.setFillStyle(0x1e7e34);
     var isLast = this._currentQ >= this._questions.length - 1;
-    var feedbackText = isLast ? 'Gefangen! 🎉' : '✓ Richtig!';
+    var feedbackText = isLast ? STRINGS[LANG].caught : STRINGS[LANG].correct;
     var txt = this.add.text(480, 610, feedbackText, {
       fontSize: '36px', color: '#ffffff', fontStyle: 'bold'
     }).setOrigin(0.5).setAlpha(0);
@@ -132,7 +132,7 @@ var QuizScene = new Phaser.Class({
   _wrong: function() {
     var self = this;
     this._panel.setFillStyle(0x7b1e1e);
-    this.add.text(480, 610, 'Tschüss! 👋', {
+    this.add.text(480, 610, STRINGS[LANG].bye, {
       fontSize: '36px', color: '#ffffff', fontStyle: 'bold'
     }).setOrigin(0.5);
 

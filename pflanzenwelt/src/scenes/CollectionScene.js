@@ -16,11 +16,11 @@ var CollectionScene = new Phaser.Class({
     this.add.rectangle(W / 2, H / 2, W, H, 0x0d0d1a, 0.92);
 
     var caught = Object.keys(collection).length;
-    this.add.text(W / 2, 40, 'Gefangen: ' + caught + ' / ' + CREATURES.length, {
+    this.add.text(W / 2, 40, STRINGS[LANG].caughtHeader + ': ' + caught + ' / ' + CREATURES.length, {
       fontSize: '30px', color: '#f5e642', fontStyle: 'bold'
     }).setOrigin(0.5);
 
-    this.add.text(W / 2, 80, '[C] oder [Esc] zum Schließen', {
+    this.add.text(W / 2, 80, STRINGS[LANG].closeHint, {
       fontSize: '16px', color: '#aaaaaa'
     }).setOrigin(0.5);
 
@@ -44,14 +44,14 @@ var CollectionScene = new Phaser.Class({
         this.add.text(cx + cardW / 2, cy + 60, c.emoji, {
           fontSize: '52px'
         }).setOrigin(0.5);
-        this.add.text(cx + cardW / 2, cy + 120, c.name, {
+        this.add.text(cx + cardW / 2, cy + 120, LANG === 'en' ? c.nameEn : c.name, {
           fontSize: '18px', color: '#ffffff', fontStyle: 'bold'
         }).setOrigin(0.5);
-        this.add.text(cx + cardW / 2, cy + 155, 'Gefangen!', {
+        this.add.text(cx + cardW / 2, cy + 155, STRINGS[LANG].caughtLabel, {
           fontSize: '13px', color: '#52b788'
         }).setOrigin(0.5);
         var rarityColor = c.rarity === 'rare' ? '#f5e642' : c.rarity === 'uncommon' ? '#b0c4de' : '#aaaaaa';
-        this.add.text(cx + cardW / 2, cy + 178, c.rarity, {
+        this.add.text(cx + cardW / 2, cy + 178, STRINGS[LANG].rarity[c.rarity], {
           fontSize: '12px', color: rarityColor
         }).setOrigin(0.5);
       } else {

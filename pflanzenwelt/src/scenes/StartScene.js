@@ -17,11 +17,11 @@ var StartScene = new Phaser.Class({
       .setStrokeStyle(3, 0x52b788);
 
     // Title
-    this.add.text(W / 2, 75, '🌿 Pflanzenwelt 🌿', {
+    this.add.text(W / 2, 75, STRINGS[LANG].title, {
       fontSize: '50px', color: '#f5e642', fontStyle: 'bold'
     }).setOrigin(0.5);
 
-    this.add.text(W / 2, 138, 'Fange alle 8 Kreaturen!', {
+    this.add.text(W / 2, 138, STRINGS[LANG].subtitle, {
       fontSize: '22px', color: '#52b788'
     }).setOrigin(0.5);
 
@@ -29,18 +29,11 @@ var StartScene = new Phaser.Class({
     this.add.rectangle(W / 2, 400, 820, 420, 0x0d1a0d, 0.85)
       .setStrokeStyle(2, 0x3d7a25);
 
-    this.add.text(W / 2, 210, 'Wie spielt man?', {
+    this.add.text(W / 2, 210, STRINGS[LANG].howToPlay, {
       fontSize: '26px', color: '#ffffff', fontStyle: 'bold'
     }).setOrigin(0.5);
 
-    var lines = [
-      ['⬆⬇⬅➡', 'Bewege dich mit den Pfeiltasten oder WASD'],
-      ['🌿',     'Laufe durch das hohe Gras um Kreaturen zu treffen'],
-      ['❓',     'Beantworte die Frage richtig um sie zu fangen'],
-      ['✖',     'Falsche Antwort? Die Kreatur flieht!'],
-      ['⭐',     'Seltene Kreaturen brauchen 2 richtige Antworten'],
-      ['📖',    'Drücke C um deine Sammlung anzusehen'],
-    ];
+    var lines = STRINGS[LANG].instructions;
 
     for (var i = 0; i < lines.length; i++) {
       this.add.text(230, 263 + i * 55, lines[i][0], {
@@ -52,7 +45,7 @@ var StartScene = new Phaser.Class({
     }
 
     // Start prompt
-    var prompt = this.add.text(W / 2, 658, 'Drücke eine Taste oder klicke zum Starten', {
+    var prompt = this.add.text(W / 2, 658, STRINGS[LANG].startPrompt, {
       fontSize: '22px', color: '#f5e642'
     }).setOrigin(0.5);
 

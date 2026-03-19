@@ -38,7 +38,7 @@ var WinScene = new Phaser.Class({
     }
 
     // Title — pulsing
-    var title = this.add.text(W / 2, 62, '🏆 Du hast gewonnen! 🏆', {
+    var title = this.add.text(W / 2, 62, STRINGS[LANG].winTitle, {
       fontSize: '48px', color: '#f5e642', fontStyle: 'bold'
     }).setOrigin(0.5);
 
@@ -51,7 +51,7 @@ var WinScene = new Phaser.Class({
       ease: 'Sine.easeInOut'
     });
 
-    this.add.text(W / 2, 122, 'Alle 8 Kreaturen gefangen — Pflanzenwelt-Meister!', {
+    this.add.text(W / 2, 122, STRINGS[LANG].winSubtitle, {
       fontSize: '20px', color: '#52b788'
     }).setOrigin(0.5);
 
@@ -73,11 +73,11 @@ var WinScene = new Phaser.Class({
         var bg = self.add.rectangle(0, 0, cardW, cardH, 0x1b4332)
           .setStrokeStyle(2, 0x52b788);
         var emoji = self.add.text(0, -28, cr.emoji, { fontSize: '38px' }).setOrigin(0.5);
-        var name  = self.add.text(0, 20, cr.name, {
+        var name  = self.add.text(0, 20, LANG === 'en' ? cr.nameEn : cr.name, {
           fontSize: '15px', color: '#ffffff', fontStyle: 'bold'
         }).setOrigin(0.5);
         var rarityColor = cr.rarity === 'rare' ? '#f5e642' : cr.rarity === 'uncommon' ? '#b0c4de' : '#aaaaaa';
-        var rarity = self.add.text(0, 44, cr.rarity, {
+        var rarity = self.add.text(0, 44, STRINGS[LANG].rarity[cr.rarity], {
           fontSize: '12px', color: rarityColor
         }).setOrigin(0.5);
 
@@ -110,7 +110,7 @@ var WinScene = new Phaser.Class({
       .setInteractive()
       .setStrokeStyle(2, 0x52b788)
       .setAlpha(0);
-    var btnLabel = this.add.text(W / 2, 658, '🔄 Nochmal spielen', {
+    var btnLabel = this.add.text(W / 2, 658, STRINGS[LANG].playAgain, {
       fontSize: '23px', color: '#ffffff'
     }).setOrigin(0.5).setAlpha(0);
 

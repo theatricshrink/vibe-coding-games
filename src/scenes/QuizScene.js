@@ -158,9 +158,10 @@ var QuizScene = new Phaser.Class({
   },
 
   _close: function(caught) {
+    var onComplete = this._onComplete; // capture before scene.stop() clears state
     this.input.keyboard.removeAllListeners();
     this.scene.stop();
     this.scene.resume('GameScene');
-    this._onComplete(caught);
+    onComplete(caught);
   }
 });

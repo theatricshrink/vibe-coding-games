@@ -160,5 +160,8 @@ var GameScene = new Phaser.Class({
       collection[creature.id] = { caughtAt: Date.now() };
       localStorage.setItem('pgame_collection', JSON.stringify(collection));
     }
+    if (Object.keys(collection).length === CREATURES.length) {
+      this.scene.start('WinScene');
+    }
   }
 });

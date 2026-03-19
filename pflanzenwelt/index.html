@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" id="html-root">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -16,10 +16,18 @@
   </style>
 </head>
 <body>
-  <a id="back-btn" href="../index.html">← Übersicht</a>
+  <a id="back-btn" href="../index.html"></a>
+  <!-- Phaser MUST load first — scene files call Phaser.Class at parse time -->
   <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+  <!-- lang.js MUST come before creatures.js, questions.js, strings.js -->
+  <script src="src/i18n/lang.js"></script>
+  <script>
+    document.getElementById('html-root').lang = LANG;
+    document.getElementById('back-btn').textContent = LANG === 'en' ? '← Overview' : '← Übersicht';
+  </script>
   <script src="src/data/creatures.js"></script>
   <script src="src/data/questions.js"></script>
+  <script src="src/i18n/strings.js"></script>
   <script src="src/utils/weightedRandom.js"></script>
   <script src="src/utils/questionPool.js"></script>
   <script src="src/scenes/StartScene.js"></script>

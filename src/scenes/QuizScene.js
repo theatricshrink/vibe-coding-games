@@ -53,11 +53,10 @@ var QuizScene = {
     }
 
     // Keyboard answer shortcuts
-    var self2 = this;
-    this.input.keyboard.on('keydown-A', function() { self2._onAnswer('A'); });
-    this.input.keyboard.on('keydown-B', function() { self2._onAnswer('B'); });
-    this.input.keyboard.on('keydown-C', function() { self2._onAnswer('C'); });
-    this.input.keyboard.on('keydown-D', function() { self2._onAnswer('D'); });
+    this.input.keyboard.on('keydown-A', function() { self._onAnswer('A'); });
+    this.input.keyboard.on('keydown-B', function() { self._onAnswer('B'); });
+    this.input.keyboard.on('keydown-C', function() { self._onAnswer('C'); });
+    this.input.keyboard.on('keydown-D', function() { self._onAnswer('D'); });
 
     this._showQuestion();
   },

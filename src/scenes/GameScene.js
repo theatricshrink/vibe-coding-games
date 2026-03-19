@@ -150,7 +150,8 @@ var GameScene = {
 
   _saveToCollection: function(creature) {
     var raw = localStorage.getItem('pgame_collection');
-    var collection = raw ? JSON.parse(raw) : {};
+    var collection = {};
+    try { if (raw) collection = JSON.parse(raw); } catch(e) {}
     if (!collection[creature.id]) {
       collection[creature.id] = { caughtAt: Date.now() };
       localStorage.setItem('pgame_collection', JSON.stringify(collection));

@@ -64,11 +64,12 @@ var StartScene = new Phaser.Class({
       repeat: -1
     });
 
-    this.input.keyboard.once('keydown', function() {
+    function startGame() {
+      localStorage.removeItem('pgame_collection');
       self.scene.start('GameScene');
-    });
-    this.input.once('pointerdown', function() {
-      self.scene.start('GameScene');
-    });
+    }
+
+    this.input.keyboard.once('keydown', startGame);
+    this.input.once('pointerdown', startGame);
   }
 });

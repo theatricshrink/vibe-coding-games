@@ -9,53 +9,117 @@ var WinScene = new Phaser.Class({
     var W = 960, H = 720;
     var self = this;
 
-    // Background
-    this.add.rectangle(W / 2, H / 2, W, H, 0x0d1a0d);
+    // Deep background
+    this.add.rectangle(W / 2, H / 2, W, H, 0x05100a);
 
-    // Decorative border
-    this.add.rectangle(W / 2, H / 2, W - 20, H - 20, 0x000000, 0)
-      .setStrokeStyle(3, 0xf5e642);
+    // Confetti — 60 colored rectangles raining down
+    var confettiColors = [0xf5e642, 0x52b788, 0xff6b9d, 0x74c0fc, 0xffa94d, 0xa9e34b, 0xda77f2];
+    for (var c = 0; c < 60; c++) {
+      (function() {
+        var x = Phaser.Math.Between(0, W);
+        var startY = Phaser.Math.Between(-200, -10);
+        var color = confettiColors[Phaser.Math.Between(0, confettiColors.length - 1)];
+        var w = Phaser.Math.Between(6, 14);
+        var h = Phaser.Math.Between(6, 14);
+        var piece = self.add.rectangle(x, startY, w, h, color).setAlpha(0.85);
+        var duration = Phaser.Math.Between(2000, 5000);
+        var delay = Phaser.Math.Between(0, 3000);
+        self.tweens.add({
+          targets: piece,
+          y: H + 20,
+          x: x + Phaser.Math.Between(-60, 60),
+          angle: Phaser.Math.Between(-360, 360),
+          duration: duration,
+          delay: delay,
+          repeat: -1,
+          repeatDelay: Phaser.Math.Between(0, 2000)
+        });
+      })();
+    }
 
-    // Title
-    this.add.text(W / 2, 55, '🎉 Glückwunsch! 🎉', {
-      fontSize: '46px', color: '#f5e642', fontStyle: 'bold'
+    // Title — pulsing
+    var title = this.add.text(W / 2, 62, '🏆 Du hast gewonnen! 🏆', {
+      fontSize: '48px', color: '#f5e642', fontStyle: 'bold'
     }).setOrigin(0.5);
 
-    this.add.text(W / 2, 115, 'Du hast alle 8 Kreaturen gefangen!', {
-      fontSize: '24px', color: '#52b788'
+    this.tweens.add({
+      targets: title,
+      scaleX: 1.06, scaleY: 1.06,
+      duration: 800,
+      yoyo: true,
+      repeat: -1,
+      ease: 'Sine.easeInOut'
+    });
+
+    this.add.text(W / 2, 122, 'Alle 8 Kreaturen gefangen — Pflanzenwelt-Meister!', {
+      fontSize: '20px', color: '#52b788'
     }).setOrigin(0.5);
 
-    // Creature grid — 4 columns × 2 rows
-    var cardW = 180, cardH = 155;
-    var startX = 90, startY = 170;
+    // Creature cards — staggered pop-in
+    var cardW = 180, cardH = 152;
+    var startX = 90, startY = 168;
     var cols = 4;
 
     for (var i = 0; i < CREATURES.length; i++) {
-      var c = CREATURES[i];
-      var col = i % cols;
-      var row = Math.floor(i / cols);
-      var cx = startX + col * (cardW + 16) + cardW / 2;
-      var cy = startY + row * (cardH + 12) + cardH / 2;
+      (function(idx) {
+        var cr = CREATURES[idx];
+        var col = idx % cols;
+        var row = Math.floor(idx / cols);
+        var cx = startX + col * (cardW + 16) + cardW / 2;
+        var cy = startY + row * (cardH + 12) + cardH / 2;
 
-      this.add.rectangle(cx, cy, cardW, cardH, 0x1b4332)
-        .setStrokeStyle(2, 0x52b788);
-      this.add.text(cx, cy - 28, c.emoji, { fontSize: '40px' }).setOrigin(0.5);
-      this.add.text(cx, cy + 22, c.name, {
-        fontSize: '15px', color: '#ffffff', fontStyle: 'bold'
-      }).setOrigin(0.5);
-      var rarityColor = c.rarity === 'rare' ? '#f5e642' : c.rarity === 'uncommon' ? '#b0c4de' : '#aaaaaa';
-      this.add.text(cx, cy + 46, c.rarity, {
-        fontSize: '12px', color: rarityColor
-      }).setOrigin(0.5);
+        var card = self.add.container(cx, cy).setScale(0).setAlpha(0);
+
+        var bg = self.add.rectangle(0, 0, cardW, cardH, 0x1b4332)
+          .setStrokeStyle(2, 0x52b788);
+        var emoji = self.add.text(0, -28, cr.emoji, { fontSize: '38px' }).setOrigin(0.5);
+        var name  = self.add.text(0, 20, cr.name, {
+          fontSize: '15px', color: '#ffffff', fontStyle: 'bold'
+        }).setOrigin(0.5);
+        var rarityColor = cr.rarity === 'rare' ? '#f5e642' : cr.rarity === 'uncommon' ? '#b0c4de' : '#aaaaaa';
+        var rarity = self.add.text(0, 44, cr.rarity, {
+          fontSize: '12px', color: rarityColor
+        }).setOrigin(0.5);
+
+        card.add([bg, emoji, name, rarity]);
+
+        self.tweens.add({
+          targets: card,
+          scaleX: 1, scaleY: 1, alpha: 1,
+          duration: 350,
+          delay: 400 + idx * 120,
+          ease: 'Back.easeOut'
+        });
+
+        // Rare cards get a gold shimmer after popping in
+        if (cr.rarity === 'rare') {
+          self.tweens.add({
+            targets: bg,
+            strokeColor: 0xf5e642,
+            duration: 600,
+            delay: 400 + idx * 120 + 400,
+            yoyo: true,
+            repeat: -1
+          });
+        }
+      })(i);
     }
 
-    // Play again button
-    var btn = this.add.rectangle(W / 2, 656, 320, 58, 0x2c5f2e)
+    // Play again button — appears after all cards have popped in
+    var btn = this.add.rectangle(W / 2, 658, 320, 56, 0x2c5f2e)
       .setInteractive()
-      .setStrokeStyle(2, 0x52b788);
-    var btnLabel = this.add.text(W / 2, 656, '🔄 Nochmal spielen', {
-      fontSize: '24px', color: '#ffffff'
-    }).setOrigin(0.5);
+      .setStrokeStyle(2, 0x52b788)
+      .setAlpha(0);
+    var btnLabel = this.add.text(W / 2, 658, '🔄 Nochmal spielen', {
+      fontSize: '23px', color: '#ffffff'
+    }).setOrigin(0.5).setAlpha(0);
+
+    this.tweens.add({
+      targets: [btn, btnLabel],
+      alpha: 1,
+      duration: 400,
+      delay: 400 + CREATURES.length * 120 + 200
+    });
 
     btn.on('pointerover', function() { btn.setFillStyle(0x3d7a25); });
     btn.on('pointerout',  function() { btn.setFillStyle(0x2c5f2e); });

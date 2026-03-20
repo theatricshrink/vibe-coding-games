@@ -11,7 +11,7 @@ var EncodeScreen = (function() {
   var hadErrors = false;
   var QUESTIONS_PER_MISSION = 8;
   var wrongCount = {};
-  var sosBuffer = '';
+  var sosLetters = '';
   var isCampaign = false;
 
   function start(m, campaign) {
@@ -20,11 +20,13 @@ var EncodeScreen = (function() {
     mission = m;
     var wave = MORSE_WAVES[m.wave];
     var prev = lettersUnlockedThrough(m.wave - 1);
+    // Fewer questions for tiny wave pools (e.g. wave 1 has only E & T)
+    QUESTIONS_PER_MISSION = wave.length <= 2 ? 6 : 8;
     letters = buildPool(wave, prev, QUESTIONS_PER_MISSION);
     currentIdx = 0; correct = 0; total = 0; streak = 0; signal = 100; hadErrors = false;
     missionStart = Date.now();
     wrongCount = {};
-    sosBuffer = '';
+    sosLetters = '';
     Router.go('encode');
   }
 
@@ -72,9 +74,6 @@ var EncodeScreen = (function() {
       updateDisplay();
     });
     Input.onConfirm(function(seq) {
-      sosBuffer += seq;
-      if (sosBuffer.length > 20) sosBuffer = sosBuffer.slice(-20);
-      AchievementsEngine.checkSOS(sosBuffer);
       currentSequence = '';
       checkAnswer(seq);
     });
@@ -105,6 +104,10 @@ var EncodeScreen = (function() {
       Audio.playCorrect();
       AchievementsEngine.onCorrectAnswer({ streak: streak });
       AchievementsEngine.onLetterCorrectAfterFails(target);
+      // SOS Easter egg: track correctly encoded letters, not raw morse
+      sosLetters += target;
+      if (sosLetters.length > 5) sosLetters = sosLetters.slice(-5);
+      if (sosLetters.slice(-3) === 'SOS') AchievementsEngine.unlock('sos');
     } else {
       hadErrors = true;
       streak = 0;
@@ -144,13 +147,16 @@ var EncodeScreen = (function() {
       mode: 'encode', hadErrors: hadErrors, triggeredWaveUnlock: triggeredWaveUnlock
     });
 
-    if (isCampaign) Progression.advanceCampaign();
+    if (isCampaign) {
+      Progression.unlockWave(mission.wave);
+      Progression.advanceCampaign();
+    }
 
     var el = document.getElementById('screen-encode');
     var starStr = '\u2605'.repeat(stars) + '\u2606'.repeat(3 - stars);
     var nextBtn = isCampaign
-      ? (Progression.isCampaignDone()
-          ? '<button class="btn" onclick="Router.go(\'campaign-end\')">' + t('campaignComplete') + ' \u2192</button>'
+      ? (Progression.isFinaleReady()
+          ? '<button class="btn" onclick="Router.go(\'campaign-end\')">' + t('campaignToFinale') + '</button>'
           : '<button class="btn" onclick="MissionScreen.startCampaign()">NEXT MISSION \u2192</button>')
       : '<button class="btn" onclick="Router.go(\'mission\')">' + t('menuFreePlay') + '</button>';
 

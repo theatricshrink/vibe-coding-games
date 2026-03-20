@@ -163,6 +163,7 @@ var CampaignEndScreen = (function() {
   };
 
   function showTeletypePhase() {
+    Progression.completeCampaign(); // finale decoded — mark campaign truly done
     var el = document.getElementById('screen-campaign-end');
     el.innerHTML = [
       '<div style="flex:1;display:flex;flex-direction:column;padding:24px;overflow-y:auto;">',

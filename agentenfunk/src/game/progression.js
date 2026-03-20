@@ -41,12 +41,22 @@ var Progression = (function() {
   function isCampaignDone() { return state.campaignDone; }
 
   function advanceCampaign() {
-    if (state.campaignDone) return;
-    // MISSIONS may not be loaded in test env — use length 12 as fallback
+    if (isFinaleReady()) return;
     var total = (typeof MISSIONS !== 'undefined') ? MISSIONS.length : 12;
     state.campaignIdx = Math.min(state.campaignIdx + 1, total);
-    if (state.campaignIdx >= total) state.campaignDone = true;
     save();
+  }
+
+  // Called after the finale message is decoded — marks campaign truly complete
+  function completeCampaign() {
+    state.campaignDone = true;
+    save();
+  }
+
+  // All 12 missions played; finale decode can now be shown
+  function isFinaleReady() {
+    var total = (typeof MISSIONS !== 'undefined') ? MISSIONS.length : 12;
+    return state.campaignIdx >= total || state.campaignDone;
   }
 
   function starsForAccuracy(accuracy, fast) {
@@ -66,6 +76,8 @@ var Progression = (function() {
     starsForAccuracy: starsForAccuracy,
     getCampaignIdx: getCampaignIdx,
     isCampaignDone: isCampaignDone,
-    advanceCampaign: advanceCampaign
+    isFinaleReady: isFinaleReady,
+    advanceCampaign: advanceCampaign,
+    completeCampaign: completeCampaign
   };
 })();

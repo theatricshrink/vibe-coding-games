@@ -10,7 +10,7 @@ var DecodeScreen = (function() {
   var noRefUsed = true;
   var hadErrors = false;
   var isCampaign = false;
-  var QUESTIONS_PER_MISSION = 10;
+  var QUESTIONS_PER_MISSION = 10; // overridden in start() based on wave size
   var isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
 
   function start(m, campaign) {
@@ -19,6 +19,7 @@ var DecodeScreen = (function() {
     mission = m;
     var wave = MORSE_WAVES[m.wave];
     var prev = lettersUnlockedThrough(m.wave - 1);
+    QUESTIONS_PER_MISSION = wave.length <= 2 ? 6 : 10;
     letters = buildPool(wave, prev, QUESTIONS_PER_MISSION);
     currentIdx = 0; correct = 0; total = 0; streak = 0; signal = 100; noRefUsed = true; hadErrors = false;
     missionStart = Date.now();
@@ -167,7 +168,10 @@ var DecodeScreen = (function() {
       mode: 'decode', durationMs: durationMs
     });
 
-    if (isCampaign) Progression.advanceCampaign();
+    if (isCampaign) {
+      Progression.unlockWave(mission.wave);
+      Progression.advanceCampaign();
+    }
     showEndScreen(stars, accuracy);
   }
 
@@ -176,8 +180,8 @@ var DecodeScreen = (function() {
     var starStr = '\u2605'.repeat(stars) + '\u2606'.repeat(3 - stars);
     var label = stars === 3 ? t('stars3') : stars === 2 ? t('stars2') : t('stars1');
     var nextBtn = isCampaign
-      ? (Progression.isCampaignDone()
-          ? '<button class="btn" onclick="Router.go(\'campaign-end\')">' + t('campaignComplete') + ' \u2192</button>'
+      ? (Progression.isFinaleReady()
+          ? '<button class="btn" onclick="Router.go(\'campaign-end\')">' + t('campaignToFinale') + '</button>'
           : '<button class="btn" onclick="MissionScreen.startCampaign()">NEXT MISSION \u2192</button>')
       : '<button class="btn" onclick="Router.go(\'mission\')">' + t('menuFreePlay') + '</button>';
 

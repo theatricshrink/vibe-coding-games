@@ -1,7 +1,7 @@
 var MissionScreen = (function() {
   function render() {
-    // Campaign completion earns all wave unlocks — repair any stale saved state
-    if (Progression.isCampaignDone()) Progression.unlockWave(6);
+    // All missions played earns all wave unlocks — repair any stale saved state
+    if (Progression.isFinaleReady()) Progression.unlockWave(6);
     var wave = Progression.getWave();
     var missions = getMissionsForWave(wave);
     var el = document.getElementById('screen-mission');
@@ -26,7 +26,7 @@ var MissionScreen = (function() {
 
   function startCampaign() {
     var idx = Progression.getCampaignIdx();
-    if (Progression.isCampaignDone()) {
+    if (Progression.isFinaleReady()) {
       Router.go('campaign-end');
       return;
     }

@@ -11,6 +11,7 @@ var STRINGS = {
     // Campaign
     campaignProgress: 'MISSION {n} OF 12',
     campaignComplete: 'CAMPAIGN COMPLETE',
+    campaignToFinale: '⚠ FINAL TRANSMISSION →',
     campaignFinaleTitle: 'OPERATION CONCLUDED',
     campaignFinaleText: 'You have decoded the final transmission. The network is secure. Your service to the signals corps will not be forgotten, operator.',
     campaignContinue: 'CONTINUE TO FREE PLAY →',
@@ -89,6 +90,7 @@ var STRINGS = {
     menuSubtitle: 'GEHEIM // NUR FÜR BEFUGTE',
     campaignProgress: 'MISSION {n} VON 12',
     campaignComplete: 'KAMPAGNE ABGESCHLOSSEN',
+    campaignToFinale: '⚠ LETZTE ÜBERTRAGUNG →',
     campaignFinaleTitle: 'OPERATION ABGESCHLOSSEN',
     campaignFinaleText: 'Du hast die letzte Übertragung entschlüsselt. Das Netzwerk ist gesichert. Dein Dienst beim Funkerkorps wird nicht vergessen, Funker.',
     campaignContinue: 'WEITER ZU FREIEM SPIEL →',

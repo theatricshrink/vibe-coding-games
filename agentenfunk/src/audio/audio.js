@@ -32,20 +32,29 @@ var Audio = (function() {
     var DASH = 0.24;
     var GAP  = 0.08;
     var c = getCtx();
-    var t = c.currentTime + 0.05;
-    code.split('').forEach(function(sym, i) {
-      var dur = sym === '.' ? DOT : DASH;
-      if (!muted) beep(dur, 600, t);
-      if (onSymbol) {
-        (function(time, s) {
-          setTimeout(function() { onSymbol(s); }, (time - c.currentTime) * 1000);
-        })(t, sym);
-      }
-      t += dur + GAP;
-    });
-    return new Promise(function(resolve) {
-      setTimeout(resolve, (t - c.currentTime) * 1000 + 100);
-    });
+
+    function schedule() {
+      var t = c.currentTime + 0.1;
+      code.split('').forEach(function(sym) {
+        var dur = sym === '.' ? DOT : DASH;
+        if (!muted) beep(dur, 600, t);
+        if (onSymbol) {
+          (function(time, s) {
+            setTimeout(function() { onSymbol(s); }, (time - c.currentTime) * 1000);
+          })(t, sym);
+        }
+        t += dur + GAP;
+      });
+      return new Promise(function(resolve) {
+        setTimeout(resolve, (t - c.currentTime) * 1000 + 100);
+      });
+    }
+
+    // Wait for context to be running (iOS resumes async)
+    if (c.state !== 'running') {
+      return c.resume().then(schedule);
+    }
+    return schedule();
   }
 
   function playCorrect() {

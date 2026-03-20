@@ -15,6 +15,7 @@ var EncodeScreen = (function() {
   var isCampaign = false;
 
   function start(m, campaign) {
+    Audio.unlock();
     isCampaign = !!campaign;
     mission = m;
     var wave = MORSE_WAVES[m.wave];

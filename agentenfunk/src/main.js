@@ -7,11 +7,9 @@
   // Unlock on first tap, then remove the listeners.
   function onFirstGesture() {
     Audio.unlock();
-    document.removeEventListener('touchstart', onFirstGesture);
-    document.removeEventListener('mousedown', onFirstGesture);
+    document.removeEventListener('click', onFirstGesture);
   }
-  document.addEventListener('touchstart', onFirstGesture);
-  document.addEventListener('mousedown', onFirstGesture);
+  document.addEventListener('click', onFirstGesture);
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/agentenfunk/service-worker.js');

@@ -61,7 +61,8 @@ var EncodeScreen = (function() {
       '</div>',
       '<div style="display:flex;gap:8px;margin-top:8px;">',
       '  <button class="btn" style="flex:1;" onclick="MorseReference.show()">\u2261 REF</button>',
-      '</div>'
+      '</div>',
+      '<button class="btn" style="width:100%;margin-top:4px;border-color:var(--red);color:var(--red);" onclick="EncodeScreen.abort()">\u2715 ' + t('abort') + '</button>'
     ].join('');
 
     currentSequence = '';
@@ -169,5 +170,10 @@ var EncodeScreen = (function() {
     ].join('');
   }
 
-  return { start: start, render: render };
+  function abort() {
+    Input.disable();
+    Router.go('menu');
+  }
+
+  return { start: start, render: render, abort: abort };
 })();

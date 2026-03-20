@@ -9,14 +9,6 @@ var SettingsScreen = (function() {
       '<div class="panel"><div style="font-family:Oswald,sans-serif;font-size:1.2rem;letter-spacing:2px;">' + t('settingsTitle') + '</div></div>',
 
       '<div class="panel">',
-      '  <div class="panel-label">' + t('settingsLang') + '</div>',
-      '  <div style="display:flex;gap:8px;">',
-      '    <button class="btn' + (LANG==='en'?' active':'') + '" style="flex:1;" onclick="setLang(\'en\');SettingsScreen.render()">\uD83C\uDDEC\uD83C\uDDE7 English</button>',
-      '    <button class="btn' + (LANG==='de'?' active':'') + '" style="flex:1;" onclick="setLang(\'de\');SettingsScreen.render()">\uD83C\uDDE9\uD83C\uDDEA Deutsch</button>',
-      '  </div>',
-      '</div>',
-
-      '<div class="panel">',
       '  <div class="panel-label">' + t('settingsPause') + '</div>',
       '  <div style="display:flex;gap:8px;">',
       '  <button class="btn' + (pause===600?' active':'') + '" style="flex:1;" onclick="Input.setPause(600);SettingsScreen.render()">' + t('settingsPause600') + '</button>',

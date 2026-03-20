@@ -55,13 +55,19 @@ var DecodeScreen = (function() {
       '<div style="display:flex;gap:8px;margin-top:8px;">',
       '  <button class="btn" style="flex:1;" onclick="DecodeScreen.replayMorse()">\u21ba REPLAY</button>',
       '  <button class="btn" style="flex:1;" onclick="MorseReference.show();DecodeScreen._noRef()">\u2261 REF</button>',
-      '</div>'
+      '</div>',
+      '<button class="btn" style="width:100%;margin-top:4px;border-color:var(--red);color:var(--red);" onclick="DecodeScreen.abort()">\u2715 ' + t('abort') + '</button>'
     ].join('');
 
     playCurrentLetter();
   }
 
   function _noRef() { noRefUsed = false; }
+
+  function abort() {
+    Input.disable();
+    Router.go('menu');
+  }
 
   function renderChoices() {
     var target = letters[currentIdx];
@@ -195,5 +201,5 @@ var DecodeScreen = (function() {
     return arr;
   }
 
-  return { start: start, render: render, replayMorse: replayMorse, checkAnswer: checkAnswer, _noRef: _noRef };
+  return { start: start, render: render, replayMorse: replayMorse, checkAnswer: checkAnswer, _noRef: _noRef, abort: abort };
 })();

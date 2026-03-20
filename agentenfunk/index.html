@@ -148,20 +148,7 @@
     }
     #back-btn:hover { opacity: 1; color: var(--amber); }
 
-    /* Lang toggle */
-    .lang-toggle {
-      position: fixed; top: 10px; right: 12px; z-index: 200;
-      display: flex; gap: 6px;
-    }
-    .lang-btn {
-      background: var(--panel-bg); border: 1px solid var(--border);
-      border-radius: 4px; color: var(--dim);
-      font-family: 'Share Tech Mono', monospace; font-size: 0.8rem;
-      padding: 3px 8px; cursor: pointer;
-    }
-    .lang-btn.active { border-color: var(--green); color: var(--green); }
-
-    /* Morse display */
+/* Morse display */
     .morse-display {
       font-size: 1.8rem;
       letter-spacing: 6px;
@@ -225,11 +212,6 @@
 </head>
 <body>
   <a id="back-btn" href="../index.html">← Übersicht</a>
-
-  <div class="lang-toggle">
-    <button class="lang-btn" id="lang-de" onclick="setLang('de')">DE</button>
-    <button class="lang-btn" id="lang-en" onclick="setLang('en')">EN</button>
-  </div>
 
   <div id="app">
     <div id="screen-menu"         class="screen"></div>

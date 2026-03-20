@@ -45,6 +45,7 @@ var DecodeScreen = (function() {
       '  <div class="morse-display" id="morse-anim">\xb7 \u2014 \xb7</div>',
       '  <div style="color:var(--dim);font-size:0.75rem;margin-top:4px;" id="morse-letter-prompt"></div>',
       '</div>',
+      '<div style="text-align:center;font-size:0.7rem;color:' + (useChoices ? 'var(--dim)' : 'var(--amber)') + ';letter-spacing:1px;margin-bottom:4px;">' + (useChoices ? t('decodeChoiceHint') : t('decodeFreeHint')) + '</div>',
       useChoices ? renderChoices() : renderInput(),
       '<div style="display:flex;gap:8px;margin-top:8px;">',
       '  <button class="btn" style="flex:1;" onclick="DecodeScreen.replayMorse()">\u21ba REPLAY</button>',

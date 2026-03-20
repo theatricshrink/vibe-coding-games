@@ -17,6 +17,7 @@ var MenuScreen = (function() {
       '<button class="btn" onclick="Router.go(\'commend\')">' + t('menuCommendations') + '</button>',
       '<button class="btn" onclick="Router.go(\'settings\')">' + t('menuSettings') + '</button>',
       '<button class="btn" onclick="MorseReference.show()">' + t('menuReference') + '</button>',
+      '<div style="color:var(--dim);font-size:0.65rem;letter-spacing:1px;margin-top:16px;">v8601afd</div>',
       '</div>'
     ].join('');
   }

@@ -26,35 +26,32 @@ var Audio = (function() {
     osc.stop(when + duration + 0.01);
   }
 
-  // Play morse code string as audio, returns promise resolving when done
+  // Play morse code string as audio, returns promise resolving when done.
+  // Uses setTimeout per symbol so each beep is triggered after the
+  // AudioContext is guaranteed running — avoids iOS scheduling-while-suspended.
   function playMorse(code, onSymbol) {
-    var DOT  = 0.08;
-    var DASH = 0.24;
-    var GAP  = 0.08;
-    var c = getCtx();
+    var DOT_MS  = 80;
+    var DASH_MS = 240;
+    var GAP_MS  = 80;
+    var offset  = 80; // initial delay in ms before first symbol
 
-    function schedule() {
-      var t = c.currentTime + 0.1;
-      code.split('').forEach(function(sym) {
-        var dur = sym === '.' ? DOT : DASH;
-        if (!muted) beep(dur, 600, t);
-        if (onSymbol) {
-          (function(time, s) {
-            setTimeout(function() { onSymbol(s); }, (time - c.currentTime) * 1000);
-          })(t, sym);
-        }
-        t += dur + GAP;
-      });
-      return new Promise(function(resolve) {
-        setTimeout(resolve, (t - c.currentTime) * 1000 + 100);
-      });
-    }
+    var cursor = 0;
+    code.split('').forEach(function(sym) {
+      var durMs = sym === '.' ? DOT_MS : DASH_MS;
+      var durSec = durMs / 1000;
+      (function(startMs, dur, s) {
+        setTimeout(function() {
+          var c = getCtx();
+          if (!muted) beep(dur, 600, c.currentTime + 0.01);
+          if (onSymbol) onSymbol(s);
+        }, startMs);
+      })(offset + cursor, durSec, sym);
+      cursor += durMs + GAP_MS;
+    });
 
-    // Wait for context to be running (iOS resumes async)
-    if (c.state !== 'running') {
-      return c.resume().then(schedule);
-    }
-    return schedule();
+    return new Promise(function(resolve) {
+      setTimeout(resolve, offset + cursor + 100);
+    });
   }
 
   function playCorrect() {

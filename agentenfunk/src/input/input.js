@@ -4,14 +4,16 @@ var Input = (function() {
   var confirmCallback = null;
   var sequence = [];
   var timer = null;
-  var pauseMs = parseInt(localStorage.getItem('agentenfunk_pause') || '900');
+  var pauseMs = 900;
+  try { pauseMs = parseInt(localStorage.getItem('agentenfunk_pause') || '900', 10) || 900; } catch(e) {}
   var active = false;
   var spaceDown = false;
   var spaceStart = 0;
+  var boundElements = [];
 
   function setPause(ms) {
-    pauseMs = ms;
-    localStorage.setItem('agentenfunk_pause', ms);
+    pauseMs = parseInt(ms, 10) || 900;
+    try { localStorage.setItem('agentenfunk_pause', pauseMs); } catch(e) {}
   }
 
   function getPause() { return pauseMs; }
@@ -66,6 +68,9 @@ var Input = (function() {
   }
 
   function bindTapZones(dotEl, dashEl) {
+    if (boundElements.indexOf(dotEl) !== -1) return;
+    boundElements.push(dotEl);
+    boundElements.push(dashEl);
     function flash(el) {
       el.classList.add('flash');
       setTimeout(function() { el.classList.remove('flash'); }, 100);
@@ -97,6 +102,8 @@ var Input = (function() {
 
   function disable() {
     active = false;
+    spaceDown = false;
+    spaceStart = 0;
     cancel();
   }
 
@@ -107,5 +114,5 @@ var Input = (function() {
   document.addEventListener('keydown', onKeyDown);
   document.addEventListener('keyup',   onKeyUp);
 
-  return { dot, dash, cancel, enable, disable, onDot, onDash, onConfirm, bindTapZones, setPause, getPause };
+  return { dot: dot, dash: dash, cancel: cancel, enable: enable, disable: disable, onDot: onDot, onDash: onDash, onConfirm: onConfirm, bindTapZones: bindTapZones, setPause: setPause, getPause: getPause };
 })();

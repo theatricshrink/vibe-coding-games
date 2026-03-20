@@ -123,5 +123,16 @@ var Audio = (function() {
   function isMuted() { return muted; }
   function isAmbientOn() { return ambientOn; }
 
-  return { playMorse: playMorse, playCorrect: playCorrect, playWrong: playWrong, playMedalThud: playMedalThud, startAmbient: startAmbient, stopAmbient: stopAmbient, toggleMute: toggleMute, toggleAmbient: toggleAmbient, isMuted: isMuted, isAmbientOn: isAmbientOn };
+  // Call this inside the first user gesture to unlock iOS AudioContext
+  function unlock() {
+    var c = getCtx();
+    var buf = c.createBuffer(1, 1, c.sampleRate);
+    var src = c.createBufferSource();
+    src.buffer = buf;
+    src.connect(c.destination);
+    src.start(0);
+    c.resume().then(function() { startAmbient(); });
+  }
+
+  return { playMorse: playMorse, playCorrect: playCorrect, playWrong: playWrong, playMedalThud: playMedalThud, startAmbient: startAmbient, stopAmbient: stopAmbient, toggleMute: toggleMute, toggleAmbient: toggleAmbient, isMuted: isMuted, isAmbientOn: isAmbientOn, unlock: unlock };
 })();

@@ -40,6 +40,9 @@ var MissionScreen = (function() {
   }
 
   function launchMission(mission, isCampaign) {
+    // In campaign mode, always unlock up to this mission's wave so the
+    // morse reference shows all letters the mission can ask about.
+    if (isCampaign) Progression.unlockWave(mission.wave);
     if (mission.mode === 'decode') DecodeScreen.start(mission, isCampaign);
     else                           EncodeScreen.start(mission, isCampaign);
   }

@@ -68,9 +68,12 @@ var DecodeScreen = (function() {
   function renderChoices() {
     var target = letters[currentIdx];
     var pool = Progression.getUnlockedLetters();
-    var wrong = pool.filter(function(l) { return l !== target; });
-    shuffle(wrong);
-    var opts = [target].concat(wrong.slice(0,3));
+    var isDigit = /\d/.test(target);
+    // Prefer wrong answers from the same category (digit vs letter)
+    var sameCategory = pool.filter(function(l) { return l !== target && /\d/.test(l) === isDigit; });
+    var wrongPool = sameCategory.length >= 3 ? sameCategory : pool.filter(function(l) { return l !== target; });
+    shuffle(wrongPool);
+    var opts = [target].concat(wrongPool.slice(0, 3));
     shuffle(opts);
     return '<div class="choices" id="answer-choices">' +
       opts.map(function(l) {

@@ -1,17 +1,19 @@
 var CampaignEndScreen = (function() {
-  var FINAL_WORDS = ['STAND', 'DOWN'];
+  var FINAL_WORDS = { en: ['STAND', 'DOWN'], de: ['AUFTRAG', 'ENDE'] };
   var phase = 'decode';
   var wordIdx = 0;
+  var words = [];
 
   function render() {
     phase = 'decode';
     wordIdx = 0;
+    words = FINAL_WORDS[LANG] || FINAL_WORDS['en'];
     showDecodePhase();
   }
 
   function showDecodePhase() {
     var el = document.getElementById('screen-campaign-end');
-    var word = FINAL_WORDS[wordIdx];
+    var word = words[wordIdx];
     var flat = word.split('').reduce(function(acc, l, i) {
       return acc + MORSE[l] + (i < word.length - 1 ? ' ' : '');
     }, '');
@@ -22,7 +24,7 @@ var CampaignEndScreen = (function() {
       '<div class="panel">',
       '  <div class="panel-label" style="color:var(--amber);letter-spacing:3px;">\u26a0 ' + t('finaleIncoming') + '</div>',
       '  <div style="font-size:0.8rem;color:var(--dim);">' + t('finaleDecodeInstruction') + '</div>',
-      '  <div style="color:var(--dim);font-size:0.75rem;margin-top:4px;">' + (wordIdx + 1) + ' / ' + FINAL_WORDS.length + '</div>',
+      '  <div style="color:var(--dim);font-size:0.75rem;margin-top:4px;">' + (wordIdx + 1) + ' / ' + words.length + '</div>',
       '</div>',
       '<div class="panel" style="text-align:center;">',
       '  <div class="morse-display" id="finale-morse" style="font-size:1.4rem;letter-spacing:4px;">' + displayed + '</div>',
@@ -37,6 +39,7 @@ var CampaignEndScreen = (function() {
       '  <div id="finale-feedback" style="margin-top:8px;font-size:0.85rem;min-height:1.2rem;"></div>',
       '</div>',
       '<button class="btn" onclick="CampaignEndScreen.replayMorse()">\u21ba REPLAY</button>',
+      '<button class="btn" style="border-color:var(--red);color:var(--red);" onclick="Router.go(\'menu\')">' + t('back') + '</button>',
       '</div>'
     ].join('');
 
@@ -66,14 +69,14 @@ var CampaignEndScreen = (function() {
     });
   }
 
-  function replayMorse() { playWord(FINAL_WORDS[wordIdx]); }
+  function replayMorse() { playWord(words[wordIdx]); }
 
   function checkWord() {
     var inp = document.getElementById('finale-input');
     var fb  = document.getElementById('finale-feedback');
     if (!inp) return;
     var answer = inp.value.trim().toUpperCase();
-    var expected = FINAL_WORDS[wordIdx];
+    var expected = words[wordIdx];
 
     if (answer === expected) {
       Audio.playCorrect();

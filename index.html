@@ -140,6 +140,16 @@
         <span class="platform-badge unsupported">📱 Mobile</span>
       </div>
     </a>
+    <a class="card" href="./agentenfunk/index.html">
+      <div class="card-emoji">📡</div>
+      <div class="card-title" id="card-af-title"></div>
+      <div class="card-desc"  id="card-af-desc"></div>
+      <div class="card-btn"   id="card-af-btn"></div>
+      <div class="card-platforms">
+        <span class="platform-badge supported">🖥️ Browser</span>
+        <span class="platform-badge supported">📱 Mobile</span>
+      </div>
+    </a>
     <!-- add more cards here -->
   </div>
 
@@ -150,6 +160,8 @@
         subtitle: 'Wähle ein Spiel!',
         pfTitle:  'Pflanzenwelt',
         pfDesc:   'Fange alle 8 Pflanzen-Kreaturen!',
+        afTitle:  'Agentenfunk',
+        afDesc:   'Lerne Morsecode als Spionage-Funker!',
         play:     'Spielen →'
       },
       en: {
@@ -157,6 +169,8 @@
         subtitle: 'Choose a game!',
         pfTitle:  'Plant World',
         pfDesc:   'Catch all 8 plant creatures!',
+        afTitle:  'Agentenfunk',
+        afDesc:   'Learn Morse code as a Cold War spy operator!',
         play:     'Play →'
       }
     };
@@ -174,6 +188,9 @@
       document.getElementById('card-pf-title').textContent   = s.pfTitle;
       document.getElementById('card-pf-desc').textContent    = s.pfDesc;
       document.getElementById('card-pf-btn').textContent     = s.play;
+      document.getElementById('card-af-title').textContent   = s.afTitle;
+      document.getElementById('card-af-desc').textContent    = s.afDesc;
+      document.getElementById('card-af-btn').textContent     = s.play;
       document.getElementById('btn-de').className = 'lang-btn' + (lang === 'de' ? ' active' : '');
       document.getElementById('btn-en').className = 'lang-btn' + (lang === 'en' ? ' active' : '');
     }

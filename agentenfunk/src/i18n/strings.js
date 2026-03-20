@@ -18,6 +18,8 @@ var STRINGS = {
     finaleIncoming: 'FINAL TRANSMISSION INCOMING',
     finaleDecodeInstruction: 'Decode each word of the final message. No hints. You know the code.',
     abort: 'ABORT MISSION',
+    missionFailed: 'MISSION FAILED',
+    missionRetry: '↺ RETRY MISSION',
     // Mission
     missionTitle: 'MISSION BRIEFING',
     missionClassified: 'CLASSIFIED',
@@ -97,6 +99,8 @@ var STRINGS = {
     finaleIncoming: 'LETZTE ÜBERTRAGUNG EINGEHEND',
     finaleDecodeInstruction: 'Entschlüssle jedes Wort der letzten Nachricht. Keine Hinweise. Du kennst den Code.',
     abort: 'MISSION ABBRECHEN',
+    missionFailed: 'MISSION GESCHEITERT',
+    missionRetry: '↺ MISSION WIEDERHOLEN',
     missionTitle: 'MISSIONSBRIEFING',
     missionClassified: 'STRENG GEHEIM',
     missionStart: 'MISSION ANNEHMEN →',

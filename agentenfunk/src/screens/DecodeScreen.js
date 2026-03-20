@@ -154,6 +154,12 @@ var DecodeScreen = (function() {
   function endMission() {
     var durationMs = Date.now() - missionStart;
     var accuracy = total ? correct / total : 1;
+
+    if (accuracy === 0) {
+      showFailScreen();
+      return;
+    }
+
     var fast = durationMs < QUESTIONS_PER_MISSION * 3000;
     var stars = Progression.starsForAccuracy(accuracy, fast);
     Progression.completeMission(durationMs);
@@ -173,6 +179,19 @@ var DecodeScreen = (function() {
       Progression.advanceCampaign();
     }
     showEndScreen(stars, accuracy);
+  }
+
+  function showFailScreen() {
+    var el = document.getElementById('screen-decode');
+    el.innerHTML = [
+      '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;">',
+      '<div style="font-size:3rem;">✕</div>',
+      '<div style="font-family:Oswald,sans-serif;letter-spacing:2px;color:var(--red);">' + t('missionFailed') + '</div>',
+      '<div style="color:var(--dim);">' + t('decodeAccuracy') + ': 0%</div>',
+      '<button class="btn" onclick="DecodeScreen.retry()">' + t('missionRetry') + '</button>',
+      '<button class="btn" onclick="Router.go(\'menu\')">' + t('back') + '</button>',
+      '</div>'
+    ].join('');
   }
 
   function showEndScreen(stars, accuracy) {
@@ -218,5 +237,7 @@ var DecodeScreen = (function() {
     return arr;
   }
 
-  return { start: start, render: render, replayMorse: replayMorse, checkAnswer: checkAnswer, _noRef: _noRef, abort: abort };
+  function retry() { start(mission, isCampaign); }
+
+  return { start: start, render: render, replayMorse: replayMorse, checkAnswer: checkAnswer, _noRef: _noRef, abort: abort, retry: retry };
 })();

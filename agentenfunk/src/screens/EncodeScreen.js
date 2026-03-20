@@ -134,6 +134,12 @@ var EncodeScreen = (function() {
   function endMission() {
     var durationMs = Date.now() - missionStart;
     var accuracy = total ? correct / total : 1;
+
+    if (accuracy === 0) {
+      showFailScreen();
+      return;
+    }
+
     var fast = durationMs < QUESTIONS_PER_MISSION * 5000;
     var stars = Progression.starsForAccuracy(accuracy, fast);
     Progression.completeMission(durationMs);
@@ -192,10 +198,26 @@ var EncodeScreen = (function() {
     return arr;
   }
 
+  function showFailScreen() {
+    Input.disable();
+    var el = document.getElementById('screen-encode');
+    el.innerHTML = [
+      '<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;">',
+      '<div style="font-size:3rem;">✕</div>',
+      '<div style="font-family:Oswald,sans-serif;letter-spacing:2px;color:var(--red);">' + t('missionFailed') + '</div>',
+      '<div style="color:var(--dim);">' + t('decodeAccuracy') + ': 0%</div>',
+      '<button class="btn" onclick="EncodeScreen.retry()">' + t('missionRetry') + '</button>',
+      '<button class="btn" onclick="Router.go(\'menu\')">' + t('back') + '</button>',
+      '</div>'
+    ].join('');
+  }
+
+  function retry() { start(mission, isCampaign); }
+
   function abort() {
     Input.disable();
     Router.go('menu');
   }
 
-  return { start: start, render: render, abort: abort };
+  return { start: start, render: render, abort: abort, retry: retry };
 })();

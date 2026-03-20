@@ -5,6 +5,8 @@ var CampaignEndScreen = (function() {
   var words = [];
 
   function render() {
+    // Reaching the campaign end means all content is earned — unlock everything
+    Progression.unlockWave(6);
     phase = 'decode';
     wordIdx = 0;
     words = FINAL_WORDS[LANG] || FINAL_WORDS['en'];

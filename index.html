@@ -94,6 +94,29 @@
       font-weight: bold;
     }
     .lang-btn:hover { border-color: #f5e642; color: #f5e642; }
+    .card-platforms {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+    }
+    .platform-badge {
+      font-size: 0.75rem;
+      padding: 2px 7px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .platform-badge.supported {
+      background: #2c5f2e;
+      border: 1px solid #52b788;
+      color: #aed9b8;
+    }
+    .platform-badge.unsupported {
+      background: #1a2e1a;
+      border: 1px solid #2e4a2e;
+      color: #3d5c3d;
+    }
   </style>
 </head>
 <body>
@@ -112,6 +135,10 @@
       <div class="card-title" id="card-pf-title"></div>
       <div class="card-desc"  id="card-pf-desc"></div>
       <div class="card-btn"   id="card-pf-btn"></div>
+      <div class="card-platforms">
+        <span class="platform-badge supported">🖥️ Browser</span>
+        <span class="platform-badge unsupported">📱 Mobile</span>
+      </div>
     </a>
     <!-- add more cards here -->
   </div>

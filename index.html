@@ -117,6 +117,24 @@
       border: 1px solid #2e4a2e;
       color: #3d5c3d;
     }
+    .platform-badge.current {
+      border-color: #f5e642;
+      color: #f5e642;
+    }
+    .card.platform-disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      pointer-events: none;
+      border-color: #2e4a2e;
+    }
+    .card.platform-disabled .card-title { color: #aed9b8; }
+    .card.platform-disabled .card-btn { display: none; }
+    .platform-unavailable {
+      font-size: 0.75rem;
+      color: #e63946;
+      margin-top: 2px;
+      letter-spacing: 0.5px;
+    }
   </style>
 </head>
 <body>
@@ -130,48 +148,56 @@
   <p class="subtitle" id="portal-subtitle"></p>
 
   <div class="grid">
-    <a class="card" href="./pflanzenwelt/index.html">
+    <a class="card" href="./pflanzenwelt/index.html" data-supports-browser="true" data-supports-mobile="false">
       <div class="card-emoji">🌿</div>
       <div class="card-title" id="card-pf-title"></div>
       <div class="card-desc"  id="card-pf-desc"></div>
       <div class="card-btn"   id="card-pf-btn"></div>
       <div class="card-platforms">
-        <span class="platform-badge supported">🖥️ Browser</span>
-        <span class="platform-badge unsupported">📱 Mobile</span>
+        <span class="platform-badge supported" id="pf-badge-browser">🖥️ Browser</span>
+        <span class="platform-badge unsupported" id="pf-badge-mobile">📱 Mobile</span>
       </div>
+      <div class="platform-unavailable" id="card-pf-unavail" style="display:none;"></div>
     </a>
-    <a class="card" href="./agentenfunk/index.html">
+    <a class="card" href="./agentenfunk/index.html" data-supports-browser="true" data-supports-mobile="true">
       <div class="card-emoji">📡</div>
       <div class="card-title" id="card-af-title"></div>
       <div class="card-desc"  id="card-af-desc"></div>
       <div class="card-btn"   id="card-af-btn"></div>
       <div class="card-platforms">
-        <span class="platform-badge supported">🖥️ Browser</span>
-        <span class="platform-badge supported">📱 Mobile</span>
+        <span class="platform-badge supported" id="af-badge-browser">🖥️ Browser</span>
+        <span class="platform-badge supported" id="af-badge-mobile">📱 Mobile</span>
       </div>
+      <div class="platform-unavailable" id="card-af-unavail" style="display:none;"></div>
     </a>
     <!-- add more cards here -->
   </div>
 
   <script>
+    var isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+
     var PORTAL_STRINGS = {
       de: {
-        heading:  '🎮 Wilmas Vibe Coding Spielesammlung',
-        subtitle: 'Wähle ein Spiel!',
-        pfTitle:  'Pflanzenwelt',
-        pfDesc:   'Fange alle 8 Pflanzen-Kreaturen!',
-        afTitle:  'Agentenfunk',
-        afDesc:   'Lerne Morsecode als Spionage-Funker!',
-        play:     'Spielen →'
+        heading:    '🎮 Wilmas Vibe Coding Spielesammlung',
+        subtitle:   'Wähle ein Spiel!',
+        pfTitle:    'Pflanzenwelt',
+        pfDesc:     'Fange alle 8 Pflanzen-Kreaturen!',
+        afTitle:    'Agentenfunk',
+        afDesc:     'Lerne Morsecode als Spionage-Funker!',
+        play:       'Spielen →',
+        unavailMobile:  '⚠ Nicht für Mobilgeräte verfügbar',
+        unavailBrowser: '⚠ Nicht für Desktop verfügbar'
       },
       en: {
-        heading:  '🎮 Wilma\'s Vibe Coding Game Collection',
-        subtitle: 'Choose a game!',
-        pfTitle:  'Plant World',
-        pfDesc:   'Catch all 8 plant creatures!',
-        afTitle:  'Agentenfunk',
-        afDesc:   'Learn Morse code as a Cold War spy operator!',
-        play:     'Play →'
+        heading:    '🎮 Wilma\'s Vibe Coding Game Collection',
+        subtitle:   'Choose a game!',
+        pfTitle:    'Plant World',
+        pfDesc:     'Catch all 8 plant creatures!',
+        afTitle:    'Agentenfunk',
+        afDesc:     'Learn Morse code as a Cold War spy operator!',
+        play:       'Play →',
+        unavailMobile:  '⚠ Not available on mobile',
+        unavailBrowser: '⚠ Not available on desktop'
       }
     };
 
@@ -180,9 +206,32 @@
       render(lang);
     }
 
+    function applyPlatform() {
+      var cards = document.querySelectorAll('.card[data-supports-browser]');
+      for (var i = 0; i < cards.length; i++) {
+        var card = cards[i];
+        var supportsMobile  = card.getAttribute('data-supports-mobile')  === 'true';
+        var supportsBrowser = card.getAttribute('data-supports-browser') === 'true';
+        var supported = isMobile ? supportsMobile : supportsBrowser;
+
+        // Highlight the current platform's badge
+        var browserBadge = card.querySelector('[id$="-badge-browser"]');
+        var mobileBadge  = card.querySelector('[id$="-badge-mobile"]');
+        if (browserBadge && !isMobile) browserBadge.classList.add('current');
+        if (mobileBadge  && isMobile)  mobileBadge.classList.add('current');
+
+        if (!supported) {
+          card.classList.add('platform-disabled');
+          card.removeAttribute('href');
+          var unavail = card.querySelector('[id$="-unavail"]');
+          if (unavail) unavail.style.display = '';
+        }
+      }
+    }
+
     function render(lang) {
       var s = PORTAL_STRINGS[lang];
-      document.getElementById('html-root').lang          = lang;
+      document.getElementById('html-root').lang              = lang;
       document.getElementById('portal-heading').textContent  = s.heading;
       document.getElementById('portal-subtitle').textContent = s.subtitle;
       document.getElementById('card-pf-title').textContent   = s.pfTitle;
@@ -193,10 +242,17 @@
       document.getElementById('card-af-btn').textContent     = s.play;
       document.getElementById('btn-de').className = 'lang-btn' + (lang === 'de' ? ' active' : '');
       document.getElementById('btn-en').className = 'lang-btn' + (lang === 'en' ? ' active' : '');
+
+      var unavailMsg = isMobile ? s.unavailMobile : s.unavailBrowser;
+      var unavails = document.querySelectorAll('.platform-unavailable');
+      for (var i = 0; i < unavails.length; i++) {
+        unavails[i].textContent = unavailMsg;
+      }
     }
 
     var currentLang = (localStorage.getItem('pgame_lang') === 'en') ? 'en' : 'de';
     render(currentLang);
+    applyPlatform();
   </script>
 
 </body>

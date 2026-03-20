@@ -5,4 +5,7 @@
   document.getElementById('lang-en').className = 'lang-btn' + (LANG === 'en' ? ' active' : '');
   Router.go('menu');
   Audio.startAmbient();
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/agentenfunk/service-worker.js');
+  }
 })();

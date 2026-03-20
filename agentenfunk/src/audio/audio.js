@@ -7,6 +7,7 @@ var Audio = (function() {
 
   function getCtx() {
     if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+    if (ctx.state === 'suspended') ctx.resume();
     return ctx;
   }
 
@@ -122,5 +123,5 @@ var Audio = (function() {
   function isMuted() { return muted; }
   function isAmbientOn() { return ambientOn; }
 
-  return { playMorse, playCorrect, playWrong, playMedalThud, startAmbient, stopAmbient, toggleMute, toggleAmbient, isMuted, isAmbientOn };
+  return { playMorse: playMorse, playCorrect: playCorrect, playWrong: playWrong, playMedalThud: playMedalThud, startAmbient: startAmbient, stopAmbient: stopAmbient, toggleMute: toggleMute, toggleAmbient: toggleAmbient, isMuted: isMuted, isAmbientOn: isAmbientOn };
 })();

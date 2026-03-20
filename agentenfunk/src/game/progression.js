@@ -50,8 +50,8 @@ var Progression = (function() {
   }
 
   function starsForAccuracy(accuracy, fast) {
-    if (accuracy >= 0.95 && fast) return 3;
-    if (accuracy >= 0.8)          return 2;
+    if (accuracy >= 1.0) return 3;
+    if (accuracy >= 0.8) return 2;
     return 1;
   }
 

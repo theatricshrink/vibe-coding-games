@@ -19,13 +19,7 @@ var EncodeScreen = (function() {
     mission = m;
     var wave = MORSE_WAVES[m.wave];
     var prev = lettersUnlockedThrough(m.wave - 1);
-    var pool = [];
-    for (var i = 0; i < QUESTIONS_PER_MISSION; i++) {
-      pool.push(Math.random() < 0.6
-        ? wave[Math.floor(Math.random() * wave.length)]
-        : (prev.length ? prev[Math.floor(Math.random() * prev.length)] : wave[0]));
-    }
-    letters = pool;
+    letters = buildPool(wave, prev, QUESTIONS_PER_MISSION);
     currentIdx = 0; correct = 0; total = 0; streak = 0; signal = 100; hadErrors = false;
     missionStart = Date.now();
     wrongCount = {};
@@ -168,6 +162,27 @@ var EncodeScreen = (function() {
       '<button class="btn" onclick="Router.go(\'menu\')">' + t('back') + '</button>',
       '</div>'
     ].join('');
+  }
+
+  function buildPool(wave, prev, count) {
+    var guaranteed = wave.slice();
+    shuffle(guaranteed);
+    var pool = guaranteed.slice(0, Math.min(count, guaranteed.length));
+    while (pool.length < count) {
+      pool.push(Math.random() < 0.6
+        ? wave[Math.floor(Math.random() * wave.length)]
+        : (prev.length ? prev[Math.floor(Math.random() * prev.length)] : wave[Math.floor(Math.random() * wave.length)]));
+    }
+    shuffle(pool);
+    return pool;
+  }
+
+  function shuffle(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i+1));
+      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+    return arr;
   }
 
   function abort() {

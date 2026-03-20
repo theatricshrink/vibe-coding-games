@@ -18,13 +18,7 @@ var DecodeScreen = (function() {
     mission = m;
     var wave = MORSE_WAVES[m.wave];
     var prev = lettersUnlockedThrough(m.wave - 1);
-    var pool = [];
-    for (var i = 0; i < QUESTIONS_PER_MISSION; i++) {
-      pool.push(Math.random() < 0.6
-        ? wave[Math.floor(Math.random() * wave.length)]
-        : (prev.length ? prev[Math.floor(Math.random() * prev.length)] : wave[0]));
-    }
-    letters = pool;
+    letters = buildPool(wave, prev, QUESTIONS_PER_MISSION);
     currentIdx = 0; correct = 0; total = 0; streak = 0; signal = 100; noRefUsed = true; hadErrors = false;
     missionStart = Date.now();
     Input.disable();
@@ -191,6 +185,20 @@ var DecodeScreen = (function() {
       '<button class="btn" onclick="Router.go(\'menu\')">' + t('back') + '</button>',
       '</div>'
     ].join('');
+  }
+
+  function buildPool(wave, prev, count) {
+    // Guarantee every wave letter appears at least once, then fill randomly
+    var guaranteed = wave.slice();
+    shuffle(guaranteed);
+    var pool = guaranteed.slice(0, Math.min(count, guaranteed.length));
+    while (pool.length < count) {
+      pool.push(Math.random() < 0.6
+        ? wave[Math.floor(Math.random() * wave.length)]
+        : (prev.length ? prev[Math.floor(Math.random() * prev.length)] : wave[Math.floor(Math.random() * wave.length)]));
+    }
+    shuffle(pool);
+    return pool;
   }
 
   function shuffle(arr) {

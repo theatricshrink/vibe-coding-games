@@ -65,7 +65,7 @@ Each level contains:
 - 1–2 enemy types culturally themed to the country
 - Enemies must use respectful, non-caricature designs — no ethnic or racial stereotypes
 - Preferred approach: theme enemies to a well-known symbol, animal, or landmark rather than a person
-- Safe examples: a baguette character for France, a cherry blossom sprite for Japan, a football for Brazil, a camel for Egypt, a windmill for Austria
+- Safe examples: a baguette character for France, a cherry blossom sprite for Japan, a football for Brazil, a camel for Egypt, a lederhosen hiker for Austria
 - All 23 enemy concepts must be reviewed for cultural sensitivity before art production
 - Enemies walk back and forth on platforms
 

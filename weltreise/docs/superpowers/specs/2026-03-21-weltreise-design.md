@@ -219,7 +219,12 @@ When the player stomps an enemy:
 Added to `/index.html` game grid with:
 - Browser support badge
 - Mobile support badge
-- Game card with title "Weltreise" and short description
+- Game card with bilingual title and description, following the exact pattern of the existing cards:
+  - Add `wtTitle` and `wtDesc` keys to both the `de` and `en` strings objects in `index.html`
+  - DE: title `'Weltreise'`, description e.g. `'Bereise die Welt und lerne Geografie!'`
+  - EN: title `'World Tour'`, description e.g. `'Travel the world and learn geography!'`
+  - Add corresponding `document.getElementById('card-wt-title')` etc. calls in the `render()` function
+  - Card HTML follows the same structure as the Pflanzenwelt and Agentenfunk cards
 
 ---
 

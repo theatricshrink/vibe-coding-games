@@ -141,6 +141,23 @@ var GameScene = new Phaser.Class({
     }
     makeQBlockTex();
 
+    // Key icon for HUD (42x22)
+    function makeKeyTex() {
+      if (self.textures.exists('key_tex')) return;
+      var g = self.make.graphics({ add: false });
+      g.fillStyle(0xffcc00, 1);
+      g.fillCircle(11, 11, 10);   // bow
+      g.fillStyle(0x3a2800, 1);
+      g.fillCircle(11, 11, 5);    // hole
+      g.fillStyle(0xffcc00, 1);
+      g.fillRect(19, 8, 23, 6);   // shaft
+      g.fillRect(32, 14, 4, 5);   // tooth 1
+      g.fillRect(38, 14, 4, 5);   // tooth 2
+      g.generateTexture('key_tex', 44, 22);
+      g.destroy();
+    }
+    makeKeyTex();
+
     // Programmatic 960x720 country background — skipped if real PNG loaded
     function makeCountryBg(key, id) {
       if (self.textures.exists(key)) return;
@@ -434,7 +451,7 @@ var GameScene = new Phaser.Class({
     // Floating platforms
     var platformDefs = [
       { x: 400,  y: 580, w: 200 },
-      { x: 700,  y: 500, w: 160 },
+      { x: 820,  y: 500, w: 160 },
       { x: 1000, y: 580, w: 200 },
       { x: 1200, y: 460, w: 200 },
       { x: 1400, y: 520, w: 96  }, // narrow — unavoidable blocker
@@ -468,16 +485,12 @@ var GameScene = new Phaser.Class({
     this.dpadRight = false;
     this.dpadJump = false;
 
-    // Star HUD (5 stars at top-left, camera-fixed)
-    this.starTexts = [];
+    // Key HUD (5 key icons at top-left, camera-fixed)
+    this.keyIcons = [];
     for (var i = 0; i < 5; i++) {
-      var star = this.add.text(20 + i * 36, 16, '☆', {
-        fontFamily: 'Arial',
-        fontSize: '28px',
-        color: '#ffcc00'
-      });
-      star.setScrollFactor(0);
-      this.starTexts.push(star);
+      var kImg = this.add.image(22 + i * 46, 22, 'key_tex');
+      kImg.setScrollFactor(0).setAlpha(0.25).setDepth(5);
+      this.keyIcons.push(kImg);
     }
 
     // Lives HUD (top-right)
@@ -585,7 +598,7 @@ var GameScene = new Phaser.Class({
     this.enemies = this.physics.add.group();
     var enemyDefs = [
       { x: 400,  y: 560 },
-      { x: 700,  y: 480 },   // on narrow platform at y=500
+      { x: 820,  y: 480 },
       { x: 1000, y: 560 },
       { x: 1400, y: 500 },  // on narrow platform at y=520
       { x: 1800, y: 540 },
@@ -672,7 +685,21 @@ var GameScene = new Phaser.Class({
       g.destroy();
     }
     makeLockTex();
-    this.lockIcon = this.add.image(3760, 608, 'lock_tex').setDepth(3);
+    // 5 small lock icons spread across door face
+    this.doorLocks = [];
+    for (var li = 0; li < 5; li++) {
+      var lk = self.add.image(3736 + li * 12, 626, 'lock_tex');
+      lk.setScale(0.42).setDepth(3);
+      self.doorLocks.push(lk);
+    }
+    // Hint text floating above door
+    var hintStr = (LANG === 'de')
+      ? 'Besiege Feinde\num 5 Schlüssel zu sammeln'
+      : 'Defeat enemies\nto collect 5 keys';
+    this.doorHintText = this.add.text(3760, 568, hintStr, {
+      fontFamily: 'Arial', fontSize: '13px', color: '#ffcc00',
+      stroke: '#000000', strokeThickness: 3, align: 'center'
+    }).setOrigin(0.5, 1).setDepth(4);
 
     // Question blocks (3 blocks for mushroom power-up)
     this.questionBlocks = this.physics.add.staticGroup();
@@ -683,6 +710,28 @@ var GameScene = new Phaser.Class({
       self.questionBlocks.add(blk);
     });
     this.mushrooms = [];
+
+    // Question blocks are solid (player can stand on them) and spawn mushroom when hit from below
+    this.physics.add.collider(this.player, this.questionBlocks, function(player, block) {
+      if (player.body.velocity.y < 0 && player.y > block.y) {
+        block.destroy();
+        var mushroom = self.physics.add.image(block.x, block.y - 30, 'mushroom_tex');
+        mushroom.setVelocityX(60);
+        mushroom.setBounce(0);
+        mushroom.setCollideWorldBounds(true);
+        self.physics.add.collider(mushroom, self.platforms);
+        self.mushrooms.push(mushroom);
+        self.physics.add.overlap(player, mushroom, function() {
+          if (mushroom.active) {
+            mushroom.destroy();
+            SFX.powerUp();
+            self.isBig = true;
+            self.player.setTexture('player_big');
+            self.player.body.setSize(32, 64, true);
+          }
+        });
+      }
+    });
 
     // Virtual d-pad
     this.dpadObjects = [];
@@ -781,15 +830,21 @@ var GameScene = new Phaser.Class({
   },
 
   updateStarHUD: function() {
-    for (var i = 0; i < this.starTexts.length; i++) {
-      this.starTexts[i].setText(i < this.starsEarned ? '★' : '☆');
+    for (var i = 0; i < this.keyIcons.length; i++) {
+      this.keyIcons[i].setAlpha(i < this.starsEarned ? 1.0 : 0.25);
+    }
+    // Remove the matching door lock (first collected = leftmost lock)
+    var lockIdx = this.starsEarned - 1;
+    if (lockIdx >= 0 && lockIdx < this.doorLocks.length && this.doorLocks[lockIdx]) {
+      this.doorLocks[lockIdx].destroy();
+      this.doorLocks[lockIdx] = null;
     }
   },
 
   unlockExit: function() {
     this.exitLocked = false;
     this.exitDoor.setAlpha(1);
-    if (this.lockIcon) { this.lockIcon.destroy(); this.lockIcon = null; }
+    if (this.doorHintText) { this.doorHintText.destroy(); this.doorHintText = null; }
 
     // Show blinking exit arrow if door is off-screen to the right
     var doorScreenX = this.exitDoor.x - this.cameras.main.scrollX;
@@ -856,29 +911,5 @@ var GameScene = new Phaser.Class({
       this.scene.start('WinScene', { countryId: this.countryId, continentId: this.continentId });
     }
 
-    // Question block hit (player hits bottom of block from below)
-    var self = this;
-    this.physics.overlap(this.player, this.questionBlocks, function(player, block) {
-      if (player.body.velocity.y < 0 && player.y > block.y) {
-        block.destroy();
-        // Spawn mushroom
-        var mushroom = self.physics.add.image(block.x, block.y - 30, 'mushroom_tex');
-        mushroom.setVelocityX(60);
-        mushroom.setBounce(0);
-        mushroom.setCollideWorldBounds(true);
-        self.physics.add.collider(mushroom, self.platforms);
-        self.mushrooms.push(mushroom);
-        // Collect mushroom on overlap with player
-        self.physics.add.overlap(player, mushroom, function() {
-          if (mushroom.active) {
-            mushroom.destroy();
-            SFX.powerUp();
-            self.isBig = true;
-            self.player.setTexture('player_big');
-            self.player.body.setSize(32, 64, true);
-          }
-        });
-      }
-    });
   }
 });

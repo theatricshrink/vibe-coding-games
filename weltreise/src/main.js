@@ -4,6 +4,10 @@ var config = {
   width: 960,
   height: 720,
   backgroundColor: '#0d1b2a',
+  scale: {
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH
+  },
   physics: {
     default: 'arcade',
     arcade: {

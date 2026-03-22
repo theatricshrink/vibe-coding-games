@@ -520,7 +520,7 @@ var GameScene = new Phaser.Class({
     try { _ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
 
     if (_ctx) {
-      var _wavUrl = 'assets/audio/anthems/' + self.countryId + '.wav';
+      var _wavUrl = 'assets/audio/anthems/' + self.countryId + '.mp3';
       fetch(_wavUrl)
         .then(function(r) { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
         .then(function(ab) { return _ctx.decodeAudioData(ab); })

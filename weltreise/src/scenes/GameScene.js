@@ -710,30 +710,54 @@ var GameScene = new Phaser.Class({
       }
     });
 
-    // Virtual d-pad
+    // Virtual d-pad — raw DOM touch events for reliable multi-touch
     this.dpadObjects = [];
     var isMobile = this.sys.game.device.os.android || this.sys.game.device.os.iOS;
     if (isMobile) {
-      var makeBtn = function(x, y, label) {
-        var bg = self.add.rectangle(x, y, 70, 70, 0x333333, 0.8).setScrollFactor(0).setDepth(10).setInteractive();
+      // Visual buttons (no setInteractive — handled by DOM events below)
+      var makeDpadBtn = function(x, y, label) {
+        var bg = self.add.rectangle(x, y, 70, 70, 0x333333, 0.8).setScrollFactor(0).setDepth(10);
         var txt = self.add.text(x, y, label, { fontFamily: 'Arial', fontSize: '28px', color: '#ffffff' }).setOrigin(0.5).setScrollFactor(0).setDepth(11);
         self.dpadObjects.push(bg, txt);
-        return bg;
       };
-      var btnLeft = makeBtn(60, 660, '◀');
-      btnLeft.on('pointerdown', function() { self.dpadLeft = true; });
-      btnLeft.on('pointerup', function() { self.dpadLeft = false; });
-      btnLeft.on('pointerout', function() { self.dpadLeft = false; });
+      makeDpadBtn(60,  660, '◀');
+      makeDpadBtn(150, 660, '▶');
+      makeDpadBtn(900, 660, '▲');
 
-      var btnRight = makeBtn(150, 660, '▶');
-      btnRight.on('pointerdown', function() { self.dpadRight = true; });
-      btnRight.on('pointerup', function() { self.dpadRight = false; });
-      btnRight.on('pointerout', function() { self.dpadRight = false; });
+      // Button hit zones in game coordinates (960×720)
+      // Left: x25-95, Right: x115-185, Jump: x865-935 — all y625-695
+      var canvas = self.sys.game.canvas;
+      function updateDpad(touches) {
+        var rect = canvas.getBoundingClientRect();
+        var sx = 960 / rect.width;
+        var sy = 720 / rect.height;
+        var left = false, right = false, jump = false;
+        for (var i = 0; i < touches.length; i++) {
+          var gx = (touches[i].clientX - rect.left) * sx;
+          var gy = (touches[i].clientY - rect.top)  * sy;
+          if (gx >= 25  && gx <= 95  && gy >= 625 && gy <= 695) left  = true;
+          if (gx >= 115 && gx <= 185 && gy >= 625 && gy <= 695) right = true;
+          if (gx >= 865 && gx <= 935 && gy >= 625 && gy <= 695) jump  = true;
+        }
+        self.dpadLeft  = left;
+        self.dpadRight = right;
+        self.dpadJump  = jump;
+      }
 
-      var btnJump = makeBtn(900, 660, '▲');
-      btnJump.on('pointerdown', function() { self.dpadJump = true; });
-      btnJump.on('pointerup', function() { self.dpadJump = false; });
-      btnJump.on('pointerout', function() { self.dpadJump = false; });
+      var onTouch       = function(e) { e.preventDefault(); updateDpad(e.touches); };
+      var onTouchCancel = function()  { self.dpadLeft = false; self.dpadRight = false; self.dpadJump = false; };
+
+      canvas.addEventListener('touchstart',  onTouch,       { passive: false });
+      canvas.addEventListener('touchmove',   onTouch,       { passive: false });
+      canvas.addEventListener('touchend',    onTouch,       { passive: false });
+      canvas.addEventListener('touchcancel', onTouchCancel);
+
+      self.events.once('shutdown', function() {
+        canvas.removeEventListener('touchstart',  onTouch);
+        canvas.removeEventListener('touchmove',   onTouch);
+        canvas.removeEventListener('touchend',    onTouch);
+        canvas.removeEventListener('touchcancel', onTouchCancel);
+      });
     }
   },
 

@@ -37,7 +37,10 @@ var GameScene = new Phaser.Class({
     this.platforms = this.physics.add.staticGroup();
 
     // Ground: full width
-    this.platforms.add(this.add.rectangle(1920, 710, 3840, 20, 0x5a3e1a).setOrigin(0.5, 0.5));
+    var ground = this.platforms.create(1920, 710, '__DEFAULT');
+    ground.setDisplaySize(3840, 20);
+    ground.setTint(0x5a3e1a);
+    ground.refreshBody();
 
     // Floating platforms at varied positions
     var platformDefs = [
@@ -54,16 +57,16 @@ var GameScene = new Phaser.Class({
     ];
 
     platformDefs.forEach(function(p) {
-      var rect = self.add.rectangle(p.x, p.y, p.w, 20, 0x5a3e1a);
-      self.platforms.add(rect);
+      var plat = self.platforms.create(p.x, p.y, '__DEFAULT');
+      plat.setDisplaySize(p.w, 20);
+      plat.setTint(0x5a3e1a);
+      plat.refreshBody();
     });
-
-    // Refresh all static bodies after adding
-    this.platforms.refresh();
 
     // Player (placeholder rectangle as physics body)
     this.player = this.physics.add.image(100, 580, '__DEFAULT');
     this.player.setDisplaySize(32, 48);
+    this.player.body.setSize(32, 48);
     this.player.setTint(0x00aaff);
     this.player.setBounce(0.1);
     this.player.setCollideWorldBounds(true);
@@ -107,6 +110,38 @@ var GameScene = new Phaser.Class({
       this.anthem.play();
     } else {
       this.anthem = null;
+    }
+
+    // Fallback: simple beep melody when no anthem file is available
+    if (!this.anthem) {
+      this.anthemInterval = null;
+      try {
+        var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        // 4-note repeating sequence representing the country's "feel"
+        var notes = [261, 294, 329, 349]; // C4 D4 E4 F4
+        var noteIdx = 0;
+        var playNote = function() {
+          try {
+            var osc = audioCtx.createOscillator();
+            var gain = audioCtx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = notes[noteIdx % notes.length];
+            noteIdx++;
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(audioCtx.currentTime);
+            osc.stop(audioCtx.currentTime + 0.4);
+          } catch(e) {}
+        };
+        self.anthemInterval = setInterval(playNote, 600);
+        // Stop on scene shutdown
+        self.events.once('shutdown', function() {
+          if (self.anthemInterval) clearInterval(self.anthemInterval);
+          try { audioCtx.close(); } catch(e) {}
+        });
+      } catch(e) {}
     }
 
     // Camera follow
@@ -173,10 +208,11 @@ var GameScene = new Phaser.Class({
     this.questionBlocks = this.physics.add.staticGroup();
     var blockDefs = [{ x: 600, y: 440 }, { x: 1100, y: 400 }, { x: 2000, y: 380 }];
     blockDefs.forEach(function(b) {
-      var blk = self.add.rectangle(b.x, b.y, 40, 40, 0xffcc00);
-      self.questionBlocks.add(blk);
+      var blk = self.questionBlocks.create(b.x, b.y, '__DEFAULT');
+      blk.setDisplaySize(40, 40);
+      blk.setTint(0xffcc00);
+      blk.refreshBody();
     });
-    this.questionBlocks.refresh();
     this.mushrooms = [];
 
     // Virtual d-pad
@@ -267,6 +303,7 @@ var GameScene = new Phaser.Class({
         this.livesText.setText('♥ ' + this.livesCount);
         if (this.livesCount <= 0) {
           if (this.anthem) this.anthem.stop();
+          if (this.anthemInterval) { clearInterval(this.anthemInterval); this.anthemInterval = null; }
           this.scene.start('GameOverScene', { countryId: this.countryId, continentId: this.continentId });
         }
       }
@@ -316,6 +353,7 @@ var GameScene = new Phaser.Class({
     if (!this.exitLocked && !this.levelCompleted && this.physics.overlap(this.player, this.exitDoor)) {
       this.levelCompleted = true; // guard: prevent firing again while transition queues
       if (this.anthem) this.anthem.stop();
+      if (this.anthemInterval) { clearInterval(this.anthemInterval); this.anthemInterval = null; }
       Progress.completeLevel(this.countryId);
       this.scene.start('WinScene', { countryId: this.countryId, continentId: this.continentId });
     }

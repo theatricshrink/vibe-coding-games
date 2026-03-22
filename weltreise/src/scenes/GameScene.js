@@ -514,14 +514,30 @@ var GameScene = new Phaser.Class({
     // Anthem — HTML Audio element works on both file:// and https://
     this.anthem = null;
     this.anthemInterval = null;
+    this._anthemAudio = null;
     try {
+      var _muted = localStorage.getItem('weltreise_mute') === '1';
       var _audio = new Audio('assets/audio/anthems/' + self.countryId + '.wav');
       _audio.loop = true;
-      _audio.volume = 0.4;
+      _audio.volume = _muted ? 0 : 0.4;
       var _playPromise = _audio.play();
       if (_playPromise) { _playPromise.catch(function() {}); }
+      self._anthemAudio = _audio;
       self.anthem = { stop: function() { _audio.pause(); _audio.src = ''; } };
     } catch(e) {}
+
+    // Music toggle (top right, below lives ♥)
+    var _muteState = localStorage.getItem('weltreise_mute') === '1';
+    var _muteBtn = self.add.text(948, 46, _muteState ? '🔇' : '🔊', {
+      fontFamily: 'Arial', fontSize: '20px', color: '#ffffff',
+      stroke: '#000000', strokeThickness: 2
+    }).setOrigin(1, 0).setScrollFactor(0).setDepth(5).setInteractive({ useHandCursor: true });
+    _muteBtn.on('pointerdown', function() {
+      _muteState = !_muteState;
+      localStorage.setItem('weltreise_mute', _muteState ? '1' : '0');
+      _muteBtn.setText(_muteState ? '🔇' : '🔊');
+      if (self._anthemAudio) { self._anthemAudio.volume = _muteState ? 0 : 0.4; }
+    });
 
     self.events.once('shutdown', function() {
       if (self.anthem) { self.anthem.stop(); self.anthem = null; }
@@ -675,6 +691,7 @@ var GameScene = new Phaser.Class({
     this.physics.add.collider(this.player, this.questionBlocks, function(player, block) {
       if (player.body.blocked.up) {
         block.destroy();
+        SFX.mushroomPop();
         var mushroom = self.physics.add.image(block.x, block.y - 30, 'mushroom_tex');
         mushroom.setVelocityX(60);
         mushroom.setBounce(0);

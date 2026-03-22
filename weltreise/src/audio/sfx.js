@@ -33,6 +33,15 @@ var SFX = (function() {
       setTimeout(function() { play('sine', 784, 784, 0.1); }, 120);
     },
     wrong: function() { play('sawtooth', 80, 80, 0.3); },
-    powerUp: function() { play('sine', 200, 800, 0.2); }
+    mushroomPop: function() {
+      play('square', 160, 90, 0.06);
+      setTimeout(function() { play('sine', 380, 950, 0.15); }, 65);
+    },
+    powerUp: function() {
+      var notes = [330, 392, 523, 659, 784];
+      notes.forEach(function(f, i) {
+        setTimeout(function() { play('sine', f, f, 0.09); }, i * 60);
+      });
+    }
   };
 })();

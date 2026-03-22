@@ -34,104 +34,162 @@ var MenuScene = new Phaser.Class({
       strokeThickness: 4
     }).setOrigin(0.5);
 
-    // Geography decoration — globe with continents
+    // ── Globe ─────────────────────────────────────────────────────────
     var gx = 480, gy = 318, gr = 40;
     var globeG = this.add.graphics();
 
     // Drop shadow
     globeG.fillStyle(0x000000, 0.18);
     globeG.fillCircle(gx + 5, gy + 5, gr);
-
     // Ocean
     globeG.fillStyle(0x1565c0, 1);
     globeG.fillCircle(gx, gy, gr);
-
     // Latitude lines
     globeG.lineStyle(1, 0x64b5f6, 0.5);
     [-22, -11, 0, 11, 22].forEach(function(dy) {
       var hw = Math.sqrt(Math.max(0, gr * gr - dy * dy));
       if (hw > 4) globeG.strokeEllipse(gx, gy + dy, hw * 2, 7);
     });
-
-    // Longitude arcs (3 vertical ellipses)
+    // Longitude arcs
     globeG.lineStyle(1, 0x64b5f6, 0.5);
     [-20, 0, 20].forEach(function(dx) {
       var hw = Math.sqrt(Math.max(0, gr * gr - dx * dx));
       if (hw > 4) globeG.strokeEllipse(gx + dx * 0.25, gy, hw * 0.5, gr * 2);
     });
+    // Continent land blobs (always visible, dimmed until completed)
+    var blobDefs = [
+      // Americas
+      { x: gx - 24, y: gy - 10, w: 11, h: 14, id: 'americas' },
+      { x: gx - 22, y: gy + 9,  w: 9,  h: 12, id: 'americas' },
+      // Europe
+      { x: gx + 4,  y: gy - 16, w: 9,  h: 7,  id: 'europe'   },
+      // Africa
+      { x: gx + 4,  y: gy - 2,  w: 10, h: 18, id: 'africa'   },
+      // Asia
+      { x: gx + 18, y: gy - 13, w: 18, h: 11, id: 'asia'     },
+      // Australia/Oceania
+      { x: gx + 24, y: gy + 10, w: 10, h: 8,  id: 'oceania'  }
+    ];
 
-    // Continent blobs
-    globeG.fillStyle(0x2e7d32, 1);
-    // Americas
-    globeG.fillEllipse(gx - 24, gy - 10, 11, 14);
-    globeG.fillEllipse(gx - 22, gy + 9, 9, 12);
-    // Europe
-    globeG.fillEllipse(gx + 4, gy - 16, 9, 7);
-    // Africa
-    globeG.fillEllipse(gx + 4, gy - 2, 10, 18);
-    // Asia
-    globeG.fillEllipse(gx + 18, gy - 13, 18, 11);
-    // Australia
-    globeG.fillEllipse(gx + 24, gy + 10, 10, 8);
-
-    // Highlight sheen (top-left)
+    // Highlight sheen
     globeG.fillStyle(0xffffff, 0.13);
     globeG.fillEllipse(gx - 14, gy - 18, 20, 14);
-
-    // Outline
+    // Globe outline
     globeG.lineStyle(3, 0x0d47a1, 1);
     globeG.strokeCircle(gx, gy, gr);
 
-    // Continent name labels flanking the globe (Mario brick style)
-    var labelData = [
-      { x: gx - 130, y: gy - 10, text: LANG === 'de' ? 'Amerika' : 'Americas', color: 0xcc6600 },
-      { x: gx + 130, y: gy - 16, text: LANG === 'de' ? 'Asien' : 'Asia',      color: 0x6a0dad },
-      { x: gx + 130, y: gy + 12, text: LANG === 'de' ? 'Afrika' : 'Africa',   color: 0x8a6200 }
+    // ── Progress check ────────────────────────────────────────────────
+    var progress = Progress.load();
+    var completedLevels = progress.completedLevels;
+
+    var continentDefs = [
+      { data: EUROPE,   id: 'europe',   label: LANG === 'de' ? 'Europa'    : 'Europe',   bx: 364, by: 280 },
+      { data: AMERICAS, id: 'americas', label: LANG === 'de' ? 'Amerika'   : 'Americas', bx: 338, by: 323 },
+      { data: ASIA,     id: 'asia',     label: LANG === 'de' ? 'Asien'     : 'Asia',     bx: 598, by: 284 },
+      { data: AFRICA,   id: 'africa',   label: LANG === 'de' ? 'Afrika'    : 'Africa',   bx: 598, by: 332 },
+      { data: OCEANIA,  id: 'oceania',  label: LANG === 'de' ? 'Ozeanien'  : 'Oceania',  bx: 592, by: 354 }
     ];
-    labelData.forEach(function(d) {
-      var bg = self.add.graphics();
-      bg.fillStyle(0x1a0900, 1);
-      bg.fillRoundedRect(d.x - 46, d.y - 11, 92, 22, 5);
-      bg.fillStyle(d.color, 1);
-      bg.fillRoundedRect(d.x - 48, d.y - 13, 96, 22, 5);
-      self.add.text(d.x, d.y, d.text, {
-        fontFamily: 'Arial Black, Arial', fontSize: '12px',
-        color: '#ffffff', stroke: '#1a0900', strokeThickness: 2
-      }).setOrigin(0.5);
+
+    // Draw dimmed continent blobs first (always)
+    blobDefs.forEach(function(b) {
+      var done = continentDefs.find(function(c) { return c.id === b.id; });
+      var complete = done && done.data.countries.every(function(c) {
+        return completedLevels.indexOf(c.id) !== -1;
+      });
+      globeG.fillStyle(complete ? 0x2e7d32 : 0x1b5e20, complete ? 1 : 0.55);
+      globeG.fillEllipse(b.x, b.y, b.w, b.h);
     });
 
-    // Play button — green Mario-style
-    makeMarioBtn(self, 480, 398, (LANG === 'de') ? '▶  Spielen' : '▶  Play',
+    // ── Mario star badge helper ────────────────────────────────────────
+    function drawStarShape(g, cx, cy, ro, ri, fill) {
+      var pts = [];
+      for (var i = 0; i < 10; i++) {
+        var a = (i * Math.PI / 5) - Math.PI / 2;
+        var r = (i % 2 === 0) ? ro : ri;
+        pts.push({ x: cx + r * Math.cos(a), y: cy + r * Math.sin(a) });
+      }
+      g.fillStyle(fill, 1);
+      g.fillPoints(pts, true);
+      g.lineStyle(1.5, 0x1a0900, 1);
+      g.strokePoints(pts, true);
+      // Inner highlight
+      var hPts = [];
+      for (var j = 0; j < 10; j++) {
+        var ha = (j * Math.PI / 5) - Math.PI / 2;
+        var hr = (j % 2 === 0) ? ro * 0.55 : ri * 0.55;
+        hPts.push({ x: cx + hr * Math.cos(ha) - 1, y: cy + hr * Math.sin(ha) - 2 });
+      }
+      g.fillStyle(0xffe566, 0.5);
+      g.fillPoints(hPts, true);
+    }
+
+    function addStarBadge(bx, by, label) {
+      var bw = 110, bh = 26;
+      var bg = self.add.graphics();
+      // Shadow
+      bg.fillStyle(0x1a0900, 0.7);
+      bg.fillRoundedRect(bx - bw / 2 + 3, by - bh / 2 + 3, bw, bh, 7);
+      // Gold body
+      bg.fillStyle(0xffcc00, 1);
+      bg.fillRoundedRect(bx - bw / 2, by - bh / 2, bw, bh, 7);
+      // Highlight strip
+      bg.fillStyle(0xffe566, 1);
+      bg.fillRoundedRect(bx - bw / 2 + 4, by - bh / 2 + 4, bw - 8, 6, 2);
+      // Outline
+      bg.lineStyle(2, 0x1a0900, 1);
+      bg.strokeRoundedRect(bx - bw / 2, by - bh / 2, bw, bh, 7);
+      // Star icon on left
+      drawStarShape(bg, bx - bw / 2 + 16, by, 11, 4, 0xffd700);
+      // Label
+      self.add.text(bx + 14, by, label, {
+        fontFamily: 'Arial Black, Arial',
+        fontSize: '11px',
+        color: '#1a0900',
+        stroke: '#ffe566',
+        strokeThickness: 1
+      }).setOrigin(0.5);
+    }
+
+    // Draw badges only for completed continents
+    continentDefs.forEach(function(c) {
+      var complete = c.data.countries.every(function(country) {
+        return completedLevels.indexOf(country.id) !== -1;
+      });
+      if (complete) {
+        addStarBadge(c.bx, c.by, c.label);
+      }
+    });
+
+    // ── Play button ───────────────────────────────────────────────────
+    makeMarioBtn(self, 480, 410, (LANG === 'de') ? '▶  Spielen' : '▶  Play',
       function() { self.scene.start('WorldMapScene'); },
       { w: 240, h: 60, fontSize: '26px', color: 0x1a8a1a }
     );
 
-    // Progress stats
-    var progress = Progress.load();
+    // ── Progress stats ────────────────────────────────────────────────
     var allCountries = [].concat(
       EUROPE.countries, AFRICA.countries, ASIA.countries,
       AMERICAS.countries, OCEANIA.countries
     );
     var total = allCountries.length;
-    var completed = progress.completedLevels.length;
+    var completed = completedLevels.length;
     var pct = total > 0 ? Math.round(completed / total * 100) : 0;
 
     var progressLabel = (LANG === 'de')
       ? (completed + ' / ' + total + ' Länder  •  ' + pct + '%')
       : (completed + ' / ' + total + ' countries  •  ' + pct + '%');
-    this.add.text(480, 468, progressLabel, {
+    this.add.text(480, 474, progressLabel, {
       fontFamily: 'Arial', fontSize: '16px', color: '#ffffff',
       stroke: '#000000', strokeThickness: 3
     }).setOrigin(0.5);
 
-    // Progress bar (400px wide)
     var barG = this.add.graphics();
     barG.fillStyle(0x000000, 0.45);
-    barG.fillRoundedRect(280, 484, 400, 14, 7);
+    barG.fillRoundedRect(280, 490, 400, 14, 7);
     barG.fillStyle(0x44dd44, 1);
-    barG.fillRoundedRect(280, 484, Math.max(4, 400 * pct / 100), 14, 7);
+    barG.fillRoundedRect(280, 490, Math.max(4, 400 * pct / 100), 14, 7);
 
-    // Reset button — Mario-style red button
+    // ── Reset button (Mario red style) ────────────────────────────────
     var resetLabel   = (LANG === 'de') ? '↺ Zurücksetzen' : '↺ Reset Progress';
     var confirmLabel = (LANG === 'de') ? 'Wirklich zurücksetzen?' : 'Really reset?';
     var yesLabel     = (LANG === 'de') ? 'Ja' : 'Yes';
@@ -142,17 +200,17 @@ var MenuScene = new Phaser.Class({
       resetBg.clear();
       var col = hover ? 0xcc2222 : 0xaa1111;
       resetBg.fillStyle(0x1a0900, 1);
-      resetBg.fillRoundedRect(480 - 105, 541 - 20 + 4, 210, 40, 7);
+      resetBg.fillRoundedRect(480 - 105, 544 - 20 + 4, 210, 40, 7);
       resetBg.fillStyle(col, 1);
-      resetBg.fillRoundedRect(480 - 105, 541 - 20, 210, 40, 7);
+      resetBg.fillRoundedRect(480 - 105, 544 - 20, 210, 40, 7);
       resetBg.fillStyle(hover ? 0xdd4444 : 0xcc2222, 1);
-      resetBg.fillRoundedRect(480 - 100, 541 - 16, 200, 7, 3);
+      resetBg.fillRoundedRect(480 - 100, 544 - 16, 200, 7, 3);
       resetBg.lineStyle(2, 0x1a0900, 1);
-      resetBg.strokeRoundedRect(480 - 105, 541 - 20, 210, 40, 7);
+      resetBg.strokeRoundedRect(480 - 105, 544 - 20, 210, 40, 7);
     }
     drawResetBg(false);
 
-    var resetText = self.add.text(480, 541, resetLabel, {
+    var resetText = self.add.text(480, 544, resetLabel, {
       fontFamily: 'Arial Black, Arial', fontSize: '16px',
       color: '#ffffff', stroke: '#1a0900', strokeThickness: 3
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
@@ -163,16 +221,16 @@ var MenuScene = new Phaser.Class({
       resetBg.destroy();
       resetText.destroy();
 
-      self.add.text(480, 524, confirmLabel, {
+      self.add.text(480, 526, confirmLabel, {
         fontFamily: 'Arial', fontSize: '14px', color: '#ffffff',
         stroke: '#000000', strokeThickness: 3
       }).setOrigin(0.5);
 
-      makeMarioBtn(self, 420, 554, yesLabel,
+      makeMarioBtn(self, 420, 558, yesLabel,
         function() { Progress.reset(); self.scene.restart(); },
         { w: 90, h: 38, fontSize: '18px', color: 0xcc1111 }
       );
-      makeMarioBtn(self, 540, 554, noLabel,
+      makeMarioBtn(self, 540, 558, noLabel,
         function() { self.scene.restart(); },
         { w: 90, h: 38, fontSize: '18px', color: 0x555555 }
       );

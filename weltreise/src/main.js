@@ -1,12 +1,13 @@
 // weltreise/src/main.js
 var config = {
   type: Phaser.AUTO,
-  width: 960,
-  height: 720,
   backgroundColor: '#0d1b2a',
+  parent: 'game-container',
   scale: {
     mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    width: 960,
+    height: 720
   },
   physics: {
     default: 'arcade',

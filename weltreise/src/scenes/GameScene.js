@@ -218,6 +218,7 @@ var GameScene = new Phaser.Class({
         // Stomp!
         enemy.isStunned = true;
         enemy.setVelocityX(0);
+        SFX.stomp();
         // Bounds check on question pool
         if (this.questionIndex >= this.questionPool.length) {
           // Re-shuffle pool
@@ -336,6 +337,7 @@ var GameScene = new Phaser.Class({
         self.physics.add.overlap(player, mushroom, function() {
           if (mushroom.active) {
             mushroom.destroy();
+            SFX.powerUp();
             self.isBig = true;
             self.player.setDisplaySize(32, 64);
           }

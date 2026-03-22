@@ -43,6 +43,7 @@ var QuestionScene = new Phaser.Class({
       btn.on('pointerout', function() { btn.setFillStyle(0x2196F3); });
       btn.on('pointerdown', function() {
         var correct = (i === correctIndex);
+        if (correct) { SFX.correct(); } else { SFX.wrong(); }
         // Sequence: stop self → resume GameScene → call onResult
         self.scene.stop();
         self.scene.resume('GameScene');

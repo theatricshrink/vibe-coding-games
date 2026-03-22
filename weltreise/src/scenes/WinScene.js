@@ -41,14 +41,11 @@ var WinScene = new Phaser.Class({
       fontFamily: 'Arial', fontSize: '48px', color: '#ffcc00'
     }).setOrigin(0.5);
 
-    // Continue button
-    var continueLabel = LANG === 'de' ? 'Weiter' : 'Continue';
-    var contBg = this.add.rectangle(480, 460, 240, 60, 0x2196F3).setInteractive();
-    this.add.text(480, 460, continueLabel, { fontFamily: 'Arial', fontSize: '28px', color: '#ffffff' }).setOrigin(0.5);
-    contBg.on('pointerover', function() { contBg.setFillStyle(0x1565c0); });
-    contBg.on('pointerout', function() { contBg.setFillStyle(0x2196F3); });
-    contBg.on('pointerdown', function() {
-      self.scene.start('LevelSelectScene', { continentId: self.continentId });
-    });
+    // Continue button — Mario-style green
+    var continueLabel = LANG === 'de' ? '▶  Weiter' : '▶  Continue';
+    makeMarioBtn(self, 480, 460, continueLabel,
+      function() { self.scene.start('LevelSelectScene', { continentId: self.continentId }); },
+      { w: 260, h: 62, fontSize: '26px', color: 0x1a8a1a }
+    );
   }
 });

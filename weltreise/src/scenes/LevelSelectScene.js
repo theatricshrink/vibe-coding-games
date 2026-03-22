@@ -28,12 +28,12 @@ var LevelSelectScene = new Phaser.Class({
       stroke: '#000000', strokeThickness: 4
     }).setOrigin(0.5);
 
-    // Back button
+    // Back button — small red Mario button
     var backLabel = (LANG === 'de') ? '← Karte' : '← Map';
-    var backBg = this.add.rectangle(56, 18, 96, 28, 0x000000, 0.65).setInteractive().setOrigin(0, 0);
-    var backTxt = this.add.text(58, 20, backLabel, { fontFamily: 'Arial', fontSize: '15px', color: '#ffffff' }).setInteractive();
-    backBg.on('pointerdown', function() { self.scene.start('WorldMapScene'); });
-    backTxt.on('pointerdown', function() { self.scene.start('WorldMapScene'); });
+    makeMarioBtn(self, 72, 26, backLabel,
+      function() { self.scene.start('WorldMapScene'); },
+      { w: 118, h: 34, fontSize: '14px', color: 0xcc1111 }
+    );
 
     // Node positions: distribute evenly across the width
     var margin = 120;

@@ -424,19 +424,15 @@ var GameScene = new Phaser.Class({
     this.livesText.setOrigin(1, 0);
     this.livesText.setScrollFactor(0);
 
-    // Back to level select (top-centre)
-    var mapLabel = (LANG === 'de') ? '← Länder' : '← Levels';
-    var mapBg  = this.add.rectangle(480, 20, 90, 26, 0x000000, 0.6).setScrollFactor(0).setDepth(5).setInteractive();
-    var mapTxt = this.add.text(480, 20, mapLabel, {
-      fontFamily: 'Arial', fontSize: '13px', color: '#ffffff'
-    }).setOrigin(0.5).setScrollFactor(0).setDepth(5).setInteractive();
+    // Back to level select (top-centre HUD)
     var doMapReturn = function() {
       if (self.anthem) self.anthem.stop();
       if (self.anthemInterval) { clearInterval(self.anthemInterval); self.anthemInterval = null; }
       self.scene.start('LevelSelectScene', { continentId: self.continentId });
     };
-    mapBg.on('pointerdown', doMapReturn);
-    mapTxt.on('pointerdown', doMapReturn);
+    makeMarioBtn(self, 480, 20, (LANG === 'de') ? '← Länder' : '← Levels', doMapReturn,
+      { w: 110, h: 26, fontSize: '13px', color: 0xcc1111, scrollFactor: 0, depth: 5 }
+    );
 
     // Anthem — fetch WAV directly (bypasses Phaser loader which fails silently)
     this.anthem = null;

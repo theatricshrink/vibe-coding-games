@@ -12,8 +12,6 @@ var GameScene = new Phaser.Class({
 
   preload: function() {
     this.load.image(this.countryId + '_bg', 'assets/backgrounds/' + this.countryId + '.png');
-    // Anthem audio via Phaser loader
-    this.load.audio(this.countryId + '_anthem', 'assets/audio/anthems/' + this.countryId + '.wav');
     // Try loading real enemy sprite — silently ignored if PNG not present yet
     this.load.image(this.countryId + '_enemy', 'assets/sprites/enemies/' + this.countryId + '_enemy.png');
 
@@ -513,18 +511,57 @@ var GameScene = new Phaser.Class({
       { w: 110, h: 26, fontSize: '13px', color: 0xcc1111, scrollFactor: 0, depth: 5 }
     );
 
-    // Anthem — play via Phaser (shares the already-unlocked AudioContext)
+    // Anthem — fetch WAV and decode via Phaser's already-unlocked AudioContext.
+    // Reusing Phaser's context avoids the suspended-context problem on iOS.
     this.anthem = null;
     this.anthemInterval = null;
-    try {
-      this.anthem = this.sound.add(this.countryId + '_anthem', { loop: true, volume: 0.4 });
-      this.anthem.play();
-    } catch(e) {}
+    var _active = true;
+    var _ctx = (this.sound && this.sound.context) ? this.sound.context : null;
 
-    self.events.once('shutdown', function() {
-      if (self.anthem) { try { self.anthem.stop(); } catch(e) {} self.anthem = null; }
-      if (self.anthemInterval) { clearInterval(self.anthemInterval); self.anthemInterval = null; }
-    });
+    if (_ctx) {
+      var _wavUrl = 'assets/audio/anthems/' + self.countryId + '.wav';
+      fetch(_wavUrl)
+        .then(function(r) { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+        .then(function(ab) { return _ctx.decodeAudioData(ab); })
+        .then(function(buffer) {
+          if (!_active) return;
+          var startLoop = function() {
+            var src = _ctx.createBufferSource();
+            src.buffer = buffer;
+            src.loop = true;
+            var gain = _ctx.createGain();
+            gain.gain.value = 0.4;
+            src.connect(gain);
+            gain.connect(_ctx.destination);
+            src.start(0);
+            self.anthem = { stop: function() { try { src.stop(); } catch(e) {} } };
+          };
+          if (_ctx.state === 'running') { startLoop(); }
+          else { _ctx.resume().then(startLoop); }
+        })
+        .catch(function() {
+          // WAV unavailable — fall back to jingle
+          if (!_active) return;
+          var notes = [261, 294, 329, 349], ni = 0;
+          self.anthemInterval = setInterval(function() {
+            try {
+              var osc = _ctx.createOscillator(), g = _ctx.createGain();
+              osc.type = 'sine';
+              osc.frequency.value = notes[ni++ % 4];
+              g.gain.setValueAtTime(0.1, _ctx.currentTime);
+              g.gain.exponentialRampToValueAtTime(0.001, _ctx.currentTime + 0.4);
+              osc.connect(g); g.connect(_ctx.destination);
+              osc.start(_ctx.currentTime); osc.stop(_ctx.currentTime + 0.4);
+            } catch(e) {}
+          }, 600);
+        });
+
+      self.events.once('shutdown', function() {
+        _active = false;
+        if (self.anthem) { self.anthem.stop(); self.anthem = null; }
+        if (self.anthemInterval) { clearInterval(self.anthemInterval); self.anthemInterval = null; }
+      });
+    }
 
     // Camera follow
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);

@@ -522,7 +522,12 @@ var GameScene = new Phaser.Class({
       var _wavUrl = 'assets/audio/anthems/' + self.countryId + '.wav';
       fetch(_wavUrl)
         .then(function(r) { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
-        .then(function(ab) { return _ctx.decodeAudioData(ab); })
+        .then(function(ab) {
+          // Wrap in explicit Promise so it works in old Safari (callback-only API)
+          return new Promise(function(resolve, reject) {
+            _ctx.decodeAudioData(ab, resolve, reject);
+          });
+        })
         .then(function(buffer) {
           if (!_active) return;
           var startLoop = function() {
@@ -537,9 +542,10 @@ var GameScene = new Phaser.Class({
             self.anthem = { stop: function() { try { src.stop(); } catch(e) {} } };
           };
           if (_ctx.state === 'running') { startLoop(); }
-          else { _ctx.resume().then(startLoop); }
+          else { _ctx.resume().then(startLoop).catch(startLoop); }
         })
-        .catch(function() {
+        .catch(function(err) {
+          console.error('Anthem failed:', err);
           // WAV unavailable — fall back to jingle
           if (!_active) return;
           var notes = [261, 294, 329, 349], ni = 0;

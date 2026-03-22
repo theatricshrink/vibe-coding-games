@@ -41,10 +41,25 @@ var WinScene = new Phaser.Class({
       fontFamily: 'Arial', fontSize: '48px', color: '#ffcc00'
     }).setOrigin(0.5);
 
-    // Continue button — Mario-style green
+    // Determine if entire continent was just completed
+    var progress = Progress.load();
+    var continentOrder = Progress.CONTINENT_ORDER;
+    var myIdx = continentOrder.indexOf(self.continentId);
+    var allDone = false;
+    if (continent) {
+      allDone = continent.countries.every(function(c) {
+        return progress.completedLevels.indexOf(c.id) !== -1;
+      });
+    }
+    var continentJustFinished = allDone && myIdx >= 0 && myIdx < continentOrder.length - 1;
+    var nextContinentId = continentJustFinished ? continentOrder[myIdx + 1] : null;
+
+    // Continue button — routes to WorldMapScene (unlock anim) or LevelSelectScene
     var continueLabel = LANG === 'de' ? '▶  Weiter' : '▶  Continue';
-    makeMarioBtn(self, 480, 460, continueLabel,
-      function() { self.scene.start('LevelSelectScene', { continentId: self.continentId }); },
+    var continueCallback = continentJustFinished
+      ? function() { self.scene.start('WorldMapScene', { unlockAnim: nextContinentId }); }
+      : function() { self.scene.start('LevelSelectScene', { continentId: self.continentId }); };
+    makeMarioBtn(self, 480, 460, continueLabel, continueCallback,
       { w: 260, h: 62, fontSize: '26px', color: 0x1a8a1a }
     );
   }

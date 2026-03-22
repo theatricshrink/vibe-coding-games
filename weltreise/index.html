@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="de" id="html-root">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weltreise</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #0d1b2a; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; }
+    canvas { display: block; margin: auto; }
+    #back-btn {
+      position: fixed; top: 10px; left: 12px; z-index: 100;
+      color: #52b788; font-family: sans-serif; font-size: 13px;
+      text-decoration: none; opacity: 0.7;
+    }
+    #back-btn:hover { opacity: 1; color: #f5e642; }
+  </style>
+</head>
+<body>
+  <a id="back-btn" href="../index.html"></a>
+  <!-- lang.js MUST come first — sets LANG before anything reads it -->
+  <script src="src/i18n/lang.js"></script>
+  <script>
+    document.getElementById('html-root').lang = LANG;
+    document.getElementById('back-btn').textContent = LANG === 'en' ? '← Overview' : '← Übersicht';
+  </script>
+  <!-- Phaser CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+  <!-- Data files — 5 continents -->
+  <script src="src/data/europe.js"></script>
+  <script src="src/data/africa.js"></script>
+  <script src="src/data/asia.js"></script>
+  <script src="src/data/americas.js"></script>
+  <script src="src/data/oceania.js"></script>
+  <!-- Utils -->
+  <script src="src/utils/progress.js"></script>
+  <!-- Scene files -->
+  <script src="src/scenes/BootScene.js"></script>
+  <script src="src/scenes/MenuScene.js"></script>
+  <script src="src/scenes/WorldMapScene.js"></script>
+  <script src="src/scenes/LevelSelectScene.js"></script>
+  <script src="src/scenes/GameScene.js"></script>
+  <script src="src/scenes/QuestionScene.js"></script>
+  <script src="src/scenes/GameOverScene.js"></script>
+  <script src="src/scenes/WinScene.js"></script>
+  <!-- Main entry point -->
+  <script src="src/main.js"></script>
+</body>
+</html>

@@ -12,8 +12,7 @@ var GameScene = new Phaser.Class({
 
   preload: function() {
     this.load.image(this.countryId + '_bg', 'assets/backgrounds/' + this.countryId + '.png');
-    // WAV files are always present (synthesized); add .mp3 alongside if you have recordings
-    this.load.audio(this.countryId + '_anthem', 'assets/audio/anthems/' + this.countryId + '.wav');
+    // Audio loaded manually via fetch in create() — Phaser loader skipped for anthems
     // Try loading real enemy sprite — silently ignored if PNG not present yet
     this.load.image(this.countryId + '_enemy', 'assets/sprites/enemies/' + this.countryId + '_enemy.png');
 
@@ -439,44 +438,60 @@ var GameScene = new Phaser.Class({
     mapBg.on('pointerdown', doMapReturn);
     mapTxt.on('pointerdown', doMapReturn);
 
-    // Anthem (play if available)
-    if (this.cache.audio.has(this.countryId + '_anthem')) {
-      this.anthem = this.sound.add(this.countryId + '_anthem', { loop: true, volume: 0.4 });
-      this.anthem.play();
-    } else {
-      this.anthem = null;
-    }
+    // Anthem — fetch WAV directly (bypasses Phaser loader which fails silently)
+    this.anthem = null;
+    this.anthemInterval = null;
+    var _active = true;
+    var _ctx = null;
+    try { _ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) {}
 
-    // Fallback: simple beep melody when no anthem file is available
-    if (!this.anthem) {
-      this.anthemInterval = null;
-      try {
-        var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        // 4-note repeating sequence representing the country's "feel"
-        var notes = [261, 294, 329, 349]; // C4 D4 E4 F4
-        var noteIdx = 0;
-        var playNote = function() {
-          try {
-            var osc = audioCtx.createOscillator();
-            var gain = audioCtx.createGain();
-            osc.type = 'sine';
-            osc.frequency.value = notes[noteIdx % notes.length];
-            noteIdx++;
-            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
-            osc.start(audioCtx.currentTime);
-            osc.stop(audioCtx.currentTime + 0.4);
-          } catch(e) {}
-        };
-        self.anthemInterval = setInterval(playNote, 600);
-        // Stop on scene shutdown
-        self.events.once('shutdown', function() {
-          if (self.anthemInterval) clearInterval(self.anthemInterval);
-          try { audioCtx.close(); } catch(e) {}
+    if (_ctx) {
+      var _wavUrl = 'assets/audio/anthems/' + self.countryId + '.wav';
+      fetch(_wavUrl)
+        .then(function(r) { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
+        .then(function(ab) { return _ctx.decodeAudioData(ab); })
+        .then(function(buffer) {
+          if (!_active) { try { _ctx.close(); } catch(e) {} return; }
+          var startLoop = function() {
+            var src = _ctx.createBufferSource();
+            src.buffer = buffer;
+            src.loop = true;
+            var gain = _ctx.createGain();
+            gain.gain.value = 0.4;
+            src.connect(gain);
+            gain.connect(_ctx.destination);
+            src.start(0);
+            self.anthem = { stop: function() {
+              try { src.stop(); } catch(e) {}
+              try { _ctx.close(); } catch(e) {}
+            }};
+          };
+          if (_ctx.state === 'running') { startLoop(); }
+          else { _ctx.resume().then(startLoop); }
+        })
+        .catch(function() {
+          // WAV unavailable — fall back to jingle
+          if (!_active) return;
+          var notes = [261, 294, 329, 349], ni = 0;
+          self.anthemInterval = setInterval(function() {
+            try {
+              var osc = _ctx.createOscillator(), g = _ctx.createGain();
+              osc.type = 'sine';
+              osc.frequency.value = notes[ni++ % 4];
+              g.gain.setValueAtTime(0.1, _ctx.currentTime);
+              g.gain.exponentialRampToValueAtTime(0.001, _ctx.currentTime + 0.4);
+              osc.connect(g); g.connect(_ctx.destination);
+              osc.start(_ctx.currentTime); osc.stop(_ctx.currentTime + 0.4);
+            } catch(e) {}
+          }, 600);
         });
-      } catch(e) {}
+
+      self.events.once('shutdown', function() {
+        _active = false;
+        if (self.anthem) { self.anthem.stop(); self.anthem = null; }
+        if (self.anthemInterval) { clearInterval(self.anthemInterval); self.anthemInterval = null; }
+        try { _ctx.close(); } catch(e) {}
+      });
     }
 
     // Camera follow

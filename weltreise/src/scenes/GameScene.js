@@ -167,6 +167,7 @@ var GameScene = new Phaser.Class({
     this.exitDoor.setAlpha(0.3);
     this.physics.add.existing(this.exitDoor, true); // static
     this.exitLocked = true;
+    this.levelCompleted = false;
 
     // Question blocks (3 blocks for mushroom power-up)
     this.questionBlocks = this.physics.add.staticGroup();
@@ -185,7 +186,6 @@ var GameScene = new Phaser.Class({
       var makeBtn = function(x, y, label) {
         var bg = self.add.rectangle(x, y, 70, 70, 0x333333, 0.8).setScrollFactor(0).setDepth(10).setInteractive();
         var txt = self.add.text(x, y, label, { fontFamily: 'Arial', fontSize: '28px', color: '#ffffff' }).setOrigin(0.5).setScrollFactor(0).setDepth(11);
-        bg.on('pointerdown', function() { return bg; }); // set in specific handlers below
         self.dpadObjects.push(bg, txt);
         return bg;
       };
@@ -313,7 +313,8 @@ var GameScene = new Phaser.Class({
     this.checkEnemyStomp();
 
     // Check exit
-    if (!this.exitLocked && this.physics.overlap(this.player, this.exitDoor)) {
+    if (!this.exitLocked && !this.levelCompleted && this.physics.overlap(this.player, this.exitDoor)) {
+      this.levelCompleted = true; // guard: prevent firing again while transition queues
       if (this.anthem) this.anthem.stop();
       Progress.completeLevel(this.countryId);
       this.scene.start('WinScene', { countryId: this.countryId, continentId: this.continentId });

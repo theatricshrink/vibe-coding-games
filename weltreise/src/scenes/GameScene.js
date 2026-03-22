@@ -12,11 +12,8 @@ var GameScene = new Phaser.Class({
 
   preload: function() {
     this.load.image(this.countryId + '_bg', 'assets/backgrounds/' + this.countryId + '.png');
-    // MP3 first (smaller), WAV fallback (always present — synthesized)
-    this.load.audio(this.countryId + '_anthem', [
-      'assets/audio/anthems/' + this.countryId + '.mp3',
-      'assets/audio/anthems/' + this.countryId + '.wav'
-    ]);
+    // WAV files are always present (synthesized); add .mp3 alongside if you have recordings
+    this.load.audio(this.countryId + '_anthem', 'assets/audio/anthems/' + this.countryId + '.wav');
     // Try loading real enemy sprite — silently ignored if PNG not present yet
     this.load.image(this.countryId + '_enemy', 'assets/sprites/enemies/' + this.countryId + '_enemy.png');
 

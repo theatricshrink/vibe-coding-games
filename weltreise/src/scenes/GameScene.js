@@ -434,7 +434,7 @@ var GameScene = new Phaser.Class({
     // Floating platforms
     var platformDefs = [
       { x: 400,  y: 580, w: 200 },
-      { x: 700,  y: 500, w: 96  }, // narrow — unavoidable blocker
+      { x: 700,  y: 500, w: 160 },
       { x: 1000, y: 580, w: 200 },
       { x: 1200, y: 460, w: 200 },
       { x: 1400, y: 520, w: 96  }, // narrow — unavoidable blocker
@@ -648,10 +648,35 @@ var GameScene = new Phaser.Class({
     this.exitDoor.refreshBody();
     this.exitLocked = true;
     this.levelCompleted = false;
+    this.exitArrow = null;
+
+    // Padlock on door — removed when exit unlocks
+    function makeLockTex() {
+      if (self.textures.exists('lock_tex')) return;
+      var g = self.make.graphics({ add: false });
+      // Shackle
+      g.fillStyle(0xb8860b, 1);
+      g.fillRect(6, 0, 5, 18);
+      g.fillRect(23, 0, 5, 18);
+      g.fillRect(6, 0, 22, 6);
+      // Body
+      g.fillStyle(0xd4a000, 1);
+      g.fillRect(0, 16, 34, 26);
+      g.fillStyle(0xffdd44, 1);
+      g.fillRect(2, 18, 10, 4);
+      // Keyhole
+      g.fillStyle(0x3a2800, 1);
+      g.fillCircle(17, 26, 5);
+      g.fillRect(14, 28, 6, 8);
+      g.generateTexture('lock_tex', 34, 42);
+      g.destroy();
+    }
+    makeLockTex();
+    this.lockIcon = this.add.image(3760, 608, 'lock_tex').setDepth(3);
 
     // Question blocks (3 blocks for mushroom power-up)
     this.questionBlocks = this.physics.add.staticGroup();
-    var blockDefs = [{ x: 600, y: 440 }, { x: 1100, y: 400 }, { x: 2000, y: 380 }];
+    var blockDefs = [{ x: 600, y: 470 }, { x: 1100, y: 400 }, { x: 2000, y: 380 }];
     blockDefs.forEach(function(b) {
       var blk = self.physics.add.staticImage(b.x, b.y, 'qblock_tex');
       blk.refreshBody();
@@ -764,6 +789,28 @@ var GameScene = new Phaser.Class({
   unlockExit: function() {
     this.exitLocked = false;
     this.exitDoor.setAlpha(1);
+    if (this.lockIcon) { this.lockIcon.destroy(); this.lockIcon = null; }
+
+    // Show blinking exit arrow if door is off-screen to the right
+    var doorScreenX = this.exitDoor.x - this.cameras.main.scrollX;
+    if (doorScreenX > 960) {
+      var arrowLabel = (LANG === 'de') ? 'AUSGANG ▶▶' : 'EXIT ▶▶';
+      this.exitArrow = this.add.text(950, 360, arrowLabel, {
+        fontFamily: 'Arial Black, Arial',
+        fontSize: '20px',
+        color: '#ffcc00',
+        stroke: '#000000',
+        strokeThickness: 4
+      }).setOrigin(1, 0.5).setScrollFactor(0).setDepth(10);
+      this.tweens.add({
+        targets: this.exitArrow,
+        alpha: 0.15,
+        duration: 480,
+        yoyo: true,
+        repeat: -1,
+        ease: 'Sine.easeInOut'
+      });
+    }
   },
 
   update: function() {
@@ -793,6 +840,12 @@ var GameScene = new Phaser.Class({
 
     // Check stomp
     this.checkEnemyStomp();
+
+    // Hide exit arrow once door scrolls into view
+    if (this.exitArrow) {
+      var doorScreenX = this.exitDoor.x - this.cameras.main.scrollX;
+      if (doorScreenX <= 960) { this.exitArrow.destroy(); this.exitArrow = null; }
+    }
 
     // Check exit
     if (!this.exitLocked && !this.levelCompleted && this.physics.overlap(this.player, this.exitDoor)) {

@@ -670,8 +670,8 @@ var GameScene = new Phaser.Class({
     }
     // Hint text floating above door
     var hintStr = (LANG === 'de')
-      ? 'Besiege Feinde\num 5 Schlüssel zu sammeln'
-      : 'Defeat enemies\nto collect 5 keys';
+      ? 'Sprich mit Leuten\num 5 Schlüssel zu sammeln'
+      : 'Talk to people\nto collect 5 keys';
     this.doorHintText = this.add.text(3760, 568, hintStr, {
       fontFamily: 'Arial', fontSize: '13px', color: '#ffcc00',
       stroke: '#000000', strokeThickness: 3, align: 'center'
@@ -821,9 +821,9 @@ var GameScene = new Phaser.Class({
       var remaining = 5 - this.starsEarned;
       var hintStr;
       if (LANG === 'de') {
-        hintStr = 'Besiege Feinde\num noch ' + remaining + ' Schlüssel zu sammeln';
+        hintStr = 'Sprich mit Leuten\num noch ' + remaining + ' Schlüssel zu sammeln';
       } else {
-        hintStr = 'Defeat enemies\nto collect ' + remaining + ' more ' + (remaining === 1 ? 'key' : 'keys');
+        hintStr = 'Talk to people\nto collect ' + remaining + ' more ' + (remaining === 1 ? 'key' : 'keys');
       }
       this.doorHintText.setText(hintStr);
     }

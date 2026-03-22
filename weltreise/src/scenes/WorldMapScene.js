@@ -39,7 +39,7 @@ var WorldMapScene = new Phaser.Class({
 
     // Path lines connecting continents in unlock order
     // Unlock order: europe→africa→asia→americas→oceania
-    var pathOrder = ['europe', 'africa', 'asia', 'americas', 'oceania'];
+    var pathOrder = ['europe', 'americas', 'africa', 'asia', 'oceania'];
     var pathG = this.add.graphics();
     for (var pi = 0; pi < pathOrder.length - 1; pi++) {
       var fromC = nodeMap[pathOrder[pi]];

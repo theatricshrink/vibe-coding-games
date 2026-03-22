@@ -1,5 +1,5 @@
 var Progress = (function() {
-  var CONTINENT_ORDER = ['europe', 'africa', 'asia', 'americas', 'oceania'];
+  var CONTINENT_ORDER = ['europe', 'americas', 'africa', 'asia', 'oceania'];
 
   function getContinentData() {
     return { europe: EUROPE, africa: AFRICA, asia: ASIA, americas: AMERICAS, oceania: OCEANIA };

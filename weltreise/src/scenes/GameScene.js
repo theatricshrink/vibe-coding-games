@@ -703,7 +703,7 @@ var GameScene = new Phaser.Class({
 
     // Question blocks (3 blocks for mushroom power-up)
     this.questionBlocks = this.physics.add.staticGroup();
-    var blockDefs = [{ x: 600, y: 530 }, { x: 1300, y: 420 }];
+    var blockDefs = [{ x: 600, y: 500 }, { x: 2100, y: 420 }];
     blockDefs.forEach(function(b) {
       var blk = self.physics.add.staticImage(b.x, b.y, 'qblock_tex');
       blk.refreshBody();
@@ -713,7 +713,7 @@ var GameScene = new Phaser.Class({
 
     // Question blocks are solid (player can stand on them) and spawn mushroom when hit from below
     this.physics.add.collider(this.player, this.questionBlocks, function(player, block) {
-      if (player.body.velocity.y < 0 && player.y > block.y) {
+      if (player.body.blocked.up) {
         block.destroy();
         var mushroom = self.physics.add.image(block.x, block.y - 30, 'mushroom_tex');
         mushroom.setVelocityX(60);

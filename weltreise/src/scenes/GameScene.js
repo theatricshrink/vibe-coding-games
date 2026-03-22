@@ -511,63 +511,22 @@ var GameScene = new Phaser.Class({
       { w: 110, h: 26, fontSize: '13px', color: 0xcc1111, scrollFactor: 0, depth: 5 }
     );
 
-    // Anthem — fetch WAV and decode via Phaser's already-unlocked AudioContext.
-    // Reusing Phaser's context avoids the suspended-context problem on iOS.
+    // Anthem — HTML Audio element works on both file:// and https://
     this.anthem = null;
     this.anthemInterval = null;
-    var _active = true;
-    var _ctx = (this.sound && this.sound.context) ? this.sound.context : null;
+    try {
+      var _audio = new Audio('assets/audio/anthems/' + self.countryId + '.wav');
+      _audio.loop = true;
+      _audio.volume = 0.4;
+      var _playPromise = _audio.play();
+      if (_playPromise) { _playPromise.catch(function() {}); }
+      self.anthem = { stop: function() { _audio.pause(); _audio.src = ''; } };
+    } catch(e) {}
 
-    if (_ctx) {
-      var _wavUrl = 'assets/audio/anthems/' + self.countryId + '.wav';
-      fetch(_wavUrl)
-        .then(function(r) { if (!r.ok) throw new Error(r.status); return r.arrayBuffer(); })
-        .then(function(ab) {
-          // Wrap in explicit Promise so it works in old Safari (callback-only API)
-          return new Promise(function(resolve, reject) {
-            _ctx.decodeAudioData(ab, resolve, reject);
-          });
-        })
-        .then(function(buffer) {
-          if (!_active) return;
-          var startLoop = function() {
-            var src = _ctx.createBufferSource();
-            src.buffer = buffer;
-            src.loop = true;
-            var gain = _ctx.createGain();
-            gain.gain.value = 0.4;
-            src.connect(gain);
-            gain.connect(_ctx.destination);
-            src.start(0);
-            self.anthem = { stop: function() { try { src.stop(); } catch(e) {} } };
-          };
-          if (_ctx.state === 'running') { startLoop(); }
-          else { _ctx.resume().then(startLoop).catch(startLoop); }
-        })
-        .catch(function(err) {
-          console.error('Anthem failed:', err);
-          // WAV unavailable — fall back to jingle
-          if (!_active) return;
-          var notes = [261, 294, 329, 349], ni = 0;
-          self.anthemInterval = setInterval(function() {
-            try {
-              var osc = _ctx.createOscillator(), g = _ctx.createGain();
-              osc.type = 'sine';
-              osc.frequency.value = notes[ni++ % 4];
-              g.gain.setValueAtTime(0.1, _ctx.currentTime);
-              g.gain.exponentialRampToValueAtTime(0.001, _ctx.currentTime + 0.4);
-              osc.connect(g); g.connect(_ctx.destination);
-              osc.start(_ctx.currentTime); osc.stop(_ctx.currentTime + 0.4);
-            } catch(e) {}
-          }, 600);
-        });
-
-      self.events.once('shutdown', function() {
-        _active = false;
-        if (self.anthem) { self.anthem.stop(); self.anthem = null; }
-        if (self.anthemInterval) { clearInterval(self.anthemInterval); self.anthemInterval = null; }
-      });
-    }
+    self.events.once('shutdown', function() {
+      if (self.anthem) { self.anthem.stop(); self.anthem = null; }
+      if (self.anthemInterval) { clearInterval(self.anthemInterval); self.anthemInterval = null; }
+    });
 
     // Camera follow
     this.cameras.main.startFollow(this.player, true, 0.1, 0.1);

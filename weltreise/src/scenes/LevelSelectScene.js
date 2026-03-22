@@ -11,75 +11,110 @@ var LevelSelectScene = new Phaser.Class({
 
   create: function() {
     var self = this;
-
-    // Get continent object from globals
     var continentMap = { europe: EUROPE, africa: AFRICA, asia: ASIA, americas: AMERICAS, oceania: OCEANIA };
     var continent = continentMap[this.continentId];
-
-    // Load progress
+    var countries = continent.countries;
+    var n = countries.length;
     var progress = Progress.load();
 
-    // Dark background
-    this.add.rectangle(480, 360, 960, 720, 0x0d1b2a);
+    // Background colour per continent
+    var bgColors = { europe: 0x1a3a6e, africa: 0x6b3a1a, asia: 0x1a5a2a, americas: 0x3a1a6e, oceania: 0x1a4a5a };
+    var bgColor = bgColors[this.continentId] || 0x1a1a2e;
+    this.add.rectangle(480, 360, 960, 720, bgColor);
 
-    // Title
-    var titleText = continent.name[LANG];
-    this.add.text(480, 60, titleText, {
-      fontFamily: 'Arial',
-      fontSize: '48px',
-      color: '#ffffff'
+    // Continent title
+    this.add.text(480, 40, continent.name[LANG], {
+      fontFamily: 'Arial', fontSize: '38px', color: '#ffffff',
+      stroke: '#000000', strokeThickness: 4
     }).setOrigin(0.5);
 
     // Back button
-    var backLabel = (LANG === 'de') ? '← Weltkarte' : '← World Map';
-    var backBg = this.add.rectangle(80, 40, 140, 36, 0x2196F3).setInteractive();
-    var backText = this.add.text(80, 40, backLabel, {
-      fontFamily: 'Arial',
-      fontSize: '16px',
-      color: '#ffffff'
-    }).setOrigin(0.5).setInteractive();
-
+    var backLabel = (LANG === 'de') ? '← Karte' : '← Map';
+    var backBg = this.add.rectangle(56, 18, 96, 28, 0x000000, 0.65).setInteractive().setOrigin(0, 0);
+    var backTxt = this.add.text(58, 20, backLabel, { fontFamily: 'Arial', fontSize: '15px', color: '#ffffff' }).setInteractive();
     backBg.on('pointerdown', function() { self.scene.start('WorldMapScene'); });
-    backText.on('pointerdown', function() { self.scene.start('WorldMapScene'); });
+    backTxt.on('pointerdown', function() { self.scene.start('WorldMapScene'); });
 
-    // Render country buttons
-    var countries = continent.countries;
-    var startY = 160;
-    var step = 100;
+    // Node positions: distribute evenly across the width
+    var margin = 120;
+    var nodeY = 360;
+    var nodeXList = [];
+    for (var i = 0; i < n; i++) {
+      nodeXList.push(n === 1 ? 480 : margin + i * ((960 - 2 * margin) / (n - 1)));
+    }
 
+    // Draw path line between nodes
+    var pathG = this.add.graphics();
+    for (var pi = 0; pi < n - 1; pi++) {
+      var isDone = Progress.isLevelComplete(countries[pi].id);
+      pathG.lineStyle(6, isDone ? 0xffcc00 : 0xffffff, isDone ? 1.0 : 0.35);
+      pathG.beginPath();
+      pathG.moveTo(nodeXList[pi], nodeY);
+      pathG.lineTo(nodeXList[pi + 1], nodeY);
+      pathG.strokePath();
+    }
+
+    // Draw country nodes
     countries.forEach(function(country, i) {
-      var y = startY + i * step;
-      var isFirst = i === 0;
-      var prevComplete = isFirst || Progress.isLevelComplete(countries[i - 1].id);
-      var isUnlocked = prevComplete;
-      var isCompleted = Progress.isLevelComplete(country.id);
+      var isFirst   = i === 0;
+      var prevDone  = i > 0 && Progress.isLevelComplete(countries[i - 1].id);
+      var isUnlocked = isFirst || prevDone;
+      var isComplete = Progress.isLevelComplete(country.id);
 
-      var label = country.name[LANG];
-      if (isCompleted) label += ' \u2605';
-      if (!isUnlocked) label += ' \uD83D\uDD12';
+      var x = nodeXList[i];
+      var nodeColor = isComplete ? 0xffcc00 : (isUnlocked ? 0x2196F3 : 0x444444);
+      var ringColor = isUnlocked ? 0xffffff : 0x777777;
 
-      var color = isUnlocked ? 0x2196F3 : 0x555555;
-      var textColor = isUnlocked ? '#ffffff' : '#888888';
+      var nodeG = self.add.graphics();
+      nodeG.fillStyle(nodeColor, 1);
+      nodeG.lineStyle(3, ringColor, 1);
+      nodeG.fillCircle(x, nodeY, 36);
+      nodeG.strokeCircle(x, nodeY, 36);
 
-      var btn = self.add.rectangle(480, y, 300, 50, color);
-      var txt = self.add.text(480, y, label, {
-        fontFamily: 'Arial',
-        fontSize: '22px',
-        color: textColor
+      // Star or number in node
+      var nodeLabel = isComplete ? '★' : (i + 1).toString();
+      self.add.text(x, nodeY, nodeLabel, {
+        fontFamily: 'Arial', fontSize: isComplete ? '28px' : '22px',
+        color: isComplete ? '#ffffff' : '#ffffff',
+        fontStyle: 'bold'
       }).setOrigin(0.5);
 
+      // Country name below node
+      self.add.text(x, nodeY + 48, country.name[LANG], {
+        fontFamily: 'Arial', fontSize: '14px',
+        color: isUnlocked ? '#ffffff' : '#888888',
+        stroke: '#000000', strokeThickness: 3,
+        wordWrap: { width: 110 }, align: 'center'
+      }).setOrigin(0.5, 0);
+
       if (isUnlocked) {
-        btn.setInteractive();
-        txt.setInteractive();
         var countryId = country.id;
         var continentId = self.continentId;
-        btn.on('pointerover', function() { btn.setFillStyle(0x1565c0); });
-        btn.on('pointerout', function() { btn.setFillStyle(0x2196F3); });
-        btn.on('pointerdown', function() { self.scene.start('GameScene', { countryId: countryId, continentId: continentId }); });
-        txt.on('pointerover', function() { btn.setFillStyle(0x1565c0); });
-        txt.on('pointerout', function() { btn.setFillStyle(0x2196F3); });
-        txt.on('pointerdown', function() { self.scene.start('GameScene', { countryId: countryId, continentId: continentId }); });
+        var zone = self.add.zone(x, nodeY, 80, 80).setInteractive();
+        zone.on('pointerover', function() {
+          nodeG.clear();
+          nodeG.fillStyle(0x42a5f5, 1);
+          nodeG.lineStyle(4, 0xffff00, 1);
+          nodeG.fillCircle(x, nodeY, 40);
+          nodeG.strokeCircle(x, nodeY, 40);
+        });
+        zone.on('pointerout', function() {
+          nodeG.clear();
+          nodeG.fillStyle(nodeColor, 1);
+          nodeG.lineStyle(3, ringColor, 1);
+          nodeG.fillCircle(x, nodeY, 36);
+          nodeG.strokeCircle(x, nodeY, 36);
+        });
+        zone.on('pointerdown', function() {
+          self.scene.start('GameScene', { countryId: countryId, continentId: continentId });
+        });
       }
     });
+
+    // Instruction text
+    var hint = (LANG === 'de') ? 'Wähle ein Land!' : 'Choose a country!';
+    this.add.text(480, 560, hint, {
+      fontFamily: 'Arial', fontSize: '20px', color: '#aaaaaa'
+    }).setOrigin(0.5);
   }
 });

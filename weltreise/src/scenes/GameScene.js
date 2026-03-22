@@ -141,6 +141,125 @@ var GameScene = new Phaser.Class({
     }
     makeQBlockTex();
 
+    // Programmatic 960x720 country background — skipped if real PNG loaded
+    function makeCountryBg(key, id) {
+      if (self.textures.exists(key)) return;
+      var W = 960, H = 720;
+      var g = self.make.graphics({ add: false });
+      // [sky1, sky2, groundColor, type]
+      var CFG = {
+        austria:      [0x4a8ec0, 0x90c8f0, 0x4a8c3f, 'alpine'],
+        germany:      [0x5090c8, 0x90c8f5, 0x5a8a40, 'alpine'],
+        france:       [0x5098d0, 0x90c8f8, 0x90b840, 'fields'],
+        italy:        [0x3a88d5, 0x80c0f5, 0xc08050, 'med'],
+        spain:        [0x3880d0, 0x80c0f5, 0xc09848, 'med'],
+        japan:        [0xf0b8d0, 0xf8e0f0, 0x5a8038, 'japan'],
+        china:        [0x8ab0d8, 0xc0d8f0, 0x588038, 'mist'],
+        egypt:        [0xd08030, 0xf0c060, 0xd4a44c, 'desert'],
+        kenya:        [0xe07028, 0xf0b060, 0xa87830, 'savanna'],
+        nigeria:      [0x3090d5, 0x70c0f0, 0x388018, 'jungle'],
+        south_africa: [0x4898d5, 0x88c0f0, 0xb88838, 'savanna'],
+        morocco:      [0xd08838, 0xf0c468, 0xc89040, 'desert'],
+        thailand:     [0x2880d0, 0x68c0f0, 0x287818, 'jungle'],
+        india:        [0xe08838, 0xf0b868, 0x889838, 'india'],
+        saudi_arabia: [0xe09830, 0xf0c860, 0xd0aa48, 'desert'],
+        brazil:       [0x2090d8, 0x60c0f0, 0x287818, 'jungle'],
+        argentina:    [0x5898d8, 0x88c8f8, 0x78b840, 'alpine'],
+        mexico:       [0xd08028, 0xf0b858, 0xb89050, 'desert'],
+        canada:       [0x4880d0, 0x88c0f0, 0x488838, 'alpine'],
+        usa:          [0x4888d5, 0x88c0f5, 0x88aa48, 'plains'],
+        australia:    [0x3888d5, 0x78c0f8, 0xd08840, 'outback'],
+        new_zealand:  [0x5098d8, 0x88c8f8, 0x58a838, 'alpine'],
+        fiji:         [0x1888e0, 0x58c0f8, 0xf0e080, 'beach']
+      };
+      var c = CFG[id] || [0x4a80d0, 0x87ceeb, 0x4a8c3f, 'alpine'];
+      var sky1 = c[0], sky2 = c[1], gnd = c[2], type = c[3];
+      // Sky gradient
+      g.fillStyle(sky1, 1); g.fillRect(0, 0, W, 430);
+      g.fillStyle(sky2, 1); g.fillRect(0, 295, W, 215);
+      // Sun
+      g.fillStyle(0xffffa0, 1); g.fillCircle(820, 85, 42);
+      if (type === 'alpine' || type === 'mist') {
+        var mts = [[105,418],[235,338],[425,392],[615,318],[765,382],[905,358]];
+        g.fillStyle(0x7090b0, 1);
+        for (var i = 0; i < mts.length; i++) { g.fillTriangle(mts[i][0]-90,496, mts[i][0],mts[i][1], mts[i][0]+90,496); }
+        g.fillStyle(0xeef5ff, 1);
+        for (var i = 0; i < mts.length; i++) { var bh=(496-mts[i][1])*0.28; g.fillTriangle(mts[i][0]-bh*0.6,mts[i][1]+bh, mts[i][0],mts[i][1], mts[i][0]+bh*0.6,mts[i][1]+bh); }
+        g.fillStyle(gnd, 1); g.fillRect(0, 490, W, H-490);
+        g.fillStyle(0x3a6a28, 1); g.fillEllipse(220,510,420,60); g.fillEllipse(720,505,360,50);
+      } else if (type === 'desert' || type === 'outback') {
+        g.fillStyle(gnd, 1); g.fillRect(0, 468, W, H-468);
+        g.fillStyle(0xbc8838, 1); g.fillEllipse(150,486,350,48); g.fillEllipse(560,474,420,46); g.fillEllipse(860,488,300,44);
+        if (id === 'egypt') {
+          g.fillStyle(0xc89038, 1); g.fillTriangle(148,490, 265,328, 382,490); g.fillTriangle(390,490, 472,376, 554,490);
+          g.fillStyle(0xa87030, 1); g.fillRect(218,480,15,10);
+        }
+        if (id === 'mexico') {
+          g.fillStyle(0x4a8820, 1);
+          g.fillRect(672,353,18,137); g.fillRect(640,386,50,14); g.fillRect(640,353,18,47); g.fillRect(690,365,18,47);
+        }
+        if (id === 'australia') { g.fillStyle(0xb04820, 1); g.fillEllipse(680,460,270,72); }
+      } else if (type === 'savanna') {
+        g.fillStyle(gnd, 1); g.fillRect(0, 476, W, H-476);
+        g.fillStyle(0x906020, 1); g.fillRect(0, 518, W, H-518);
+        var atx = [132,372,632,822];
+        for (var i = 0; i < atx.length; i++) {
+          g.fillStyle(0x6a4018, 1); g.fillRect(atx[i]-5,438,10,60);
+          g.fillStyle(0x4a7018, 1); g.fillEllipse(atx[i],430,88,28);
+        }
+      } else if (type === 'jungle') {
+        g.fillStyle(gnd, 1); g.fillRect(0, 476, W, H-476);
+        var jxs = [58,170,292,432,562,682,802,922];
+        g.fillStyle(0x1a5a10, 1);
+        for (var i = 0; i < jxs.length; i++) { var jy=388+(i%3)*36; g.fillTriangle(jxs[i]-55,490, jxs[i],jy, jxs[i]+55,490); g.fillTriangle(jxs[i]-35,490, jxs[i],jy+26, jxs[i]+35,490); }
+        if (id === 'brazil') { g.fillStyle(0x1a60a0, 1); g.fillRect(340,492,112,28); }
+      } else if (type === 'med') {
+        g.fillStyle(gnd, 1); g.fillRect(0, 486, W, H-486);
+        g.fillStyle(0xc07840, 1); g.fillRect(0, 526, W, H-526);
+        g.fillStyle(gnd, 1); g.fillEllipse(212,493,432,48); g.fillEllipse(722,485,402,42);
+        var cyp = [76,212,542,692,860];
+        for (var i = 0; i < cyp.length; i++) { g.fillStyle(0x2a5818, 1); g.fillRect(cyp[i]-5,426,10,70); g.fillEllipse(cyp[i],410,22,50); }
+      } else if (type === 'japan') {
+        g.fillStyle(0x9090a8, 1); g.fillTriangle(292,496, 480,253, 668,496);
+        g.fillStyle(0xeef5ff, 1); g.fillTriangle(392,328, 480,253, 568,328);
+        g.fillStyle(gnd, 1); g.fillRect(0, 486, W, H-486);
+        var ctx = [82,207,742,870];
+        for (var i = 0; i < ctx.length; i++) {
+          g.fillStyle(0x7a5020, 1); g.fillRect(ctx[i]-5,396,10,92);
+          g.fillStyle(0xf5a0c0, 1); g.fillCircle(ctx[i],370,38); g.fillCircle(ctx[i]-22,386,26); g.fillCircle(ctx[i]+22,383,26);
+        }
+      } else if (type === 'fields') {
+        g.fillStyle(0x9088c8, 1); g.fillRect(0, 488, W, 52);
+        g.fillStyle(0x7060b0, 1); g.fillRect(0, 528, W, 42);
+        g.fillStyle(gnd, 1); g.fillRect(0, 558, W, H-558);
+      } else if (type === 'india') {
+        g.fillStyle(gnd, 1); g.fillRect(0, 486, W, H-486);
+        g.fillStyle(0xe8e8f0, 1);
+        g.fillRect(372,416,216,80); g.fillRect(444,356,72,62); g.fillCircle(480,343,32);
+        g.fillRect(368,436,14,62); g.fillRect(578,436,14,62); g.fillCircle(375,433,9); g.fillCircle(585,433,9);
+      } else if (type === 'plains') {
+        g.fillStyle(gnd, 1); g.fillRect(0, 486, W, H-486);
+        var blds = [[80,426,60,62],[165,390,52,98],[248,436,68,52],[355,376,52,112],[430,418,62,70],[598,383,80,105],[705,418,60,70],[798,406,72,82]];
+        for (var i = 0; i < blds.length; i++) {
+          var b = blds[i];
+          g.fillStyle(0x607090, 1); g.fillRect(b[0],b[1],b[2],b[3]);
+          g.fillStyle(0xffd080, 1); g.fillRect(b[0]+6,b[1]+6,10,8); g.fillRect(b[0]+b[2]-16,b[1]+6,10,8);
+        }
+      } else if (type === 'beach') {
+        g.fillStyle(0x1070d0, 1); g.fillRect(0, 446, W, H-446);
+        g.fillStyle(0xf0e080, 1); g.fillRect(0, 488, W, 60);
+        var pxs = [110,292,692,857];
+        for (var i = 0; i < pxs.length; i++) {
+          var px = pxs[i];
+          g.fillStyle(0x7a5018, 1); g.fillRect(px-5,378,10,122);
+          g.fillStyle(0x228818, 1); g.fillEllipse(px-22,366,68,18); g.fillEllipse(px+22,360,68,18); g.fillEllipse(px,356,58,18);
+        }
+      }
+      g.generateTexture(key, W, H);
+      g.destroy();
+    }
+    makeCountryBg(this.countryId + '_bg', this.countryId);
+
     // Programmatic country-specific enemy sprite (40x56 humanoid)
     // Skipped if real PNG already loaded in preload()
     function makeCountryEnemy(key) {
@@ -235,12 +354,8 @@ var GameScene = new Phaser.Class({
     this.physics.world.setBounds(0, 0, 3840, 720);
     this.cameras.main.setBounds(0, 0, 3840, 720);
 
-    // Background
-    if (this.textures.exists(this.countryId + '_bg')) {
-      this.add.image(0, 0, this.countryId + '_bg').setOrigin(0, 0).setScrollFactor(0);
-    } else {
-      this.add.rectangle(480, 360, 960, 720, 0x1a3a6e).setScrollFactor(0);
-    }
+    // Background (programmatic or real PNG — always available after makeCountryBg)
+    this.add.image(0, 0, this.countryId + '_bg').setOrigin(0, 0).setScrollFactor(0);
 
     // Platforms — use staticImage so physics body is exact
     this.platforms = this.physics.add.staticGroup();

@@ -597,13 +597,13 @@ var GameScene = new Phaser.Class({
     // Enemies
     this.enemies = this.physics.add.group();
     var enemyDefs = [
-      { x: 400,  y: 560 },
-      { x: 820,  y: 480 },
-      { x: 1000, y: 560 },
-      { x: 1400, y: 500 },  // on narrow platform at y=520
-      { x: 1800, y: 540 },
-      { x: 2400, y: 520 },
-      { x: 3000, y: 480 }
+      { x: 400,  y: 542 },  // platform 300–500 (y=580)
+      { x: 820,  y: 462 },  // platform 740–900 (y=500)
+      { x: 1200, y: 422 },  // platform 1100–1300 (y=460)
+      { x: 1524, y: 660 },  // ground — gap between x=1448 and x=1600
+      { x: 1700, y: 522 },  // platform 1600–1800 (y=560)
+      { x: 2400, y: 502 },  // platform 2300–2500 (y=540)
+      { x: 3000, y: 660 }   // ground — gap between x=2900 and x=3300
     ];
     enemyDefs.forEach(function(def, i) {
       var e = self.physics.add.image(def.x, def.y, self.countryId + '_enemy');

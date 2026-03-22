@@ -23,26 +23,42 @@ var GameScene = new Phaser.Class({
   create: function() {
     var self = this;
 
-    // World & background
+    // Generate solid-color textures for all placeholders
+    // (more reliable than '__DEFAULT' + setTint + setDisplaySize)
+    function makeTex(key, color, w, h) {
+      if (self.textures.exists(key)) return;
+      var g = self.make.graphics({ add: false });
+      g.fillStyle(color, 1);
+      g.fillRect(0, 0, w, h);
+      g.generateTexture(key, w, h);
+      g.destroy();
+    }
+    makeTex('plat_tex',   0x5a3e1a, 200, 20);
+    makeTex('player_tex', 0x00aaff,  32, 48);
+    makeTex('enemy_tex',  0xff4444,  32, 32);
+    makeTex('qblock_tex', 0xffcc00,  40, 40);
+
+    // World bounds
     this.physics.world.setBounds(0, 0, 3840, 720);
     this.cameras.main.setBounds(0, 0, 3840, 720);
 
+    // Background
     if (this.textures.exists(this.countryId + '_bg')) {
       this.add.image(0, 0, this.countryId + '_bg').setOrigin(0, 0).setScrollFactor(0);
     } else {
       this.add.rectangle(480, 360, 960, 720, 0x1a3a6e).setScrollFactor(0);
     }
 
-    // Platforms
+    // Platforms — use staticImage so physics body is exact
     this.platforms = this.physics.add.staticGroup();
 
     // Ground: full width
-    var ground = this.platforms.create(1920, 710, '__DEFAULT');
+    var ground = this.physics.add.staticImage(1920, 710, 'plat_tex');
     ground.setDisplaySize(3840, 20);
-    ground.setTint(0x5a3e1a);
     ground.refreshBody();
+    this.platforms.add(ground);
 
-    // Floating platforms at varied positions
+    // Floating platforms
     var platformDefs = [
       { x: 400,  y: 580, w: 200 },
       { x: 700,  y: 500, w: 96  }, // narrow — unavoidable blocker
@@ -55,22 +71,18 @@ var GameScene = new Phaser.Class({
       { x: 2800, y: 500, w: 200 },
       { x: 3400, y: 580, w: 200 }
     ];
-
     platformDefs.forEach(function(p) {
-      var plat = self.platforms.create(p.x, p.y, '__DEFAULT');
+      var plat = self.physics.add.staticImage(p.x, p.y, 'plat_tex');
       plat.setDisplaySize(p.w, 20);
-      plat.setTint(0x5a3e1a);
       plat.refreshBody();
+      self.platforms.add(plat);
     });
 
-    // Player (placeholder rectangle as physics body)
-    this.player = this.physics.add.image(100, 580, '__DEFAULT');
-    this.player.setDisplaySize(32, 48);
-    this.player.body.setSize(32, 48);
-    this.player.setTint(0x00aaff);
+    // Player
+    this.player = this.physics.add.image(100, 200, 'player_tex');
     this.player.setBounce(0.1);
     this.player.setCollideWorldBounds(true);
-    this.player.setDepth(1);
+    this.player.setDepth(2);
     this.physics.add.collider(this.player, this.platforms);
 
     // State
@@ -182,8 +194,7 @@ var GameScene = new Phaser.Class({
       { x: 3000, y: 480 }
     ];
     enemyDefs.forEach(function(def, i) {
-      var e = self.physics.add.image(def.x, def.y, '__DEFAULT');
-      e.setDisplaySize(32, 32);
+      var e = self.physics.add.image(def.x, def.y, 'enemy_tex');
       e.setTint(0xff4444);
       e.setBounce(0);
       e.setCollideWorldBounds(true);
@@ -197,10 +208,11 @@ var GameScene = new Phaser.Class({
     });
     this.physics.add.collider(this.enemies, this.platforms);
 
-    // Exit door
-    this.exitDoor = this.add.rectangle(3760, 650, 60, 120, 0x00ff00);
+    // Exit door (green rectangle as visual + static physics body)
+    makeTex('door_tex', 0x00ff00, 60, 120);
+    this.exitDoor = this.physics.add.staticImage(3760, 650, 'door_tex');
     this.exitDoor.setAlpha(0.3);
-    this.physics.add.existing(this.exitDoor, true); // static
+    this.exitDoor.refreshBody();
     this.exitLocked = true;
     this.levelCompleted = false;
 
@@ -208,10 +220,9 @@ var GameScene = new Phaser.Class({
     this.questionBlocks = this.physics.add.staticGroup();
     var blockDefs = [{ x: 600, y: 440 }, { x: 1100, y: 400 }, { x: 2000, y: 380 }];
     blockDefs.forEach(function(b) {
-      var blk = self.questionBlocks.create(b.x, b.y, '__DEFAULT');
-      blk.setDisplaySize(40, 40);
-      blk.setTint(0xffcc00);
+      var blk = self.physics.add.staticImage(b.x, b.y, 'qblock_tex');
       blk.refreshBody();
+      self.questionBlocks.add(blk);
     });
     this.mushrooms = [];
 
@@ -364,7 +375,7 @@ var GameScene = new Phaser.Class({
       if (player.body.velocity.y < 0 && player.y > block.y) {
         block.destroy();
         // Spawn mushroom
-        var mushroom = self.physics.add.image(block.x, block.y - 30, '__DEFAULT');
+        var mushroom = self.physics.add.image(block.x, block.y - 30, 'enemy_tex');
         mushroom.setDisplaySize(24, 24);
         mushroom.setTint(0xff8800);
         mushroom.setVelocityX(60);

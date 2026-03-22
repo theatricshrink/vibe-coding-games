@@ -35,10 +35,111 @@ var GameScene = new Phaser.Class({
       g.generateTexture(key, w, h);
       g.destroy();
     }
-    makeTex('plat_tex',   0x5a3e1a, 200, 20);
-    makeTex('player_tex', 0x00aaff,  32, 48);
-    makeTex('enemy_tex',  0xff8800,  24, 24); // mushroom power-up
-    makeTex('qblock_tex', 0xffcc00,  40, 40);
+    makeTex('plat_tex', 0x5a3e1a, 200, 20);
+
+    // Mario-style plumber — small (32x48) and big (32x64)
+    function makePlumber(key, H) {
+      if (self.textures.exists(key)) return;
+      var g = self.make.graphics({ add: false });
+      var bodyH = (H === 64) ? 18 : 12;
+      var legY  = (H === 64) ? 44 : 38;
+      var shoeY = (H === 64) ? 54 : 42;
+      var shoeH = (H === 64) ? 10 : 6;
+      var armH  = (H === 64) ? 20 : 14;
+      // Red cap
+      g.fillStyle(0xcc1111, 1);
+      g.fillRect(9, 1, 14, 6);    // crown
+      g.fillRect(4, 6, 24, 4);    // brim
+      g.fillStyle(0xffffff, 1);
+      g.fillRect(5, 9, 22, 1);    // white band
+      // Skin face
+      g.fillStyle(0xffe0b2, 1);
+      g.fillRect(6, 10, 20, 12);  // face
+      g.fillRect(4, 13, 4, 6);    // left ear
+      g.fillRect(24, 13, 4, 6);   // right ear
+      // Eyes
+      g.fillStyle(0x222222, 1);
+      g.fillRect(9, 13, 4, 3);
+      g.fillRect(19, 13, 4, 3);
+      // Nose
+      g.fillStyle(0xffb07b, 1);
+      g.fillRect(14, 17, 4, 3);
+      // Mustache
+      g.fillStyle(0x3e1a00, 1);
+      g.fillRect(9, 19, 6, 3);
+      g.fillRect(17, 19, 6, 3);
+      // Red shirt arms
+      g.fillStyle(0xcc1111, 1);
+      g.fillRect(4, 22, 6, armH);
+      g.fillRect(22, 22, 6, armH);
+      // Blue overalls body
+      g.fillStyle(0x1a5fb4, 1);
+      g.fillRect(10, 22, 12, 4);         // bib top strap
+      g.fillRect(6, 26, 20, bodyH);      // body
+      // Yellow buttons
+      g.fillStyle(0xffcc00, 1);
+      g.fillRect(10, 27, 3, 3);
+      g.fillRect(19, 27, 3, 3);
+      // Legs
+      g.fillStyle(0x1a5fb4, 1);
+      g.fillRect(7, legY, 8, 6);
+      g.fillRect(17, legY, 8, 6);
+      // Shoes
+      g.fillStyle(0x3e1a00, 1);
+      g.fillRect(5, shoeY, 11, shoeH);
+      g.fillRect(16, shoeY, 11, shoeH);
+      g.generateTexture(key, 32, H);
+      g.destroy();
+    }
+    makePlumber('player_small', 48);
+    makePlumber('player_big',   64);
+
+    // Mushroom power-up (28x28)
+    function makeMushroomTex() {
+      if (self.textures.exists('mushroom_tex')) return;
+      var g = self.make.graphics({ add: false });
+      g.fillStyle(0xee1111, 1);
+      g.fillCircle(14, 11, 12);   // red cap dome
+      g.fillStyle(0xffffff, 1);
+      g.fillCircle(8,  7, 3);     // spots
+      g.fillCircle(20, 6, 3);
+      g.fillCircle(14, 3, 2);
+      g.fillRect(8, 18, 12, 10);  // white stem
+      g.fillStyle(0x333333, 1);
+      g.fillCircle(10, 20, 2);    // eyes
+      g.fillCircle(18, 20, 2);
+      g.generateTexture('mushroom_tex', 28, 28);
+      g.destroy();
+    }
+    makeMushroomTex();
+
+    // Question block — yellow tile with pixel-art "?"
+    function makeQBlockTex() {
+      if (self.textures.exists('qblock_tex')) return;
+      var g = self.make.graphics({ add: false });
+      g.fillStyle(0xffcc00, 1);
+      g.fillRect(0, 0, 40, 40);
+      g.fillStyle(0xd47000, 1);   // orange border
+      g.fillRect(0, 0, 40, 3);
+      g.fillRect(0, 37, 40, 3);
+      g.fillRect(0, 0, 3, 40);
+      g.fillRect(37, 0, 3, 40);
+      g.fillStyle(0xffe566, 1);   // highlight (top-left bevel)
+      g.fillRect(3, 3, 3, 34);
+      g.fillRect(3, 3, 34, 3);
+      g.fillStyle(0x5a2d00, 1);   // "?" pixel art (4px blocks, 5-col grid at x=10, y=5)
+      var q = function(c, r) { g.fillRect(10 + c * 4, 5 + r * 4, 4, 4); };
+      q(1,0); q(2,0); q(3,0);     // .###.
+      q(0,1); q(4,1);             // #...#
+      q(3,2); q(4,2);             // ...##
+      q(2,3); q(3,3);             // ..##.
+      q(2,4);                     // ..#..
+                                  // .....  gap
+      q(2,6);                     // ..#..  dot
+      g.generateTexture('qblock_tex', 40, 40);
+      g.destroy();
+    }
+    makeQBlockTex();
 
     // Programmatic country-specific enemy sprite (40x56 humanoid)
     // Skipped if real PNG already loaded in preload()
@@ -171,7 +272,7 @@ var GameScene = new Phaser.Class({
     });
 
     // Player
-    this.player = this.physics.add.image(100, 200, 'player_tex');
+    this.player = this.physics.add.image(100, 200, 'player_small');
     this.player.setBounce(0.1);
     this.player.setCollideWorldBounds(true);
     this.player.setDepth(2);
@@ -400,7 +501,8 @@ var GameScene = new Phaser.Class({
       // Player penalty
       if (this.isBig) {
         this.isBig = false;
-        this.player.setDisplaySize(32, 48); // shrink back
+        this.player.setTexture('player_small');
+        this.player.body.setSize(32, 48, true);
       } else {
         this.livesCount--;
         this.livesText.setText('♥ ' + this.livesCount);
@@ -467,9 +569,7 @@ var GameScene = new Phaser.Class({
       if (player.body.velocity.y < 0 && player.y > block.y) {
         block.destroy();
         // Spawn mushroom
-        var mushroom = self.physics.add.image(block.x, block.y - 30, 'enemy_tex');
-        mushroom.setDisplaySize(24, 24);
-        mushroom.setTint(0xff8800);
+        var mushroom = self.physics.add.image(block.x, block.y - 30, 'mushroom_tex');
         mushroom.setVelocityX(60);
         mushroom.setBounce(0);
         mushroom.setCollideWorldBounds(true);
@@ -481,7 +581,8 @@ var GameScene = new Phaser.Class({
             mushroom.destroy();
             SFX.powerUp();
             self.isBig = true;
-            self.player.setDisplaySize(32, 64);
+            self.player.setTexture('player_big');
+            self.player.body.setSize(32, 64, true);
           }
         });
       }

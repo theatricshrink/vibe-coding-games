@@ -219,6 +219,36 @@ var GameScene = new Phaser.Class({
         g.fillStyle(gnd, 1); g.fillEllipse(212,493,432,48); g.fillEllipse(722,485,402,42);
         var cyp = [76,212,542,692,860];
         for (var i = 0; i < cyp.length; i++) { g.fillStyle(0x2a5818, 1); g.fillRect(cyp[i]-5,426,10,70); g.fillEllipse(cyp[i],410,22,50); }
+        // Italy — Colosseum silhouette (centre-right, anchor x=680, ground y=486)
+        if (id === 'italy') {
+          var colX = 680;
+          // Base oval shadow
+          g.fillStyle(0xb09060, 1);
+          g.fillEllipse(colX, 486, 200, 30);
+          // Main wall body
+          g.fillStyle(0xc8a870, 1);
+          g.fillRect(colX - 100, 340, 200, 146);
+          // Lower arcade (y 420–442): 9 dark arch openings
+          g.fillStyle(0x3a2a10, 1);
+          for (var ai = 0; ai < 9; ai++) {
+            g.fillRect(colX - 96 + ai * 22, 420, 14, 22);
+          }
+          // Middle arcade (y 370–390): 8 openings
+          for (var ai = 0; ai < 8; ai++) {
+            g.fillRect(colX - 88 + ai * 24, 370, 12, 20);
+          }
+          // Upper attic wall (y 340–368): 160px wide (right 40px missing = ruin)
+          g.fillStyle(0xc8a870, 1);
+          g.fillRect(colX - 100, 340, 160, 28);
+          // Attic windows: 5 small
+          g.fillStyle(0x3a2a10, 1);
+          for (var ai = 0; ai < 5; ai++) {
+            g.fillRect(colX - 90 + ai * 34, 346, 8, 12);
+          }
+          // Ruin break: paint sky colour over top-right corner
+          g.fillStyle(sky1, 1);
+          g.fillRect(colX + 60, 340, 40, 28);
+        }
       } else if (type === 'japan') {
         g.fillStyle(0x9090a8, 1); g.fillTriangle(292,496, 480,253, 668,496);
         g.fillStyle(0xeef5ff, 1); g.fillTriangle(392,328, 480,253, 568,328);
@@ -232,6 +262,34 @@ var GameScene = new Phaser.Class({
         g.fillStyle(0x9088c8, 1); g.fillRect(0, 488, W, 52);
         g.fillStyle(0x7060b0, 1); g.fillRect(0, 528, W, 42);
         g.fillStyle(gnd, 1); g.fillRect(0, 558, W, H-558);
+        // France — Eiffel Tower silhouette (centred at x=480, ground y=488)
+        if (id === 'france') {
+          g.fillStyle(0x4a4a5a, 1);
+          // Base legs — two wide triangles splaying outward
+          g.fillTriangle(400, 488, 455, 420, 470, 488);
+          g.fillTriangle(510, 488, 525, 420, 580, 488);
+          // First platform
+          g.fillStyle(0x5a5a6a, 1);
+          g.fillRect(442, 416, 96, 10);
+          // Mid body — two narrowing triangles
+          g.fillStyle(0x4a4a5a, 1);
+          g.fillTriangle(442, 416, 462, 310, 468, 416);
+          g.fillTriangle(492, 416, 518, 416, 498, 310);
+          // Second platform
+          g.fillStyle(0x5a5a6a, 1);
+          g.fillRect(458, 306, 64, 8);
+          // Upper spire
+          g.fillStyle(0x4a4a5a, 1);
+          g.fillTriangle(458, 306, 480, 195, 522, 306);
+          // Horizontal lattice lines
+          g.fillStyle(0x5a5a5a, 1);
+          g.fillRect(428, 380, 104, 2);
+          g.fillRect(436, 360, 88,  2);
+          g.fillRect(444, 340, 72,  2);
+          // Static gold tip dot (tween added separately in create())
+          g.fillStyle(0xffdd44, 1);
+          g.fillCircle(480, 195, 4);
+        }
       } else if (type === 'india') {
         g.fillStyle(gnd, 1); g.fillRect(0, 486, W, H-486);
         g.fillStyle(0xe8e8f0, 1);
@@ -356,6 +414,13 @@ var GameScene = new Phaser.Class({
 
     // Background (programmatic or real PNG — always available after makeCountryBg)
     this.add.image(0, 0, this.countryId + '_bg').setOrigin(0, 0).setScrollFactor(0);
+    // France: animated tip sparkle over static background
+    if (this.countryId === 'france') {
+      var tipG = this.add.graphics().setScrollFactor(0);
+      tipG.fillStyle(0xffdd44, 1);
+      tipG.fillCircle(480, 195, 4);
+      this.tweens.add({ targets: tipG, alpha: 0.3, duration: 1200, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
+    }
 
     // Platforms — use staticImage so physics body is exact
     this.platforms = this.physics.add.staticGroup();

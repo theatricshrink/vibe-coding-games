@@ -13,6 +13,8 @@ var GameScene = new Phaser.Class({
   preload: function() {
     this.load.image(this.countryId + '_bg', 'assets/backgrounds/' + this.countryId + '.png');
     this.load.audio(this.countryId + '_anthem', ['assets/audio/anthems/' + this.countryId + '.mp3']);
+    // Try loading real enemy sprite — silently ignored if PNG not present yet
+    this.load.image(this.countryId + '_enemy', 'assets/sprites/enemies/' + this.countryId + '_enemy.png');
 
     // Handle missing assets silently
     this.load.on('loaderror', function(file) {
@@ -35,8 +37,98 @@ var GameScene = new Phaser.Class({
     }
     makeTex('plat_tex',   0x5a3e1a, 200, 20);
     makeTex('player_tex', 0x00aaff,  32, 48);
-    makeTex('enemy_tex',  0xff4444,  32, 32);
+    makeTex('enemy_tex',  0xff8800,  24, 24); // mushroom power-up
     makeTex('qblock_tex', 0xffcc00,  40, 40);
+
+    // Programmatic country-specific enemy sprite (40x56 humanoid)
+    // Skipped if real PNG already loaded in preload()
+    function makeCountryEnemy(key) {
+      if (self.textures.exists(key)) return;
+      var W = 40, H = 56;
+      var STYLES = {
+        austria_enemy:      { skin: 0xffe0b2, body: 0x795548, leg: 0x4e342e, hat: 'wide',     hatColor: 0x388e3c },
+        germany_enemy:      { skin: 0xffe0b2, body: 0x795548, leg: 0x4e342e, hat: 'wide',     hatColor: 0x1565c0 },
+        france_enemy:       { skin: 0xffe0b2, body: 0x1565c0, leg: 0x0d47a1, hat: 'beret',    hatColor: 0xb71c1c },
+        italy_enemy:        { skin: 0xffe0b2, body: 0xffffff, leg: 0x37474f, hat: 'chef',     hatColor: 0xffffff },
+        spain_enemy:        { skin: 0xffe0b2, body: 0xb71c1c, leg: 0x212121, hat: 'wide',     hatColor: 0x212121 },
+        japan_enemy:        { skin: 0xffe0b2, body: 0xb71c1c, leg: 0x212121, hat: 'kabuto',   hatColor: 0x424242 },
+        china_enemy:        { skin: 0xffe0b2, body: 0xb71c1c, leg: 0xb71c1c, hat: 'pointed',  hatColor: 0xffcc00 },
+        egypt_enemy:        { skin: 0xd7a96a, body: 0xf5deb3, leg: 0xc8a96a, hat: 'pharaoh',  hatColor: 0xffcc00, accent: 0x1565c0 },
+        kenya_enemy:        { skin: 0x5d4037, body: 0x8d6e63, leg: 0x4e342e, hat: 'wide',     hatColor: 0xf5f5dc },
+        nigeria_enemy:      { skin: 0x5d4037, body: 0x00897b, leg: 0x004d40, hat: 'beret',    hatColor: 0x388e3c },
+        south_africa_enemy: { skin: 0x8d6e63, body: 0x388e3c, leg: 0x1b5e20, hat: 'wide',     hatColor: 0xf5f5dc },
+        morocco_enemy:      { skin: 0xd7a96a, body: 0xff7043, leg: 0xbf360c, hat: 'fez',      hatColor: 0xb71c1c },
+        thailand_enemy:     { skin: 0xffe0b2, body: 0xff8f00, leg: 0xe65100, hat: 'pointed',  hatColor: 0xffd600 },
+        india_enemy:        { skin: 0xd7a96a, body: 0xff8f00, leg: 0xff6f00, hat: 'turban',   hatColor: 0xff6f00, accent: 0xffd600 },
+        saudi_arabia_enemy: { skin: 0xd7a96a, body: 0xffffff, leg: 0xfafafa, hat: 'keffiyeh', hatColor: 0xffffff, accent: 0x212121 },
+        brazil_enemy:       { skin: 0xd7a96a, body: 0xfdd835, leg: 0x388e3c, hat: 'sombrero', hatColor: 0x388e3c },
+        argentina_enemy:    { skin: 0xffe0b2, body: 0x90caf9, leg: 0x1565c0, hat: 'wide',     hatColor: 0x795548 },
+        mexico_enemy:       { skin: 0xd7a96a, body: 0x388e3c, leg: 0x1b5e20, hat: 'sombrero', hatColor: 0x795548 },
+        canada_enemy:       { skin: 0xffe0b2, body: 0xb71c1c, leg: 0x212121, hat: 'wide',     hatColor: 0x8d6e63 },
+        usa_enemy:          { skin: 0xffe0b2, body: 0x1565c0, leg: 0x4e342e, hat: 'cowboy',   hatColor: 0x8d6e63 },
+        australia_enemy:    { skin: 0xffe0b2, body: 0x795548, leg: 0x4e342e, hat: 'wide',     hatColor: 0xd2a069 },
+        new_zealand_enemy:  { skin: 0xffe0b2, body: 0x1b5e20, leg: 0x212121, hat: 'round',    hatColor: 0x4e342e },
+        fiji_enemy:         { skin: 0x8d6e63, body: 0xff8f00, leg: 0x795548, hat: 'none',     hatColor: 0x000000 }
+      };
+      var st = STYLES[key] || { skin: 0xffe0b2, body: 0xff4444, leg: 0xcc0000, hat: 'round', hatColor: 0x880000 };
+      var g = self.make.graphics({ add: false });
+      // Legs
+      g.fillStyle(st.leg, 1);
+      g.fillRect(10, 44, 8, 12);
+      g.fillRect(22, 44, 8, 12);
+      // Body
+      g.fillStyle(st.body, 1);
+      g.fillRect(9, 26, 22, 20);
+      // Head
+      g.fillStyle(st.skin, 1);
+      g.fillCircle(20, 16, 11);
+      // Eyes
+      g.fillStyle(0x333333, 1);
+      g.fillCircle(16, 14, 2);
+      g.fillCircle(24, 14, 2);
+      // Hat
+      g.fillStyle(st.hatColor, 1);
+      if (st.hat === 'wide' || st.hat === 'cowboy') {
+        g.fillRect(5, 8, 30, 3);   // brim
+        g.fillRect(12, 1, 16, 8);  // crown
+      } else if (st.hat === 'sombrero') {
+        g.fillRect(2, 9, 36, 3);   // wide brim
+        g.fillRect(12, 1, 16, 9);  // crown
+      } else if (st.hat === 'chef') {
+        g.fillRect(9, 7, 22, 3);   // base band
+        g.fillRect(12, 0, 16, 8);  // puffy crown
+      } else if (st.hat === 'beret') {
+        g.fillEllipse(20, 6, 28, 12);
+      } else if (st.hat === 'fez') {
+        g.fillRect(13, 2, 14, 9);  // cylinder
+        g.fillRect(11, 10, 18, 3); // base band
+      } else if (st.hat === 'kabuto') {
+        g.fillCircle(20, 7, 12);   // dome
+        g.fillRect(6, 12, 28, 4);  // cheek guard
+      } else if (st.hat === 'pointed') {
+        g.fillTriangle(20, 0, 8, 11, 32, 11);
+      } else if (st.hat === 'pharaoh') {
+        g.fillRect(8, 4, 24, 14);  // nemes cloth
+        g.fillStyle(st.accent || 0x1565c0, 1);
+        g.fillRect(8, 7, 24, 2);
+        g.fillRect(8, 12, 24, 2);
+      } else if (st.hat === 'turban') {
+        g.fillCircle(20, 5, 11);
+        g.fillStyle(st.accent || 0xffd600, 1);
+        g.fillRect(10, 4, 20, 3);
+      } else if (st.hat === 'keffiyeh') {
+        g.fillRect(8, 4, 24, 14);
+        g.fillStyle(st.accent || 0x212121, 1);
+        g.fillRect(8, 4, 24, 3);
+        g.fillRect(8, 9, 24, 3);
+      } else if (st.hat === 'round') {
+        g.fillCircle(20, 6, 9);
+      }
+      // hat === 'none': bare head
+      g.generateTexture(key, W, H);
+      g.destroy();
+    }
+    makeCountryEnemy(this.countryId + '_enemy');
 
     // World bounds
     this.physics.world.setBounds(0, 0, 3840, 720);
@@ -194,8 +286,8 @@ var GameScene = new Phaser.Class({
       { x: 3000, y: 480 }
     ];
     enemyDefs.forEach(function(def, i) {
-      var e = self.physics.add.image(def.x, def.y, 'enemy_tex');
-      e.setTint(0xff4444);
+      var e = self.physics.add.image(def.x, def.y, self.countryId + '_enemy');
+      e.body.setSize(32, 48, true); // consistent hitbox regardless of sprite size
       e.setBounce(0);
       e.setCollideWorldBounds(true);
       e.setVelocityX(80);

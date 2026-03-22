@@ -1,7 +1,7 @@
 var Audio = (function() {
   var ctx = null;
   var muted = localStorage.getItem('agentenfunk_mute') === '1';
-  var ambientOn = localStorage.getItem('agentenfunk_ambient') !== '0';
+  var ambientOn = localStorage.getItem('agentenfunk_ambient') === '1';
   var ambientNode = null;
   var ambientGain = null;
 

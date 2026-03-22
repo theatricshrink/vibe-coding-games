@@ -53,6 +53,7 @@ var GameScene = new Phaser.Class({
 
     this._drawPlayer();
     this._setupKeys();
+    this._setupDpad();
   },
 
   _drawMap: function() {
@@ -99,9 +100,90 @@ var GameScene = new Phaser.Class({
       if (self._quizActive) return;
       if (self._collectionActive) return;
       self._collectionActive = true;
+      self._hideDpad();
       self.scene.launch('CollectionScene');
       self.scene.pause();
     });
+
+    // Restore d-pad when CollectionScene closes and GameScene resumes
+    this.events.on('resume', function() {
+      self._showDpad();
+    });
+  },
+
+  _setupDpad: function() {
+    this.dpadObjects = [];
+    var self = this;
+    var isMobile = this.sys.game.device.os.android || this.sys.game.device.os.iOS;
+    if (!isMobile) return;
+
+    // Cross layout at bottom-left: Up/Down/Left/Right — 70×70 buttons
+    var makeDpadBtn = function(x, y, label) {
+      var bg  = self.add.rectangle(x, y, 70, 70, 0x333333, 0.8).setScrollFactor(0).setDepth(10);
+      var txt = self.add.text(x, y, label, { fontFamily: 'Arial', fontSize: '28px', color: '#ffffff' })
+                    .setOrigin(0.5).setScrollFactor(0).setDepth(11);
+      self.dpadObjects.push(bg, txt);
+    };
+    // Positions in 960×720 game coords
+    makeDpadBtn(80,  555, '▲');  // up
+    makeDpadBtn(80,  665, '▼');  // down
+    makeDpadBtn(25,  610, '◀');  // left
+    makeDpadBtn(135, 610, '▶');  // right
+
+    // Hit zones (center ± 35)
+    // Up:    x[45-115] y[520-590]   Down: x[45-115] y[630-700]
+    // Left:  x[0-60]  y[575-645]   Right: x[100-170] y[575-645]
+    var canvas = this.sys.game.canvas;
+
+    function updateDpad(touches) {
+      var rect = canvas.getBoundingClientRect();
+      var sx = 960 / rect.width;
+      var sy = 720 / rect.height;
+      var up = false, down = false, left = false, right = false;
+      for (var i = 0; i < touches.length; i++) {
+        var gx = (touches[i].clientX - rect.left) * sx;
+        var gy = (touches[i].clientY - rect.top)  * sy;
+        if (gx >= 45  && gx <= 115 && gy >= 520 && gy <= 590) up    = true;
+        if (gx >= 45  && gx <= 115 && gy >= 630 && gy <= 700) down  = true;
+        if (gx >= 0   && gx <= 60  && gy >= 575 && gy <= 645) left  = true;
+        if (gx >= 100 && gx <= 170 && gy >= 575 && gy <= 645) right = true;
+      }
+      // Fire move on press, not continuous hold (handled via flag tracking)
+      if (up    && !self._dpadUp)    { self._dpadUp    = true; self._tryMove( 0, -1); }
+      if (down  && !self._dpadDown)  { self._dpadDown  = true; self._tryMove( 0,  1); }
+      if (left  && !self._dpadLeft)  { self._dpadLeft  = true; self._tryMove(-1,  0); }
+      if (right && !self._dpadRight) { self._dpadRight = true; self._tryMove( 1,  0); }
+      if (!up)    self._dpadUp    = false;
+      if (!down)  self._dpadDown  = false;
+      if (!left)  self._dpadLeft  = false;
+      if (!right) self._dpadRight = false;
+    }
+
+    var onTouch = function(e) { e.preventDefault(); updateDpad(e.touches); };
+    var onTouchCancel = function() {
+      self._dpadUp = false; self._dpadDown = false;
+      self._dpadLeft = false; self._dpadRight = false;
+    };
+
+    canvas.addEventListener('touchstart',  onTouch,       { passive: false });
+    canvas.addEventListener('touchmove',   onTouch,       { passive: false });
+    canvas.addEventListener('touchend',    onTouch,       { passive: false });
+    canvas.addEventListener('touchcancel', onTouchCancel);
+
+    this.events.once('shutdown', function() {
+      canvas.removeEventListener('touchstart',  onTouch);
+      canvas.removeEventListener('touchmove',   onTouch);
+      canvas.removeEventListener('touchend',    onTouch);
+      canvas.removeEventListener('touchcancel', onTouchCancel);
+    });
+  },
+
+  _hideDpad: function() {
+    this.dpadObjects.forEach(function(obj) { obj.setVisible(false); });
+  },
+
+  _showDpad: function() {
+    this.dpadObjects.forEach(function(obj) { obj.setVisible(true); });
   },
 
   _tryMove: function(dc, dr) {
@@ -144,11 +226,13 @@ var GameScene = new Phaser.Class({
       questions.push(this._questionPool.draw(cat));
     }
 
+    this._hideDpad();
     this.scene.launch('QuizScene', {
       creature: creature,
       questions: questions,
       onComplete: function(caught) {
         self._quizActive = false;
+        self._showDpad();
         if (caught) {
           self._saveToCollection(creature);
         }

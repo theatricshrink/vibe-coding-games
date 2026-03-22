@@ -632,7 +632,7 @@ var GameScene = new Phaser.Class({
       g.destroy();
     }
     makeDoorTex();
-    this.exitDoor = this.physics.add.staticImage(3760, 650, 'door_tex');
+    this.exitDoor = this.physics.add.staticImage(3680, 650, 'door_tex');
     this.exitDoor.setAlpha(0.3);
     this.exitDoor.refreshBody();
     this.exitLocked = true;
@@ -664,7 +664,7 @@ var GameScene = new Phaser.Class({
     // 5 small lock icons spread across door face
     this.doorLocks = [];
     for (var li = 0; li < 5; li++) {
-      var lk = self.add.image(3736 + li * 12, 626, 'lock_tex');
+      var lk = self.add.image(3656 + li * 12, 626, 'lock_tex');
       lk.setScale(0.42).setDepth(3);
       self.doorLocks.push(lk);
     }
@@ -672,7 +672,7 @@ var GameScene = new Phaser.Class({
     var hintStr = (LANG === 'de')
       ? 'Sprich mit Leuten\num 5 Schlüssel zu sammeln'
       : 'Talk to people\nto collect 5 keys';
-    this.doorHintText = this.add.text(3760, 568, hintStr, {
+    this.doorHintText = this.add.text(3680, 568, hintStr, {
       fontFamily: 'Arial', fontSize: '13px', color: '#ffcc00',
       stroke: '#000000', strokeThickness: 3, align: 'center'
     }).setOrigin(0.5, 1).setDepth(4);

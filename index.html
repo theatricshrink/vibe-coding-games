@@ -170,6 +170,17 @@
       </div>
       <div class="platform-unavailable" id="card-af-unavail" style="display:none;"></div>
     </a>
+    <a class="card" href="./weltreise/" data-supports-browser="true" data-supports-mobile="true">
+      <div class="card-emoji">🌍</div>
+      <div class="card-title" id="card-wt-title"></div>
+      <div class="card-desc"  id="card-wt-desc"></div>
+      <div class="card-btn"   id="card-wt-btn"></div>
+      <div class="card-platforms">
+        <span class="platform-badge supported" id="wt-badge-browser">🖥️ Browser</span>
+        <span class="platform-badge supported" id="wt-badge-mobile">📱 Mobile</span>
+      </div>
+      <div class="platform-unavailable" id="card-wt-unavail" style="display:none;"></div>
+    </a>
     <!-- add more cards here -->
   </div>
 
@@ -184,6 +195,8 @@
         pfDesc:     'Fange alle 8 Pflanzen-Kreaturen!',
         afTitle:    'Agentenfunk',
         afDesc:     'Lerne Morsecode als Spionage-Funker!',
+        wtTitle:    'Weltreise',
+        wtDesc:     'Bereise die Welt und lerne Geografie!',
         play:       'Spielen →',
         unavailMobile:  '⚠ Nicht für Mobilgeräte verfügbar',
         unavailBrowser: '⚠ Nicht für Desktop verfügbar'
@@ -195,6 +208,8 @@
         pfDesc:     'Catch all 8 plant creatures!',
         afTitle:    'Agentenfunk',
         afDesc:     'Learn Morse code as a Cold War spy operator!',
+        wtTitle:    'World Tour',
+        wtDesc:     'Travel the world and learn geography!',
         play:       'Play →',
         unavailMobile:  '⚠ Not available on mobile',
         unavailBrowser: '⚠ Not available on desktop'
@@ -240,6 +255,9 @@
       document.getElementById('card-af-title').textContent   = s.afTitle;
       document.getElementById('card-af-desc').textContent    = s.afDesc;
       document.getElementById('card-af-btn').textContent     = s.play;
+      document.getElementById('card-wt-title').textContent   = s.wtTitle;
+      document.getElementById('card-wt-desc').textContent    = s.wtDesc;
+      document.getElementById('card-wt-btn').textContent     = s.play;
       document.getElementById('btn-de').className = 'lang-btn' + (lang === 'de' ? ' active' : '');
       document.getElementById('btn-en').className = 'lang-btn' + (lang === 'en' ? ' active' : '');
 

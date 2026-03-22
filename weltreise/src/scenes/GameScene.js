@@ -519,9 +519,11 @@ var GameScene = new Phaser.Class({
       var _muted = localStorage.getItem('weltreise_mute') === '1';
       var _audio = new Audio('assets/audio/anthems/' + self.countryId + '.wav');
       _audio.loop = true;
-      _audio.volume = _muted ? 0 : 0.4;
-      var _playPromise = _audio.play();
-      if (_playPromise) { _playPromise.catch(function() {}); }
+      _audio.volume = 0.4;
+      if (!_muted) {
+        var _playPromise = _audio.play();
+        if (_playPromise) { _playPromise.catch(function() {}); }
+      }
       self._anthemAudio = _audio;
       self.anthem = { stop: function() { _audio.pause(); _audio.src = ''; } };
     } catch(e) {}
@@ -536,7 +538,14 @@ var GameScene = new Phaser.Class({
       _muteState = !_muteState;
       localStorage.setItem('weltreise_mute', _muteState ? '1' : '0');
       _muteBtn.setText(_muteState ? '🔇' : '🔊');
-      if (self._anthemAudio) { self._anthemAudio.volume = _muteState ? 0 : 0.4; }
+      if (self._anthemAudio) {
+        if (_muteState) {
+          self._anthemAudio.pause();
+        } else {
+          var _p = self._anthemAudio.play();
+          if (_p) { _p.catch(function() {}); }
+        }
+      }
     });
 
     self.events.once('shutdown', function() {
@@ -744,7 +753,7 @@ var GameScene = new Phaser.Class({
         self.dpadJump  = jump;
       }
 
-      var onTouch       = function(e) { e.preventDefault(); updateDpad(e.touches); };
+      var onTouch       = function(e) { updateDpad(e.touches); };
       var onTouchCancel = function()  { self.dpadLeft = false; self.dpadRight = false; self.dpadJump = false; };
 
       canvas.addEventListener('touchstart',  onTouch,       { passive: false });

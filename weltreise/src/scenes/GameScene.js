@@ -703,7 +703,7 @@ var GameScene = new Phaser.Class({
 
     // Question blocks (3 blocks for mushroom power-up)
     this.questionBlocks = this.physics.add.staticGroup();
-    var blockDefs = [{ x: 600, y: 500 }, { x: 2100, y: 420 }];
+    var blockDefs = [{ x: 600, y: 500 }, { x: 2200, y: 460 }];
     blockDefs.forEach(function(b) {
       var blk = self.physics.add.staticImage(b.x, b.y, 'qblock_tex');
       blk.refreshBody();

@@ -50,5 +50,63 @@ var MenuScene = new Phaser.Class({
       function() { self.scene.start('WorldMapScene'); },
       { w: 240, h: 60, fontSize: '26px', color: 0x1a8a1a }
     );
+
+    // Progress stats
+    var progress = Progress.load();
+    var allCountries = [].concat(
+      EUROPE.countries, AFRICA.countries, ASIA.countries,
+      AMERICAS.countries, OCEANIA.countries
+    );
+    var total = allCountries.length;
+    var completed = progress.completedLevels.length;
+    var pct = total > 0 ? Math.round(completed / total * 100) : 0;
+
+    var progressLabel = (LANG === 'de')
+      ? (completed + ' / ' + total + ' Länder  •  ' + pct + '%')
+      : (completed + ' / ' + total + ' countries  •  ' + pct + '%');
+    this.add.text(480, 476, progressLabel, {
+      fontFamily: 'Arial', fontSize: '16px', color: '#ffffff',
+      stroke: '#000000', strokeThickness: 3
+    }).setOrigin(0.5);
+
+    // Progress bar (400px wide)
+    var barG = this.add.graphics();
+    barG.fillStyle(0x000000, 0.45);
+    barG.fillRoundedRect(280, 492, 400, 14, 7);
+    barG.fillStyle(0x44dd44, 1);
+    barG.fillRoundedRect(280, 492, Math.max(4, 400 * pct / 100), 14, 7);
+
+    // Reset button — small, with inline confirmation
+    var resetLabel = (LANG === 'de') ? '↺ Fortschritt zurücksetzen' : '↺ Reset progress';
+    var confirmLabel = (LANG === 'de') ? 'Wirklich zurücksetzen?' : 'Really reset?';
+    var yesLabel = (LANG === 'de') ? 'Ja' : 'Yes';
+    var noLabel  = (LANG === 'de') ? 'Nein' : 'No';
+
+    // We'll manage the reset flow with plain text + zones (avoids nested makeMarioBtn complexity)
+    var resetText = self.add.text(480, 548, resetLabel, {
+      fontFamily: 'Arial', fontSize: '13px', color: '#ffaaaa',
+      stroke: '#000000', strokeThickness: 2
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+
+    resetText.on('pointerover', function() { resetText.setColor('#ff4444'); });
+    resetText.on('pointerout',  function() { resetText.setColor('#ffaaaa'); });
+    resetText.on('pointerdown', function() {
+      // Replace with confirmation
+      resetText.setVisible(false);
+
+      self.add.text(480, 534, confirmLabel, {
+        fontFamily: 'Arial', fontSize: '14px', color: '#ffffff',
+        stroke: '#000000', strokeThickness: 3
+      }).setOrigin(0.5);
+
+      makeMarioBtn(self, 420, 560, yesLabel,
+        function() { Progress.reset(); self.scene.restart(); },
+        { w: 80, h: 34, fontSize: '16px', color: 0xcc1111 }
+      );
+      makeMarioBtn(self, 540, 560, noLabel,
+        function() { self.scene.restart(); },
+        { w: 80, h: 34, fontSize: '16px', color: 0x555555 }
+      );
+    });
   }
 });

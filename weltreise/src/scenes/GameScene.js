@@ -714,6 +714,7 @@ var GameScene = new Phaser.Class({
             self.isBig = true;
             self.player.setTexture('player_big');
             self.player.body.setSize(32, 64, true);
+            self.player.y -= 8; // (64-48)/2 — keep body bottom flush with floor
           }
         });
       }

@@ -703,7 +703,7 @@ var GameScene = new Phaser.Class({
 
     // Question blocks (3 blocks for mushroom power-up)
     this.questionBlocks = this.physics.add.staticGroup();
-    var blockDefs = [{ x: 600, y: 470 }, { x: 1100, y: 400 }, { x: 2000, y: 380 }];
+    var blockDefs = [{ x: 600, y: 530 }, { x: 1300, y: 420 }];
     blockDefs.forEach(function(b) {
       var blk = self.physics.add.staticImage(b.x, b.y, 'qblock_tex');
       blk.refreshBody();
@@ -838,6 +838,17 @@ var GameScene = new Phaser.Class({
     if (lockIdx >= 0 && lockIdx < this.doorLocks.length && this.doorLocks[lockIdx]) {
       this.doorLocks[lockIdx].destroy();
       this.doorLocks[lockIdx] = null;
+    }
+    // Update hint text with remaining count
+    if (this.doorHintText && this.doorHintText.active) {
+      var remaining = 5 - this.starsEarned;
+      var hintStr;
+      if (LANG === 'de') {
+        hintStr = 'Besiege Feinde\num noch ' + remaining + ' Schlüssel zu sammeln';
+      } else {
+        hintStr = 'Defeat enemies\nto collect ' + remaining + ' more ' + (remaining === 1 ? 'key' : 'keys');
+      }
+      this.doorHintText.setText(hintStr);
     }
   },
 

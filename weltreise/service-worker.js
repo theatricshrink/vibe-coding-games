@@ -1,6 +1,5 @@
-var CACHE_NAME = 'weltreise-v1';
+var CACHE_NAME = 'weltreise-v2';
 var CACHE_URLS = [
-  '/weltreise/',
   '/weltreise/index.html',
   '/weltreise/src/i18n/lang.js',
   '/weltreise/src/utils/progress.js',
@@ -83,7 +82,8 @@ self.addEventListener('activate', function(e) {
 self.addEventListener('fetch', function(e) {
   e.respondWith(
     caches.match(e.request).then(function(cached) {
-      return cached || fetch(e.request);
+      if (cached && !cached.redirected) return cached;
+      return fetch(e.request);
     })
   );
 });

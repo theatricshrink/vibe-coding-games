@@ -424,6 +424,20 @@ var GameScene = new Phaser.Class({
     this.livesText.setOrigin(1, 0);
     this.livesText.setScrollFactor(0);
 
+    // Back to level select (top-centre)
+    var mapLabel = (LANG === 'de') ? '← Länder' : '← Levels';
+    var mapBg  = this.add.rectangle(480, 20, 90, 26, 0x000000, 0.6).setScrollFactor(0).setDepth(5).setInteractive();
+    var mapTxt = this.add.text(480, 20, mapLabel, {
+      fontFamily: 'Arial', fontSize: '13px', color: '#ffffff'
+    }).setOrigin(0.5).setScrollFactor(0).setDepth(5).setInteractive();
+    var doMapReturn = function() {
+      if (self.anthem) self.anthem.stop();
+      if (self.anthemInterval) { clearInterval(self.anthemInterval); self.anthemInterval = null; }
+      self.scene.start('LevelSelectScene', { continentId: self.continentId });
+    };
+    mapBg.on('pointerdown', doMapReturn);
+    mapTxt.on('pointerdown', doMapReturn);
+
     // Anthem (play if available)
     if (this.cache.audio.has(this.countryId + '_anthem')) {
       this.anthem = this.sound.add(this.countryId + '_anthem', { loop: true, volume: 0.4 });
@@ -516,8 +530,42 @@ var GameScene = new Phaser.Class({
     });
     this.physics.add.collider(this.enemies, this.platforms);
 
-    // Exit door (green rectangle as visual + static physics body)
-    makeTex('door_tex', 0x00ff00, 60, 120);
+    // Exit door — arched wooden door with keyhole
+    function makeDoorTex() {
+      if (self.textures.exists('door_tex')) return;
+      var g = self.make.graphics({ add: false });
+      // Outer frame (dark wood)
+      g.fillStyle(0x2d1200, 1);
+      g.fillRect(0, 0, 60, 120);
+      // Arch shape: rect base + semicircle top
+      g.fillStyle(0x5c2800, 1);
+      g.fillRect(4, 22, 52, 94);
+      g.fillCircle(30, 22, 26);
+      // Door surface
+      g.fillStyle(0x7a3d10, 1);
+      g.fillRect(8, 26, 44, 88);
+      g.fillCircle(30, 26, 20);
+      // Upper panel recess
+      g.fillStyle(0x4e2008, 1); g.fillRect(12, 30, 36, 32);
+      g.fillStyle(0x8b4a18, 1); g.fillRect(14, 32, 32, 28);
+      // Lower panel recess
+      g.fillStyle(0x4e2008, 1); g.fillRect(12, 70, 36, 38);
+      g.fillStyle(0x8b4a18, 1); g.fillRect(14, 72, 32, 34);
+      // Wood grain lines
+      g.fillStyle(0x6a3008, 1);
+      g.fillRect(15, 40, 30, 2); g.fillRect(15, 50, 30, 2);
+      g.fillRect(15, 80, 30, 2); g.fillRect(15, 90, 30, 2);
+      // Gold doorknob
+      g.fillStyle(0xd4a000, 1); g.fillCircle(43, 86, 5);
+      g.fillStyle(0xffdd44, 1); g.fillCircle(42, 85, 3);
+      // Keyhole
+      g.fillStyle(0x1a0800, 1);
+      g.fillCircle(43, 95, 3);
+      g.fillRect(41, 95, 4, 6);
+      g.generateTexture('door_tex', 60, 120);
+      g.destroy();
+    }
+    makeDoorTex();
     this.exitDoor = this.physics.add.staticImage(3760, 650, 'door_tex');
     this.exitDoor.setAlpha(0.3);
     this.exitDoor.refreshBody();

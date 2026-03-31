@@ -210,7 +210,89 @@ var GameScene = new Phaser.Class({
   _spawnGhosts: function() {},
   _spawnPellets: function() {},
 
+  _updateInput: function() {
+    var dirs = ['up','down','left','right'];
+    var keys = {
+      up:    this.cursors.up.isDown    || this.wasd.up.isDown,
+      down:  this.cursors.down.isDown  || this.wasd.down.isDown,
+      left:  this.cursors.left.isDown  || this.wasd.left.isDown,
+      right: this.cursors.right.isDown || this.wasd.right.isDown
+    };
+    for (var i = 0; i < dirs.length; i++) {
+      if (keys[dirs[i]]) { this.pac.queuedDir = dirs[i]; break; }
+    }
+  },
+
+  _updatePac: function() {
+    var pac = this.pac;
+
+    if (pac.stunnedFrames > 0) {
+      pac.stunnedFrames--;
+      return;
+    }
+
+    var tileR = Math.round(pac.r);
+    var tileC = Math.round(pac.c);
+    var aligned = Math.abs(pac.r - tileR) < 0.15 && Math.abs(pac.c - tileC) < 0.15;
+
+    if (aligned) {
+      // Snap to tile centre to prevent drift
+      pac.r = tileR;
+      pac.c = tileC;
+
+      // Apply queued direction if valid
+      if (pac.queuedDir && canMove(MAZE, tileR, tileC, pac.queuedDir)) {
+        pac.dir = pac.queuedDir;
+        pac.queuedDir = null;
+      }
+
+      // Stop if wall ahead
+      if (!canMove(MAZE, tileR, tileC, pac.dir)) return;
+    }
+
+    var d = DIR_DELTA[pac.dir];
+    pac.r += d.dr * 0.09;
+    pac.c += d.dc * 0.09;
+
+    // Tunnel wrap
+    if (pac.c < -0.5) pac.c = COLS - 0.5;
+    if (pac.c > COLS - 0.5) pac.c = -0.5;
+
+    // Animate mouth
+    if (pac.mouthOpen) {
+      pac.mouthAngle += 0.06;
+      if (pac.mouthAngle >= 0.42) pac.mouthOpen = false;
+    } else {
+      pac.mouthAngle -= 0.06;
+      if (pac.mouthAngle <= 0) pac.mouthOpen = true;
+    }
+  },
+
+  _drawPac: function() {
+    var pac = this.pac;
+    var g = this.pacGfx;
+    g.clear();
+
+    var p = entityPixel(pac.r, pac.c);
+    var stunned = pac.stunnedFrames > 0;
+    var color = stunned ? 0x888888 : 0xffe066;
+
+    // Rotation angle based on direction
+    var rot = { right: 0, down: Math.PI/2, left: Math.PI, up: -Math.PI/2 };
+    var angle = rot[pac.dir] || 0;
+    var mouth = stunned ? 0.42 : pac.mouthAngle;
+
+    g.fillStyle(color, 1);
+    g.beginPath();
+    g.arc(p.x, p.y, PAC_RADIUS, angle + mouth, angle + Math.PI * 2 - mouth, false);
+    g.lineTo(p.x, p.y);
+    g.closePath();
+    g.fillPath();
+  },
+
   update: function() {
-    // Filled in Tasks 9-13
+    this._updateInput();
+    this._updatePac();
+    this._drawPac();
   }
 });

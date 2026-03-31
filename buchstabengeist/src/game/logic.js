@@ -51,8 +51,8 @@ function getNextTargetIdx(ghosts) {
 // Ghost direction AI: called at tile boundary.
 // Returns best direction for ghost given pac position, scared state.
 function chooseGhostDir(maze, ghost, pac, scared) {
-  var r = Math.round(ghost.r);
-  var c = Math.round(ghost.c);
+  var r = Math.floor(ghost.r);
+  var c = Math.floor(ghost.c);
   var dirs = ['up', 'down', 'left', 'right'];
   var rev = DIR_REVERSE[ghost.dir];
   var valid = dirs.filter(function(d) {

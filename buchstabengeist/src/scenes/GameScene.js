@@ -303,14 +303,16 @@ var GameScene = new Phaser.Class({
       return;
     }
 
-    var tileR = Math.round(pac.r);
-    var tileC = Math.round(pac.c);
-    var aligned = Math.abs(pac.r - tileR) < 0.15 && Math.abs(pac.c - tileC) < 0.15;
+    var tileR = Math.floor(pac.r);
+    var tileC = Math.floor(pac.c);
+    var centerR = tileR + 0.5;
+    var centerC = tileC + 0.5;
+    var aligned = Math.abs(pac.r - centerR) < 0.15 && Math.abs(pac.c - centerC) < 0.15;
 
     if (aligned) {
       // Snap to tile centre to prevent drift
-      pac.r = tileR;
-      pac.c = tileC;
+      pac.r = centerR;
+      pac.c = centerC;
 
       // Apply queued direction if valid
       if (pac.queuedDir && canMove(MAZE, tileR, tileC, pac.queuedDir)) {
@@ -374,13 +376,15 @@ var GameScene = new Phaser.Class({
       // Update scared state
       if (g.scared && now > g.scaredUntil) g.scared = false;
 
-      var tileR = Math.round(g.r);
-      var tileC = Math.round(g.c);
-      var aligned = Math.abs(g.r - tileR) < 0.12 && Math.abs(g.c - tileC) < 0.12;
+      var tileR = Math.floor(g.r);
+      var tileC = Math.floor(g.c);
+      var centerR = tileR + 0.5;
+      var centerC = tileC + 0.5;
+      var aligned = Math.abs(g.r - centerR) < 0.12 && Math.abs(g.c - centerC) < 0.12;
 
       if (aligned) {
-        g.r = tileR;
-        g.c = tileC;
+        g.r = centerR;
+        g.c = centerC;
         g.dir = chooseGhostDir(MAZE, g, pac, g.scared);
       }
 

@@ -27,7 +27,6 @@ var MenuScene = new Phaser.Class({
     ];
 
     this._modeBoxes = {};
-    var self = this;
 
     modes.forEach(function(m) {
       var box = self.add.rectangle(m.x, 230, 190, 120, 0x1a1a3a)

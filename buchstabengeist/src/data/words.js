@@ -1,4 +1,68 @@
-// Word data - populated by task 3
-// Stub globals for testing - actual data loaded at runtime
-if (typeof WORDS_EN === 'undefined') WORDS_EN = [];
-if (typeof WORDS_DE === 'undefined') WORDS_DE = [];
+var WORDS_EN = [
+  {word:'CAT',    hint:'a common household pet'},
+  {word:'DOG',    hint:"man's best friend"},
+  {word:'FOX',    hint:'a sly woodland animal'},
+  {word:'NET',    hint:'used to catch fish'},
+  {word:'JET',    hint:'a very fast plane'},
+  {word:'BRAVE',  hint:'courageous, not afraid'},
+  {word:'CLOUD',  hint:'floats in the sky'},
+  {word:'DREAM',  hint:'what you see while sleeping'},
+  {word:'FLAME',  hint:"fire's dancing light"},
+  {word:'GLOBE',  hint:'a sphere-shaped map'},
+  {word:'QUEST',  hint:'a search or adventure'},
+  {word:'REALM',  hint:'a kingdom or domain'},
+  {word:'SWIFT',  hint:'moving very fast'},
+  {word:'VIVID',  hint:'bright and striking'},
+  {word:'WALTZ',  hint:'an elegant ballroom dance'},
+  {word:'BLURT',  hint:'say something suddenly'},
+  {word:'CRISP',  hint:'firm and fresh'},
+  {word:'EVOKE',  hint:'bring a memory to mind'},
+  {word:'FLAIR',  hint:'natural talent or style'},
+  {word:'HAVOC',  hint:'chaos and destruction'},
+  {word:'OPAQUE', hint:'not see-through'},
+  {word:'PLAGUE', hint:'a widespread disease'},
+  {word:'QUIVER', hint:'tremble slightly'},
+  {word:'RAVINE', hint:'a narrow deep valley'},
+  {word:'MINGLE', hint:'mix socially with others'},
+  {word:'SOMBRE', hint:'dark and gloomy in mood'},
+  {word:'LAMENT', hint:'express grief or sorrow'},
+  {word:'FRIGID', hint:'very cold'},
+  {word:'CLAMOR', hint:'a loud continuous noise'},
+  {word:'ZENITH', hint:'the highest point'}
+];
+
+var WORDS_DE = [
+  {word:'HUND',    hint:'bester Freund des Menschen'},
+  {word:'KATZE',   hint:'ein beliebtes Haustier'},
+  {word:'HAUS',    hint:'dort wohnst du'},
+  {word:'BAUM',    hint:'wächst im Wald oder Garten'},
+  {word:'TIER',    hint:'lebt in der Natur'},
+  {word:'FLUSS',   hint:'fließt ins Meer'},
+  {word:'STERN',   hint:'leuchtet nachts am Himmel'},
+  {word:'FEUER',   hint:'heiß und leuchtend'},
+  {word:'WASSER',  hint:'zum Trinken und Schwimmen'},
+  {word:'WOLKE',   hint:'schwimmt am Himmel'},
+  {word:'TAPFER',  hint:'mutig und furchtlos'},
+  {word:'RUHIG',   hint:'still und friedlich'},
+  {word:'SCHNELL', hint:'sehr hohe Geschwindigkeit'},
+  {word:'DUNKEL',  hint:'ohne Licht'},
+  {word:'FRISCH',  hint:'neu und sauber'},
+  {word:'KLUG',    hint:'intelligent und schlau'},
+  {word:'TRAUM',   hint:'was du beim Schlafen siehst'},
+  {word:'KRAFT',   hint:'körperliche Stärke'},
+  {word:'WUESTE',  hint:'heißes, sandiges Gebiet'},
+  {word:'INSEL',   hint:'Land, umgeben von Wasser'},
+  {word:'SCHATZ',  hint:'versteckte Kostbarkeit'},
+  {word:'FALKE',   hint:'ein schneller Greifvogel'},
+  {word:'BODEN',   hint:'unter deinen Füßen'},
+  {word:'STURM',   hint:'starker Wind mit Regen'},
+  {word:'GEIST',   hint:'übernatürliches Wesen'},
+  {word:'FROSCH',  hint:'springt und quakt'},
+  {word:'ERNTE',   hint:'wenn Bauern Früchte sammeln'},
+  {word:'HAFEN',   hint:'wo Schiffe ankern'},
+  {word:'NEBEL',   hint:'dicker Dunst, kaum Sicht'},
+  {word:'ZAUBER',  hint:'magische Kraft'}
+];
+
+// WORDS is set at game start based on LANG
+var WORDS = typeof LANG !== 'undefined' && LANG === 'en' ? WORDS_EN : WORDS_DE;

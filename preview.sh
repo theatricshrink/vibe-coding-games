@@ -6,10 +6,10 @@ if ! docker info > /dev/null 2>&1; then
   exit 1
 fi
 
-echo "Preview running at http://localhost:8080 — Ctrl+C to stop"
+echo "Preview running at http://localhost:8181 — Ctrl+C to stop"
 
 docker run --rm \
   --name vibe-games-preview \
   -v "$SCRIPT_DIR":/usr/share/nginx/html:ro \
-  -p 8080:80 \
+  -p 8181:80 \
   nginx:alpine

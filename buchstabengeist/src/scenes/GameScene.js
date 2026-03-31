@@ -207,7 +207,59 @@ var GameScene = new Phaser.Class({
     this.shieldText.setVisible(this.mode === 'challenge' && this.shield);
   },
 
-  _spawnGhosts: function() {},
+  _spawnGhosts: function() {
+    // Destroy old letter Text objects
+    this.ghostLetters.forEach(function(t) { t.destroy(); });
+    this.ghostLetters = [];
+    this.ghosts = [];
+
+    var word = this.currentWord.word;
+    var openCells = [];
+    for (var r = 0; r < ROWS; r++) {
+      for (var c = 0; c < COLS; c++) {
+        if (MAZE[r][c] === 0) openCells.push({ r: r, c: c });
+      }
+    }
+
+    for (var i = 0; i < word.length; i++) {
+      // Find cell away from pac start and previous ghosts
+      var cell = null;
+      for (var attempt = 0; attempt < 200; attempt++) {
+        var candidate = openCells[Math.floor(Math.random() * openCells.length)];
+        var distPac = Math.abs(candidate.r - PAC_START_R) + Math.abs(candidate.c - PAC_START_C);
+        if (distPac < 6) continue;
+        var tooClose = false;
+        for (var j = 0; j < this.ghosts.length; j++) {
+          if (Math.abs(candidate.r - this.ghosts[j].r) + Math.abs(candidate.c - this.ghosts[j].c) < 3) {
+            tooClose = true; break;
+          }
+        }
+        if (!tooClose) { cell = candidate; break; }
+      }
+      if (!cell) cell = openCells[Math.floor(Math.random() * openCells.length)];
+
+      var dirs = ['up','down','left','right'];
+      var startDir = dirs[Math.floor(Math.random() * dirs.length)];
+
+      this.ghosts.push({
+        r: cell.r + 0.5, c: cell.c + 0.5,
+        dir: startDir,
+        wordIdx: i,
+        eaten: false,
+        scared: false,
+        scaredUntil: 0,
+        baseSpeed: 0.038 + i * 0.003 + (this.level - 1) * 0.004,
+        color: GHOST_COLORS[i % GHOST_COLORS.length]
+      });
+
+      this.ghostLetters.push(
+        this.add.text(0, 0, word[i], {
+          fontFamily: 'monospace', fontSize: '13px',
+          color: '#ffffff', stroke: '#000000', strokeThickness: 2
+        }).setOrigin(0.5)
+      );
+    }
+  },
   _spawnPellets: function() {},
 
   _updateInput: function() {
@@ -290,9 +342,105 @@ var GameScene = new Phaser.Class({
     g.fillPath();
   },
 
+  _updateGhosts: function() {
+    var now = this.time.now;
+    var pac = this.pac;
+    var guided = this.mode === 'guided';
+
+    for (var i = 0; i < this.ghosts.length; i++) {
+      var g = this.ghosts[i];
+      if (g.eaten) continue;
+
+      // Update scared state
+      if (g.scared && now > g.scaredUntil) g.scared = false;
+
+      var tileR = Math.round(g.r);
+      var tileC = Math.round(g.c);
+      var aligned = Math.abs(g.r - tileR) < 0.12 && Math.abs(g.c - tileC) < 0.12;
+
+      if (aligned) {
+        g.r = tileR;
+        g.c = tileC;
+        g.dir = chooseGhostDir(MAZE, g, pac, g.scared);
+      }
+
+      var speed = g.baseSpeed * (g.scared ? 0.45 : 1) * (guided ? 0.85 : 1);
+      var d = DIR_DELTA[g.dir];
+      g.r += d.dr * speed;
+      g.c += d.dc * speed;
+
+      // Tunnel wrap
+      if (g.c < -0.5) g.c = COLS - 0.5;
+      if (g.c > COLS - 0.5) g.c = -0.5;
+    }
+  },
+
+  _drawGhosts: function() {
+    var now = this.time.now;
+    var gfx = this.ghostGfx;
+    gfx.clear();
+
+    var nextIdx = getNextTargetIdx(this.ghosts);
+    var guided = this.mode === 'guided';
+
+    for (var i = 0; i < this.ghosts.length; i++) {
+      var gh = this.ghosts[i];
+      if (gh.eaten) {
+        this.ghostLetters[i].setVisible(false);
+        continue;
+      }
+
+      var p = entityPixel(gh.r, gh.c);
+      var R = GHOST_RADIUS;
+
+      // Next-target halo
+      if (i === nextIdx) {
+        var haloAlpha = guided
+          ? 0.4 + 0.2 * Math.sin(now * 0.006)
+          : 0.22;
+        gfx.fillStyle(0xffe066, haloAlpha);
+        gfx.fillCircle(p.x, p.y, R + 5);
+      }
+
+      // Scared flash
+      var flash = gh.scared && now > gh.scaredUntil - 600 && Math.floor(now / 100) % 2 === 0;
+      var bodyColor = gh.scared ? (flash ? 0xffffff : 0x3333bb) : gh.color;
+
+      // Ghost body: circle top + rect body + cut-out scallops
+      gfx.fillStyle(bodyColor, 1);
+      gfx.fillCircle(p.x, p.y, R);
+      gfx.fillRect(p.x - R, p.y, R * 2, R * 1.3);
+
+      // Scallop cut-outs (background colour)
+      gfx.fillStyle(0x080818, 1);
+      var scR = R / 3;
+      gfx.fillCircle(p.x - R * 0.66, p.y + R * 1.3, scR);
+      gfx.fillCircle(p.x,             p.y + R * 1.3, scR);
+      gfx.fillCircle(p.x + R * 0.66, p.y + R * 1.3, scR);
+
+      // Eyes (hidden when scared)
+      if (!gh.scared) {
+        gfx.fillStyle(0xffffff, 1);
+        gfx.fillCircle(p.x - R * 0.32, p.y - R * 0.1, R * 0.28);
+        gfx.fillCircle(p.x + R * 0.32, p.y - R * 0.1, R * 0.28);
+        var eyeShift = { up:[0,-0.18], down:[0,0.18], left:[-0.18,0], right:[0.18,0] };
+        var es = eyeShift[gh.dir] || [0,0];
+        gfx.fillStyle(0x0033cc, 1);
+        gfx.fillCircle(p.x - R*0.32 + es[0]*R, p.y - R*0.1 + es[1]*R, R*0.14);
+        gfx.fillCircle(p.x + R*0.32 + es[0]*R, p.y - R*0.1 + es[1]*R, R*0.14);
+      }
+
+      // Position letter text
+      this.ghostLetters[i].setVisible(!gh.scared);
+      this.ghostLetters[i].setPosition(p.x, p.y + 1);
+    }
+  },
+
   update: function() {
     this._updateInput();
     this._updatePac();
+    this._updateGhosts();
     this._drawPac();
+    this._drawGhosts();
   }
 });

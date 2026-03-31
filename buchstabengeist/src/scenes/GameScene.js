@@ -436,10 +436,137 @@ var GameScene = new Phaser.Class({
     }
   },
 
+  _scatterGhosts: function() {
+    var now = this.time.now;
+    for (var i = 0; i < this.ghosts.length; i++) {
+      if (!this.ghosts[i].eaten) {
+        this.ghosts[i].scared = true;
+        this.ghosts[i].scaredUntil = now + 2000;
+      }
+    }
+  },
+
+  _stunPac: function() {
+    this.pac.stunnedFrames = 55;
+    this.pac.mouthAngle = 0.42;
+  },
+
+  _loseLife: function() {
+    this.lives--;
+    this._updateHUD();
+    if (this.lives <= 0) {
+      this.time.delayedCall(600, function() {
+        this.ghostLetters.forEach(function(t) { t.destroy(); });
+        this.scene.start('GameOverScene', { score: this.score, lang: LANG });
+      }, [], this);
+    }
+  },
+
+  _handleWordComplete: function() {
+    this.score = Math.max(0, this.score + calcScoreDelta('wordComplete', this.level));
+    AudioManager.wordComplete();
+    var self = this;
+
+    var flash = this.add.text(240, 330, STRINGS[LANG].wordComplete, {
+      fontFamily: 'monospace', fontSize: '28px', color: '#f5e642',
+      stroke: '#000', strokeThickness: 4
+    }).setOrigin(0.5).setDepth(10);
+    this.tweens.add({
+      targets: flash,
+      scaleX: { from: 0, to: 1 }, scaleY: { from: 0, to: 1 },
+      alpha: { from: 1, to: 0 },
+      duration: 1100, ease: 'Back.Out',
+      onComplete: function() { flash.destroy(); }
+    });
+
+    this.time.delayedCall(1300, function() {
+      self.level++;
+      self._startWord();
+    });
+  },
+
+  _fillWordSlot: function(idx) {
+    if (idx >= this.wordSlots.length) return;
+    var slot = this.wordSlots[idx];
+    slot.setText(this.currentWord.word[idx]);
+    slot.setColor('#f5e642');
+    this.tweens.add({
+      targets: slot,
+      scaleX: { from: 0, to: 1 }, scaleY: { from: 0, to: 1 },
+      duration: 200, ease: 'Back.Out'
+    });
+  },
+
+  _shakeSlot: function(idx) {
+    if (idx >= this.wordSlots.length) return;
+    var slot = this.wordSlots[idx];
+    var origX = slot.x;
+    this.tweens.add({
+      targets: slot,
+      x: { from: origX - 5, to: origX + 5 },
+      duration: 60, yoyo: true, repeat: 3,
+      onComplete: function() { slot.setX(origX); }
+    });
+  },
+
+  _checkCollisions: function() {
+    if (this.pac.stunnedFrames > 0) return;
+
+    var pac = this.pac;
+    var now = this.time.now;
+    var nextIdx = getNextTargetIdx(this.ghosts);
+
+    for (var i = 0; i < this.ghosts.length; i++) {
+      var gh = this.ghosts[i];
+      if (gh.eaten) continue;
+
+      if (!ghostOverlapsPac(pac, gh)) continue;
+
+      if (!gh.scared) {
+        if (gh.wordIdx === nextIdx) {
+          gh.eaten = true;
+          this.wordProgress++;
+          this.score = Math.max(0, this.score + calcScoreDelta('correctEat', this.level));
+          AudioManager.correctEat(this.wordProgress - 1);
+          this._fillWordSlot(gh.wordIdx);
+          this._updateHUD();
+
+          if (this.wordProgress >= this.currentWord.word.length) {
+            this._handleWordComplete();
+          }
+        } else {
+          if (this.mode === 'challenge') {
+            if (this.shield) {
+              this.shield = false;
+              AudioManager.shieldUsed();
+              this._scatterGhosts();
+              this._stunPac();
+              this._updateHUD();
+            } else {
+              this.score = Math.max(0, this.score + calcScoreDelta('wrongEat', this.level));
+              AudioManager.wrongEat();
+              this._scatterGhosts();
+              this._stunPac();
+              this._shakeSlot(nextIdx);
+              this._loseLife();
+            }
+          } else {
+            AudioManager.wrongEat();
+            this._scatterGhosts();
+            this._stunPac();
+            this._shakeSlot(nextIdx);
+          }
+        }
+        return;
+      }
+    }
+  },
+
   update: function() {
     this._updateInput();
     this._updatePac();
     this._updateGhosts();
+    this._checkCollisions();
     this._drawPac();
     this._drawGhosts();
   }

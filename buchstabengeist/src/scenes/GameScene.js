@@ -260,7 +260,27 @@ var GameScene = new Phaser.Class({
       );
     }
   },
-  _spawnPellets: function() {},
+  _spawnPellets: function() {
+    this.pellets = [];
+    // One pellet per quadrant: top-left, top-right, bottom-left, bottom-right
+    var quadrants = [
+      { rMin: 1, rMax: 9,  cMin: 1, cMax: 8  },
+      { rMin: 1, rMax: 9,  cMin: 10, cMax: 17 },
+      { rMin: 11, rMax: 19, cMin: 1, cMax: 8  },
+      { rMin: 11, rMax: 19, cMin: 10, cMax: 17 }
+    ];
+    quadrants.forEach(function(q) {
+      var candidates = [];
+      for (var r = q.rMin; r <= q.rMax; r++) {
+        for (var c = q.cMin; c <= q.cMax; c++) {
+          if (MAZE[r][c] === 0) candidates.push({ r: r, c: c });
+        }
+      }
+      if (candidates.length > 0) {
+        this.pellets.push(candidates[Math.floor(Math.random() * candidates.length)]);
+      }
+    }, this);
+  },
 
   _updateInput: function() {
     var dirs = ['up','down','left','right'];
@@ -562,12 +582,52 @@ var GameScene = new Phaser.Class({
     }
   },
 
+  _drawPellets: function() {
+    var gfx = this.pelletGfx;
+    gfx.clear();
+    if (this.mode !== 'challenge') return;
+    var now = this.time.now;
+    var pulse = 7 + 2 * Math.sin(now * 0.004);
+
+    this.pellets.forEach(function(pel) {
+      if (pel.collected) return;
+      var p = entityPixel(pel.r + 0.5, pel.c + 0.5);
+      gfx.fillStyle(0xfffbb0, 0.9);
+      gfx.fillCircle(p.x, p.y, pulse);
+      gfx.lineStyle(2, 0xffe066, 0.6);
+      gfx.strokeCircle(p.x, p.y, pulse + 3);
+    });
+  },
+
+  _checkPellets: function() {
+    if (this.mode !== 'challenge') return;
+    var pac = this.pac;
+    for (var i = 0; i < this.pellets.length; i++) {
+      var pel = this.pellets[i];
+      if (pel.collected) continue;
+      var distR = Math.abs(pac.r - (pel.r + 0.5));
+      var distC = Math.abs(pac.c - (pel.c + 0.5));
+      if (distR < 0.55 && distC < 0.55) {
+        pel.collected = true;
+        if (this.shield) {
+          this.score = Math.max(0, this.score + calcScoreDelta('sparePellet', this.level));
+        } else {
+          this.shield = true;
+        }
+        AudioManager.powerPellet();
+        this._updateHUD();
+      }
+    }
+  },
+
   update: function() {
     this._updateInput();
     this._updatePac();
     this._updateGhosts();
     this._checkCollisions();
+    this._checkPellets();
     this._drawPac();
     this._drawGhosts();
+    this._drawPellets();
   }
 });

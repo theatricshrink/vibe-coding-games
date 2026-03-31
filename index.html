@@ -181,6 +181,17 @@
       </div>
       <div class="platform-unavailable" id="card-wt-unavail" style="display:none;"></div>
     </a>
+    <a class="card" href="./buchstabengeist/index.html" data-supports-browser="true" data-supports-mobile="true">
+      <div class="card-emoji">👻</div>
+      <div class="card-title" id="card-bg-title"></div>
+      <div class="card-desc"  id="card-bg-desc"></div>
+      <div class="card-btn"   id="card-bg-btn"></div>
+      <div class="card-platforms">
+        <span class="platform-badge supported" id="bg-badge-browser">🖥️ Browser</span>
+        <span class="platform-badge supported" id="bg-badge-mobile">📱 Mobile</span>
+      </div>
+      <div class="platform-unavailable" id="card-bg-unavail" style="display:none;"></div>
+    </a>
     <!-- add more cards here -->
   </div>
 
@@ -197,6 +208,8 @@
         afDesc:     'Lerne Morsecode als Spionage-Funker!',
         wtTitle:    'Weltreise',
         wtDesc:     'Bereise die Welt und lerne Geografie!',
+        bgTitle:    'Buchstabengeist',
+        bgDesc:     'Fresse die Buchstabengeister in der richtigen Reihenfolge!',
         play:       'Spielen →',
         unavailMobile:  '⚠ Nicht für Mobilgeräte verfügbar',
         unavailBrowser: '⚠ Nicht für Desktop verfügbar'
@@ -210,6 +223,8 @@
         afDesc:     'Learn Morse code as a Cold War spy operator!',
         wtTitle:    'World Tour',
         wtDesc:     'Travel the world and learn geography!',
+        bgTitle:    'Buchstabengeist',
+        bgDesc:     'Eat the letter ghosts in the right order to spell words!',
         play:       'Play →',
         unavailMobile:  '⚠ Not available on mobile',
         unavailBrowser: '⚠ Not available on desktop'
@@ -258,6 +273,9 @@
       document.getElementById('card-wt-title').textContent   = s.wtTitle;
       document.getElementById('card-wt-desc').textContent    = s.wtDesc;
       document.getElementById('card-wt-btn').textContent     = s.play;
+      document.getElementById('card-bg-title').textContent   = s.bgTitle;
+      document.getElementById('card-bg-desc').textContent    = s.bgDesc;
+      document.getElementById('card-bg-btn').textContent     = s.play;
       document.getElementById('btn-de').className = 'lang-btn' + (lang === 'de' ? ' active' : '');
       document.getElementById('btn-en').className = 'lang-btn' + (lang === 'en' ? ' active' : '');
 

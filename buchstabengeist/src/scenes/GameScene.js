@@ -317,7 +317,9 @@ var GameScene = new Phaser.Class({
         eaten: false,
         scared: false,
         scaredUntil: 0,
-        baseSpeed: 0.022 + i * 0.002 + (this.level - 1) * 0.006,
+        baseSpeed: this.mode === 'challenge'
+          ? 0.013 + i * 0.001 + (this.level - 1) * 0.004
+          : 0.022 + i * 0.002 + (this.level - 1) * 0.006,
         color: GHOST_COLORS[i % GHOST_COLORS.length],
         lastSnapR: -1, lastSnapC: -1
       });

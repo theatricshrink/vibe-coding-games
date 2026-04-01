@@ -74,6 +74,16 @@ var GameScene = new Phaser.Class({
       fontFamily: 'monospace', fontSize: '14px'
     }).setOrigin(1, 0).setVisible(false);
 
+    // ── Quit button ──────────────────────────────────────────────────
+    var self = this;
+    this.quitBtn = this.add.text(480 - 8, 41, STRINGS[LANG].quit, {
+      fontFamily: 'monospace', fontSize: '10px', color: '#554466'
+    }).setOrigin(1, 0).setInteractive({ useHandCursor: true });
+    this.quitBtn.on('pointerover', function() { self.quitBtn.setColor('#ff6b9d'); });
+    this.quitBtn.on('pointerout',  function() { self.quitBtn.setColor('#554466'); });
+    this.quitBtn.on('pointerdown', function() { self._quitToMenu(); });
+    this.input.keyboard.on('keydown-ESC', function() { self._quitToMenu(); });
+
     // ── Word bar (y = 55..109) ───────────────────────────────────────
     this.spellLabel = this.add.text(8, 62, s.spell, {
       fontFamily: 'monospace', fontSize: '12px', color: '#aaaacc'
@@ -99,6 +109,8 @@ var GameScene = new Phaser.Class({
     this.wordProgress = 0;
     this.ghosts = [];
     this.pellets = [];
+    this.frozen = false;
+    this.usedWords = [];
 
     // ── Rendering objects (populated in later tasks) ─────────────────
     this.pacGfx   = this.add.graphics();
@@ -106,12 +118,19 @@ var GameScene = new Phaser.Class({
     this.pelletGfx = this.add.graphics();
     this.ghostLetters = [];
 
+    // ── Countdown overlay ────────────────────────────────────────────
+    this.countdownText = this.add.text(240, 372, '', {
+      fontFamily: 'monospace', fontSize: '80px', color: '#f5e642',
+      stroke: '#000000', strokeThickness: 8
+    }).setOrigin(0.5).setDepth(20).setVisible(false);
+
     // Pac object
     this.pac = {
       r: PAC_START_R, c: PAC_START_C,
       dir: 'left', queuedDir: null,
       stunnedFrames: 0,
-      mouthAngle: 0, mouthOpen: true
+      mouthAngle: 0, mouthOpen: true,
+      lastSnapR: -1, lastSnapC: -1
     };
 
     // ── Input (keyboard) ────────────────────────────────────────────
@@ -165,14 +184,53 @@ var GameScene = new Phaser.Class({
   },
 
   _startWord: function() {
-    var lastWord = this.currentWord ? this.currentWord.word : null;
-    this.currentWord = pickWord(WORDS, lastWord);
+    this.currentWord = pickWord(WORDS, this.usedWords, this.level);
+    this.usedWords.push(this.currentWord.word);
     this.wordProgress = 0;
     this._createWordSlots();
     this.hintText.setText(this.currentWord.hint);
     this._spawnGhosts();
     if (this.mode === 'challenge') this._spawnPellets();
     this._updateHUD();
+    this._startCountdown();
+  },
+
+  _startCountdown: function() {
+    var self = this;
+    this.frozen = true;
+
+    // In pro mode show the hint prominently so the player knows what to spell
+    var hintOverlays = [];
+    if (this.mode === 'challenge' && this.currentWord) {
+      var panel = this.add.rectangle(240, 292, 444, 68, 0x000000, 0.78)
+        .setDepth(24);
+      var labelTxt = this.add.text(240, 264, '\u2014 HINT \u2014', {
+        fontFamily: 'monospace', fontSize: '11px', color: '#6bc5ff'
+      }).setOrigin(0.5).setDepth(25);
+      var hintTxt = this.add.text(240, 280, this.currentWord.hint, {
+        fontFamily: 'monospace', fontSize: '15px', color: '#ffe066',
+        stroke: '#000000', strokeThickness: 3,
+        wordWrap: { width: 420 }, align: 'center'
+      }).setOrigin(0.5, 0).setDepth(25);
+      hintOverlays.push(panel, labelTxt, hintTxt);
+    }
+
+    var count = 3;
+    var tick = function() {
+      if (count > 0) {
+        self.countdownText.setText('' + count).setVisible(true);
+        count--;
+        self.time.delayedCall(800, tick);
+      } else {
+        self.countdownText.setText('GO!');
+        self.time.delayedCall(500, function() {
+          self.countdownText.setVisible(false);
+          hintOverlays.forEach(function(o) { o.destroy(); });
+          self.frozen = false;
+        });
+      }
+    };
+    tick();
   },
 
   _createWordSlots: function() {
@@ -248,38 +306,40 @@ var GameScene = new Phaser.Class({
         eaten: false,
         scared: false,
         scaredUntil: 0,
-        baseSpeed: 0.038 + i * 0.003 + (this.level - 1) * 0.004,
-        color: GHOST_COLORS[i % GHOST_COLORS.length]
+        baseSpeed: 0.022 + i * 0.002 + (this.level - 1) * 0.006,
+        color: GHOST_COLORS[i % GHOST_COLORS.length],
+        lastSnapR: -1, lastSnapC: -1
       });
 
       this.ghostLetters.push(
         this.add.text(0, 0, word[i], {
-          fontFamily: 'monospace', fontSize: '13px',
-          color: '#ffffff', stroke: '#000000', strokeThickness: 2
+          fontFamily: 'monospace', fontSize: '16px',
+          color: '#ffe066', stroke: '#000000', strokeThickness: 4
         }).setOrigin(0.5)
       );
     }
   },
   _spawnPellets: function() {
     this.pellets = [];
-    // One pellet per quadrant: top-left, top-right, bottom-left, bottom-right
-    var quadrants = [
-      { rMin: 1, rMax: 9,  cMin: 1, cMax: 8  },
-      { rMin: 1, rMax: 9,  cMin: 10, cMax: 17 },
-      { rMin: 11, rMax: 19, cMin: 1, cMax: 8  },
-      { rMin: 11, rMax: 19, cMin: 10, cMax: 17 }
-    ];
-    quadrants.forEach(function(q) {
-      var candidates = [];
-      for (var r = q.rMin; r <= q.rMax; r++) {
-        for (var c = q.cMin; c <= q.cMax; c++) {
-          if (MAZE[r][c] === 0) candidates.push({ r: r, c: c });
+    // Build candidate list: open cells away from pac start
+    var candidates = [];
+    for (var r = 1; r < ROWS - 1; r++) {
+      for (var c = 1; c < COLS - 1; c++) {
+        if (MAZE[r][c] === 0) {
+          var dist = Math.abs(r - PAC_START_R) + Math.abs(c - PAC_START_C);
+          if (dist > 7) candidates.push({ r: r, c: c });
         }
       }
-      if (candidates.length > 0) {
-        this.pellets.push(candidates[Math.floor(Math.random() * candidates.length)]);
-      }
-    }, this);
+    }
+    // Pick 3 positions, each at least 5 tiles apart from each other
+    for (var n = 0; n < 3 && candidates.length > 0; n++) {
+      var idx = Math.floor(Math.random() * candidates.length);
+      var chosen = candidates[idx];
+      this.pellets.push(chosen);
+      candidates = candidates.filter(function(cell) {
+        return Math.abs(cell.r - chosen.r) + Math.abs(cell.c - chosen.c) >= 5;
+      });
+    }
   },
 
   _updateInput: function() {
@@ -307,20 +367,22 @@ var GameScene = new Phaser.Class({
     var tileC = Math.floor(pac.c);
     var centerR = tileR + 0.5;
     var centerC = tileC + 0.5;
-    var aligned = Math.abs(pac.r - centerR) < 0.15 && Math.abs(pac.c - centerC) < 0.15;
+    var nearCenter = Math.abs(pac.r - centerR) < 0.15 && Math.abs(pac.c - centerC) < 0.15;
 
-    if (aligned) {
-      // Snap to tile centre to prevent drift
+    // Snap to tile centre only when arriving from a different tile (prevents oscillation)
+    if (nearCenter && (tileR !== pac.lastSnapR || tileC !== pac.lastSnapC)) {
+      pac.lastSnapR = tileR;
+      pac.lastSnapC = tileC;
       pac.r = centerR;
       pac.c = centerC;
+    }
 
-      // Apply queued direction if valid
+    // Direction change and wall check always apply near a tile centre
+    if (nearCenter) {
       if (pac.queuedDir && canMove(MAZE, tileR, tileC, pac.queuedDir)) {
         pac.dir = pac.queuedDir;
         pac.queuedDir = null;
       }
-
-      // Stop if wall ahead
       if (!canMove(MAZE, tileR, tileC, pac.dir)) return;
     }
 
@@ -380,9 +442,12 @@ var GameScene = new Phaser.Class({
       var tileC = Math.floor(g.c);
       var centerR = tileR + 0.5;
       var centerC = tileC + 0.5;
-      var aligned = Math.abs(g.r - centerR) < 0.12 && Math.abs(g.c - centerC) < 0.12;
+      var newTile = tileR !== g.lastSnapR || tileC !== g.lastSnapC;
+      var aligned = newTile && Math.abs(g.r - centerR) < 0.12 && Math.abs(g.c - centerC) < 0.12;
 
       if (aligned) {
+        g.lastSnapR = tileR;
+        g.lastSnapC = tileC;
         g.r = centerR;
         g.c = centerC;
         g.dir = chooseGhostDir(MAZE, g, pac, g.scared);
@@ -404,8 +469,8 @@ var GameScene = new Phaser.Class({
     var gfx = this.ghostGfx;
     gfx.clear();
 
-    var nextIdx = getNextTargetIdx(this.ghosts);
     var guided = this.mode === 'guided';
+    var nextLetter = this.currentWord ? this.currentWord.word[this.wordProgress] : null;
 
     for (var i = 0; i < this.ghosts.length; i++) {
       var gh = this.ghosts[i];
@@ -417,8 +482,8 @@ var GameScene = new Phaser.Class({
       var p = entityPixel(gh.r, gh.c);
       var R = GHOST_RADIUS;
 
-      // Next-target halo
-      if (i === nextIdx) {
+      // Next-target halo (guided mode): highlight every ghost whose letter matches the next needed letter
+      if (guided && nextLetter !== null && this.currentWord.word[gh.wordIdx] === nextLetter) {
         var haloAlpha = guided
           ? 0.4 + 0.2 * Math.sin(now * 0.006)
           : 0.22;
@@ -475,8 +540,15 @@ var GameScene = new Phaser.Class({
     this.pac.mouthAngle = 0.42;
   },
 
+  _quitToMenu: function() {
+    this.ghostLetters.forEach(function(t) { t.destroy(); });
+    this.scene.start('MenuScene');
+  },
+
   _loseLife: function() {
+    if (this.mode === 'guided') return;
     this.lives--;
+    this.score = Math.max(0, this.score + calcScoreDelta('loseLife', this.level));
     this._updateHUD();
     if (this.lives <= 0) {
       this.time.delayedCall(600, function() {
@@ -504,8 +576,55 @@ var GameScene = new Phaser.Class({
     });
 
     this.time.delayedCall(1300, function() {
-      self.level++;
-      self._startWord();
+      if (self.level >= 10) {
+        self._showVictory();
+      } else {
+        self.level++;
+        // Pro mode: restore 1 lost life on level completion
+        if (self.mode === 'challenge' && self.lives < 3) {
+          self.lives++;
+          self._updateHUD();
+        }
+        self._startWord();
+      }
+    });
+  },
+
+  _showVictory: function() {
+    var s = STRINGS[LANG];
+    var self = this;
+    this.frozen = true;
+
+    // Dim overlay
+    this.add.rectangle(240, 330, 480, 660, 0x000000, 0.8).setDepth(40);
+
+    this.add.text(240, 210, '🏆', { fontSize: '52px' })
+      .setOrigin(0.5).setDepth(41);
+
+    this.add.text(240, 278, s.victory, {
+      fontFamily: 'monospace', fontSize: '38px', color: '#f5e642',
+      stroke: '#000000', strokeThickness: 5
+    }).setOrigin(0.5).setDepth(41);
+
+    this.add.text(240, 328, s.allLevels, {
+      fontFamily: 'monospace', fontSize: '16px', color: '#aaaacc'
+    }).setOrigin(0.5).setDepth(41);
+
+    this.add.text(240, 366, s.finalScore + ': ' + this.score, {
+      fontFamily: 'monospace', fontSize: '22px', color: '#ffffff',
+      stroke: '#000000', strokeThickness: 3
+    }).setOrigin(0.5).setDepth(41);
+
+    var btn = this.add.text(240, 430, s.playAgain, {
+      fontFamily: 'monospace', fontSize: '20px', color: '#ffffff',
+      backgroundColor: '#2c2c5a', padding: { x: 24, y: 10 }
+    }).setOrigin(0.5).setDepth(41).setInteractive({ useHandCursor: true });
+
+    btn.on('pointerover', function() { btn.setColor('#f5e642'); });
+    btn.on('pointerout',  function() { btn.setColor('#ffffff'); });
+    btn.on('pointerdown', function() {
+      self.ghostLetters.forEach(function(t) { t.destroy(); });
+      self.scene.start('MenuScene');
     });
   },
 
@@ -538,7 +657,7 @@ var GameScene = new Phaser.Class({
 
     var pac = this.pac;
     var now = this.time.now;
-    var nextIdx = getNextTargetIdx(this.ghosts);
+    var nextLetter = this.currentWord.word[this.wordProgress];
 
     for (var i = 0; i < this.ghosts.length; i++) {
       var gh = this.ghosts[i];
@@ -547,7 +666,7 @@ var GameScene = new Phaser.Class({
       if (!ghostOverlapsPac(pac, gh)) continue;
 
       if (!gh.scared) {
-        if (gh.wordIdx === nextIdx) {
+        if (this.currentWord.word[gh.wordIdx] === nextLetter) {
           gh.eaten = true;
           this.wordProgress++;
           this.score = Math.max(0, this.score + calcScoreDelta('correctEat', this.level));
@@ -571,14 +690,14 @@ var GameScene = new Phaser.Class({
               AudioManager.wrongEat();
               this._scatterGhosts();
               this._stunPac();
-              this._shakeSlot(nextIdx);
+              this._shakeSlot(this.wordProgress);
               this._loseLife();
             }
           } else {
+            // Guided mode: scatter ghosts as feedback, no punishment
             AudioManager.wrongEat();
             this._scatterGhosts();
-            this._stunPac();
-            this._shakeSlot(nextIdx);
+            this._shakeSlot(this.wordProgress);
           }
         }
         return;
@@ -591,15 +710,30 @@ var GameScene = new Phaser.Class({
     gfx.clear();
     if (this.mode !== 'challenge') return;
     var now = this.time.now;
-    var pulse = 7 + 2 * Math.sin(now * 0.004);
+    var alpha = 0.75 + 0.25 * Math.sin(now * 0.004);
 
     this.pellets.forEach(function(pel) {
       if (pel.collected) return;
       var p = entityPixel(pel.r + 0.5, pel.c + 0.5);
-      gfx.fillStyle(0xfffbb0, 0.9);
-      gfx.fillCircle(p.x, p.y, pulse);
-      gfx.lineStyle(2, 0xffe066, 0.6);
-      gfx.strokeCircle(p.x, p.y, pulse + 3);
+      var S = 8; // half-width
+
+      // Shield body: flat top, angled sides, pointed bottom
+      var pts = [
+        { x: p.x - S,       y: p.y - S * 0.75 },
+        { x: p.x + S,       y: p.y - S * 0.75 },
+        { x: p.x + S,       y: p.y + S * 0.1  },
+        { x: p.x,           y: p.y + S         },
+        { x: p.x - S,       y: p.y + S * 0.1  }
+      ];
+      gfx.fillStyle(0x44ddff, 0.8 * alpha);
+      gfx.fillPoints(pts, true);
+      gfx.lineStyle(1.5, 0xaaeeff, alpha);
+      gfx.strokePoints(pts, true);
+
+      // Small cross highlight inside shield
+      gfx.fillStyle(0xffffff, 0.55 * alpha);
+      gfx.fillRect(p.x - 1,       p.y - S * 0.35, 2,       S * 0.7);
+      gfx.fillRect(p.x - S * 0.4, p.y - 1,        S * 0.8, 2);
     });
   },
 
@@ -626,10 +760,12 @@ var GameScene = new Phaser.Class({
 
   update: function() {
     this._updateInput();
-    this._updatePac();
-    this._updateGhosts();
-    this._checkCollisions();
-    this._checkPellets();
+    if (!this.frozen) {
+      this._updatePac();
+      this._updateGhosts();
+      this._checkCollisions();
+      this._checkPellets();
+    }
     this._drawPac();
     this._drawGhosts();
     this._drawPellets();

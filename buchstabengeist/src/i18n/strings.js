@@ -7,14 +7,20 @@ var STRINGS = {
     lives:         'Lives',
     modeChallenge: 'CHALLENGE',
     modeGuided:    'GUIDED',
-    descChallenge: 'Guess the word. Power pellets save your life.',
-    descGuided:    'Word shown. Focus on the chase.',
-    controls:      'Arrow keys / WASD / Swipe',
+    descChallenge: '• Word is hidden\n• Eat ghosts in order\n• 3 shields per level\n  (only 1 active at once)\n• 3 lives · 10 levels',
+    descGuided:    '• Word shown upfront\n• Next ghost highlighted\n• Ghosts are slower\n• No lives lost\n• 10 levels',
+    howToPlayTitle: '— HOW TO PLAY —',
+    howToPlay:     'Each ghost carries a letter. Eat them in the correct order to spell the word shown in the bar above. Wrong order: all ghosts scatter! Finish the word to reach the next level.',
+    controls:      'Arrow keys / WASD / Swipe to move',
     playBtn:       'PLAY',
     playAgain:     'PLAY AGAIN',
     gameOver:      'GAME OVER',
     wordComplete:  '✓ WORD!',
-    livesOut:      'You ran out of lives!'
+    livesOut:      'You ran out of lives!',
+    quit:          '✕ MENU',
+    victory:       'VICTORY!',
+    allLevels:     '10 Levels Complete!',
+    finalScore:    'Final Score'
   },
   de: {
     title:         'BUCHSTABENGEIST',
@@ -24,13 +30,19 @@ var STRINGS = {
     lives:         'Leben',
     modeChallenge: 'PROFI',
     modeGuided:    'LERNMODUS',
-    descChallenge: 'Errate das Wort. Power-Pillen retten dein Leben.',
-    descGuided:    'Wort wird angezeigt. Fang die Geister!',
+    descChallenge: '• Wort ist verborgen\n• Geister der Reihe nach\n• 3 Schilde pro Level\n  (max. 1 gleichzeitig)\n• 3 Leben · 10 Level',
+    descGuided:    '• Wort wird angezeigt\n• Nächster Geist markiert\n• Geister langsamer\n• Keine Leben verloren\n• 10 Level',
+    howToPlayTitle: '— SO WIRD GESPIELT —',
+    howToPlay:     'Jeder Geist trägt einen Buchstaben. Fange sie in der richtigen Reihenfolge, um das Wort zu buchstabieren! Falscher Geist: alle fliehen! Vervollständige das Wort für das nächste Level.',
     controls:      'Pfeiltasten / WASD / Wischen',
     playBtn:       'SPIELEN',
     playAgain:     'NOCHMAL',
     gameOver:      'SPIEL VORBEI',
     wordComplete:  '✓ WORT!',
-    livesOut:      'Du hast keine Leben mehr!'
+    livesOut:      'Du hast keine Leben mehr!',
+    quit:          '✕ MENÜ',
+    victory:       'GEWONNEN!',
+    allLevels:     '10 Level geschafft!',
+    finalScore:    'Endstand'
   }
 };

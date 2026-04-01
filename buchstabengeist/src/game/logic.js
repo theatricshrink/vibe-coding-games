@@ -22,8 +22,38 @@ function ghostOverlapsPac(pac, ghost) {
   return Math.abs(pac.r - ghost.r) < 0.58 && Math.abs(pac.c - ghost.c) < 0.58;
 }
 
-function pickWord(words, lastWord) {
-  var pool = lastWord ? words.filter(function(w) { return w.word !== lastWord; }) : words;
+// Map game level (1-10) to a word-length range so difficulty grows.
+//   Levels 1-3  → short  words (≤4 letters)
+//   Levels 4-7  → medium words (5 letters)
+//   Levels 8-10 → long   words (≥6 letters)
+function _lengthRange(level) {
+  if (level <= 3) return { min: 1, max: 4 };
+  if (level <= 7) return { min: 5, max: 5 };
+  return { min: 6, max: 99 };
+}
+
+// Pick a word appropriate for the current level, avoiding already-used words.
+// Falls back to any unused word if the tier is exhausted, then resets.
+function pickWord(words, usedWords, level) {
+  var range = _lengthRange(level || 1);
+  var inTier = function(w) {
+    return w.word.length >= range.min && w.word.length <= range.max;
+  };
+
+  // Preferred: correct tier, not yet used
+  var pool = words.filter(function(w) { return inTier(w) && usedWords.indexOf(w.word) === -1; });
+
+  // Fallback: any unused word (tier exhausted)
+  if (pool.length === 0) {
+    pool = words.filter(function(w) { return usedWords.indexOf(w.word) === -1; });
+  }
+
+  // Last resort: all words used — restart cycle from tier
+  if (pool.length === 0) {
+    pool = words.filter(inTier);
+    if (pool.length === 0) pool = words.slice();
+  }
+
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
@@ -32,6 +62,7 @@ function calcScoreDelta(event, level) {
     case 'correctEat':   return 100 + level * 20;
     case 'wordComplete': return 300 + level * 50;
     case 'wrongEat':     return -50;
+    case 'loseLife':     return -200;
     case 'sparePellet':  return 50;
     default:             return 0;
   }

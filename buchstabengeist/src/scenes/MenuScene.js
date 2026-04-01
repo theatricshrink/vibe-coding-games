@@ -12,35 +12,41 @@ var MenuScene = new Phaser.Class({
     this.add.rectangle(W/2, H/2, W, H, 0x080818);
 
     // Title
-    this.add.text(W/2, 60, s.title, {
-      fontFamily: 'monospace', fontSize: '28px', color: '#ff6b9d',
+    this.add.text(W/2, 48, s.title, {
+      fontFamily: 'monospace', fontSize: '26px', color: '#ff6b9d',
       stroke: '#000', strokeThickness: 3
     }).setOrigin(0.5);
 
     // Ghost decoration
-    this.add.text(W/2, 115, '👻', { fontSize: '48px' }).setOrigin(0.5);
+    this.add.text(W/2, 95, '👻', { fontSize: '40px' }).setOrigin(0.5);
 
-    // Mode buttons
+    // ── Mode selection ───────────────────────────────────────────────
+    // Two boxes side-by-side: 210 px wide each, 20 px gap, 15 px outer margin
+    var BOX_W = 210, BOX_H = 126, BOX_Y = 222;
     var modes = [
-      { key: 'challenge', label: s.modeChallenge, desc: s.descChallenge, x: W/4 },
-      { key: 'guided',    label: s.modeGuided,    desc: s.descGuided,    x: 3*W/4 }
+      { key: 'challenge', label: s.modeChallenge, desc: s.descChallenge, x: W/4 + 2 },
+      { key: 'guided',    label: s.modeGuided,    desc: s.descGuided,    x: 3*W/4 - 2 }
     ];
 
     this._modeBoxes = {};
 
     modes.forEach(function(m) {
-      var box = self.add.rectangle(m.x, 230, 190, 120, 0x1a1a3a)
+      var boxTop = BOX_Y - BOX_H / 2;
+
+      var box = self.add.rectangle(m.x, BOX_Y, BOX_W, BOX_H, 0x1a1a3a)
         .setStrokeStyle(2, 0x6bc5ff)
         .setInteractive({ useHandCursor: true });
 
-      self.add.text(m.x, 195, m.label, {
+      // Mode name
+      self.add.text(m.x, boxTop + 10, m.label, {
         fontFamily: 'monospace', fontSize: '14px', color: '#f5e642'
-      }).setOrigin(0.5);
-
-      self.add.text(m.x, 225, m.desc, {
-        fontFamily: 'monospace', fontSize: '10px', color: '#aaaacc',
-        wordWrap: { width: 170 }, align: 'center'
       }).setOrigin(0.5, 0);
+
+      // Mode description — left-aligned bullet list inside box
+      self.add.text(m.x - BOX_W / 2 + 12, boxTop + 34, m.desc, {
+        fontFamily: 'monospace', fontSize: '12px', color: '#aaaacc',
+        lineSpacing: 4
+      }).setOrigin(0, 0);
 
       self._modeBoxes[m.key] = box;
 
@@ -52,8 +58,18 @@ var MenuScene = new Phaser.Class({
 
     this._updateModeHighlight();
 
-    // Play button
-    var playBtn = this.add.text(W/2, 340, s.playBtn, {
+    // ── How to play ──────────────────────────────────────────────────
+    this.add.text(W/2, 300, s.howToPlayTitle, {
+      fontFamily: 'monospace', fontSize: '13px', color: '#6bc5ff'
+    }).setOrigin(0.5);
+
+    this.add.text(W/2, 320, s.howToPlay, {
+      fontFamily: 'monospace', fontSize: '12px', color: '#888899',
+      wordWrap: { width: 430 }, align: 'center', lineSpacing: 3
+    }).setOrigin(0.5, 0);
+
+    // ── Play button ──────────────────────────────────────────────────
+    var playBtn = this.add.text(W/2, 460, s.playBtn, {
       fontFamily: 'monospace', fontSize: '22px', color: '#ffffff',
       backgroundColor: '#2c2c5a', padding: { x: 28, y: 12 }
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
@@ -66,13 +82,13 @@ var MenuScene = new Phaser.Class({
     });
 
     // Controls hint
-    this.add.text(W/2, 400, s.controls, {
-      fontFamily: 'monospace', fontSize: '11px', color: '#555577'
+    this.add.text(W/2, 520, s.controls, {
+      fontFamily: 'monospace', fontSize: '12px', color: '#555577'
     }).setOrigin(0.5);
 
     // Language badge
     this.add.text(W - 10, 10, LANG.toUpperCase(), {
-      fontFamily: 'monospace', fontSize: '11px', color: '#444466'
+      fontFamily: 'monospace', fontSize: '12px', color: '#444466'
     }).setOrigin(1, 0);
   },
 

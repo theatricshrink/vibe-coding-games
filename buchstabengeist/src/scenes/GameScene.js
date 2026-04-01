@@ -279,29 +279,40 @@ var GameScene = new Phaser.Class({
       }
     }
 
+    // Phase 1: collect all spawn cells (spread out, away from pac start)
+    var cells = [];
     for (var i = 0; i < word.length; i++) {
-      // Find cell away from pac start and previous ghosts
       var cell = null;
       for (var attempt = 0; attempt < 200; attempt++) {
         var candidate = openCells[Math.floor(Math.random() * openCells.length)];
         var distPac = Math.abs(candidate.r - PAC_START_R) + Math.abs(candidate.c - PAC_START_C);
         if (distPac < 6) continue;
         var tooClose = false;
-        for (var j = 0; j < this.ghosts.length; j++) {
-          if (Math.abs(candidate.r - this.ghosts[j].r) + Math.abs(candidate.c - this.ghosts[j].c) < 3) {
+        for (var j = 0; j < cells.length; j++) {
+          if (Math.abs(candidate.r - cells[j].r) + Math.abs(candidate.c - cells[j].c) < 3) {
             tooClose = true; break;
           }
         }
         if (!tooClose) { cell = candidate; break; }
       }
       if (!cell) cell = openCells[Math.floor(Math.random() * openCells.length)];
+      cells.push(cell);
+    }
 
-      var dirs = ['up','down','left','right'];
-      var startDir = dirs[Math.floor(Math.random() * dirs.length)];
+    // Phase 2: swap the cell closest to pac into index 0 so the first letter is nearest
+    var closestIdx = 0, closestDist = Infinity;
+    for (var k = 0; k < cells.length; k++) {
+      var d = Math.abs(cells[k].r - PAC_START_R) + Math.abs(cells[k].c - PAC_START_C);
+      if (d < closestDist) { closestDist = d; closestIdx = k; }
+    }
+    var tmp = cells[0]; cells[0] = cells[closestIdx]; cells[closestIdx] = tmp;
 
+    // Phase 3: create ghost objects
+    var dirs = ['up','down','left','right'];
+    for (var i = 0; i < word.length; i++) {
       this.ghosts.push({
-        r: cell.r + 0.5, c: cell.c + 0.5,
-        dir: startDir,
+        r: cells[i].r + 0.5, c: cells[i].c + 0.5,
+        dir: dirs[Math.floor(Math.random() * dirs.length)],
         wordIdx: i,
         eaten: false,
         scared: false,

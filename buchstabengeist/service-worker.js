@@ -1,4 +1,4 @@
-var CACHE = 'buchstabengeist-v3';
+var CACHE = 'buchstabengeist-v4';
 var ASSETS = [
   '/buchstabengeist/',
   '/buchstabengeist/index.html',

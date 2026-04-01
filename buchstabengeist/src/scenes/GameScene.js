@@ -333,9 +333,7 @@ var GameScene = new Phaser.Class({
         eaten: false,
         scared: false,
         scaredUntil: 0,
-        baseSpeed: this.mode === 'challenge'
-          ? 0.013 + i * 0.001 + (this.level - 1) * 0.004
-          : 0.022 + i * 0.002 + (this.level - 1) * 0.006,
+        baseSpeed: 0.013 + i * 0.001 + (this.level - 1) * 0.004,
         color: GHOST_COLORS[i % GHOST_COLORS.length],
         lastSnapR: -1, lastSnapC: -1
       });
@@ -482,7 +480,7 @@ var GameScene = new Phaser.Class({
         g.dir = chooseGhostDir(MAZE, g, pac, g.scared);
       }
 
-      var speed = g.baseSpeed * (g.scared ? 0.45 : 1) * (guided ? 0.85 : 1);
+      var speed = g.baseSpeed * (g.scared ? 0.45 : 1);
       var d = DIR_DELTA[g.dir];
       g.r += d.dr * speed;
       g.c += d.dc * speed;

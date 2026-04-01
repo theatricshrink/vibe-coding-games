@@ -199,20 +199,36 @@ var GameScene = new Phaser.Class({
     var self = this;
     this.frozen = true;
 
-    // In pro mode show the hint prominently so the player knows what to spell
+    // During countdown show word/hint prominently
     var hintOverlays = [];
-    if (this.mode === 'challenge' && this.currentWord) {
-      var panel = this.add.rectangle(240, 292, 444, 68, 0x000000, 0.78)
-        .setDepth(24);
-      var labelTxt = this.add.text(240, 264, '\u2014 HINT \u2014', {
-        fontFamily: 'monospace', fontSize: '11px', color: '#6bc5ff'
-      }).setOrigin(0.5).setDepth(25);
-      var hintTxt = this.add.text(240, 280, this.currentWord.hint, {
-        fontFamily: 'monospace', fontSize: '15px', color: '#ffe066',
-        stroke: '#000000', strokeThickness: 3,
-        wordWrap: { width: 420 }, align: 'center'
-      }).setOrigin(0.5, 0).setDepth(25);
-      hintOverlays.push(panel, labelTxt, hintTxt);
+    if (this.currentWord) {
+      if (this.mode === 'challenge') {
+        // Pro mode: show hint only (word stays hidden)
+        var panel = this.add.rectangle(240, 292, 444, 68, 0x000000, 0.78)
+          .setDepth(24);
+        var labelTxt = this.add.text(240, 264, '\u2014 HINT \u2014', {
+          fontFamily: 'monospace', fontSize: '11px', color: '#6bc5ff'
+        }).setOrigin(0.5).setDepth(25);
+        var hintTxt = this.add.text(240, 280, this.currentWord.hint, {
+          fontFamily: 'monospace', fontSize: '15px', color: '#ffe066',
+          stroke: '#000000', strokeThickness: 3,
+          wordWrap: { width: 420 }, align: 'center'
+        }).setOrigin(0.5, 0).setDepth(25);
+        hintOverlays.push(panel, labelTxt, hintTxt);
+      } else {
+        // Guided mode: show the word itself prominently
+        var panel = this.add.rectangle(240, 285, 444, 72, 0x000000, 0.78)
+          .setDepth(24);
+        var labelTxt = this.add.text(240, 258, '\u2014 SPELL \u2014', {
+          fontFamily: 'monospace', fontSize: '11px', color: '#6bc5ff'
+        }).setOrigin(0.5).setDepth(25);
+        var wordTxt = this.add.text(240, 274, this.currentWord.word, {
+          fontFamily: 'monospace', fontSize: '26px', color: '#ff6b9d',
+          stroke: '#000000', strokeThickness: 4,
+          letterSpacing: 8
+        }).setOrigin(0.5, 0).setDepth(25);
+        hintOverlays.push(panel, labelTxt, wordTxt);
+      }
     }
 
     var count = 3;

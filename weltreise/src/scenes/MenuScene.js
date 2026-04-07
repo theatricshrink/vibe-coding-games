@@ -201,17 +201,12 @@ var MenuScene = new Phaser.Class({
     }
 
     var toggleY = 452;
-    var modeLabel = LANG === 'de' ? 'Schwierigkeit:' : 'Difficulty:';
-    self.add.text(480, toggleY - 20, modeLabel, {
-      fontFamily: 'Arial', fontSize: '13px', color: '#ffffff',
-      stroke: '#000000', strokeThickness: 3
-    }).setOrigin(0.5);
 
-    makeToggleBtn(self, 418, toggleY + 6, lblNormal, !isEasy, function() {
+    makeToggleBtn(self, 418, toggleY, lblNormal, !isEasy, function() {
       localStorage.setItem('weltreise_easy', 'false');
       self.scene.restart();
     });
-    makeToggleBtn(self, 542, toggleY + 6, lblEasy, isEasy, function() {
+    makeToggleBtn(self, 542, toggleY, lblEasy, isEasy, function() {
       localStorage.setItem('weltreise_easy', 'true');
       self.scene.restart();
     });

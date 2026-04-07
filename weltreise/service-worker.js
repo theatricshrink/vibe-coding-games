@@ -1,4 +1,4 @@
-var CACHE_NAME = 'weltreise-v3';
+var CACHE_NAME = 'weltreise-v4';
 var CACHE_URLS = [
   '/weltreise/index.html',
   '/weltreise/src/i18n/lang.js',
@@ -10,6 +10,7 @@ var CACHE_URLS = [
   '/weltreise/src/data/asia.js',
   '/weltreise/src/data/americas.js',
   '/weltreise/src/data/oceania.js',
+  '/weltreise/src/data/easy_questions.js',
   '/weltreise/src/scenes/BootScene.js',
   '/weltreise/src/scenes/MenuScene.js',
   '/weltreise/src/scenes/WorldMapScene.js',
@@ -80,6 +81,7 @@ self.addEventListener('activate', function(e) {
 });
 
 self.addEventListener('fetch', function(e) {
+  if (e.request.mode === 'navigate') return;
   e.respondWith(
     caches.match(e.request).then(function(cached) {
       if (cached && !cached.redirected) return cached;

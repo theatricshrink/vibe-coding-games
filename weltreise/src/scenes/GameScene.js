@@ -570,8 +570,13 @@ var GameScene = new Phaser.Class({
         break;
       }
     }
+    // Select question pool: easy mode or normal
+    var useEasy = localStorage.getItem('weltreise_easy') === 'true';
+    var rawPool = (useEasy && EASY_QUESTIONS && EASY_QUESTIONS[this.countryId])
+      ? EASY_QUESTIONS[this.countryId]
+      : this.countryData.questions;
     // Shuffle questions (Fisher-Yates)
-    var qs = this.countryData.questions.slice();
+    var qs = rawPool.slice();
     for (var qi = qs.length - 1; qi > 0; qi--) {
       var qj = Math.floor(Math.random() * (qi + 1));
       var qtmp = qs[qi]; qs[qi] = qs[qj]; qs[qj] = qtmp;

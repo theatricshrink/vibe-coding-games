@@ -161,10 +161,60 @@ var MenuScene = new Phaser.Class({
     });
 
     // ── Play button ───────────────────────────────────────────────────
-    makeMarioBtn(self, 480, 410, (LANG === 'de') ? '▶  Spielen' : '▶  Play',
+    makeMarioBtn(self, 480, 400, (LANG === 'de') ? '▶  Spielen' : '▶  Play',
       function() { self.scene.start('WorldMapScene'); },
       { w: 240, h: 60, fontSize: '26px', color: 0x1a8a1a }
     );
+
+    // ── Difficulty toggle ─────────────────────────────────────────────
+    var isEasy = localStorage.getItem('weltreise_easy') === 'true';
+    var lblNormal = LANG === 'de' ? 'Normal' : 'Normal';
+    var lblEasy   = LANG === 'de' ? 'Einfach' : 'Easy';
+
+    function makeToggleBtn(scene, x, y, label, active, onClick) {
+      var bw = 110, bh = 34;
+      var bg = scene.add.graphics();
+      bg.fillStyle(0x1a0900, 1);
+      bg.fillRoundedRect(x - bw / 2 + 3, y - bh / 2 + 3, bw, bh, 7);
+      if (active) {
+        bg.fillStyle(0xffcc00, 1);
+        bg.fillRoundedRect(x - bw / 2, y - bh / 2, bw, bh, 7);
+        bg.fillStyle(0xffe566, 1);
+        bg.fillRoundedRect(x - bw / 2 + 4, y - bh / 2 + 4, bw - 8, 5, 2);
+        bg.lineStyle(2, 0x1a0900, 1);
+        bg.strokeRoundedRect(x - bw / 2, y - bh / 2, bw, bh, 7);
+      } else {
+        bg.fillStyle(0x334466, 1);
+        bg.fillRoundedRect(x - bw / 2, y - bh / 2, bw, bh, 7);
+        bg.lineStyle(2, 0x1a0900, 1);
+        bg.strokeRoundedRect(x - bw / 2, y - bh / 2, bw, bh, 7);
+      }
+      var txt = scene.add.text(x, y, label, {
+        fontFamily: 'Arial Black, Arial',
+        fontSize: '14px',
+        color: active ? '#1a0900' : '#aabbcc',
+        stroke: active ? '#ffe566' : '#000000',
+        strokeThickness: active ? 1 : 2
+      }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+      txt.on('pointerdown', onClick);
+      return { bg: bg, txt: txt };
+    }
+
+    var toggleY = 452;
+    var modeLabel = LANG === 'de' ? 'Schwierigkeit:' : 'Difficulty:';
+    self.add.text(480, toggleY - 20, modeLabel, {
+      fontFamily: 'Arial', fontSize: '13px', color: '#ffffff',
+      stroke: '#000000', strokeThickness: 3
+    }).setOrigin(0.5);
+
+    makeToggleBtn(self, 418, toggleY + 6, lblNormal, !isEasy, function() {
+      localStorage.setItem('weltreise_easy', 'false');
+      self.scene.restart();
+    });
+    makeToggleBtn(self, 542, toggleY + 6, lblEasy, isEasy, function() {
+      localStorage.setItem('weltreise_easy', 'true');
+      self.scene.restart();
+    });
 
     // ── Progress stats ────────────────────────────────────────────────
     var allCountries = [].concat(
@@ -178,16 +228,16 @@ var MenuScene = new Phaser.Class({
     var progressLabel = (LANG === 'de')
       ? (completed + ' / ' + total + ' Länder  •  ' + pct + '%')
       : (completed + ' / ' + total + ' countries  •  ' + pct + '%');
-    this.add.text(480, 474, progressLabel, {
+    this.add.text(480, 508, progressLabel, {
       fontFamily: 'Arial', fontSize: '16px', color: '#ffffff',
       stroke: '#000000', strokeThickness: 3
     }).setOrigin(0.5);
 
     var barG = this.add.graphics();
     barG.fillStyle(0x000000, 0.45);
-    barG.fillRoundedRect(280, 490, 400, 14, 7);
+    barG.fillRoundedRect(280, 524, 400, 14, 7);
     barG.fillStyle(0x44dd44, 1);
-    barG.fillRoundedRect(280, 490, Math.max(4, 400 * pct / 100), 14, 7);
+    barG.fillRoundedRect(280, 524, Math.max(4, 400 * pct / 100), 14, 7);
 
     // ── Reset button (Mario red style) ────────────────────────────────
     var resetLabel   = (LANG === 'de') ? '↺ Zurücksetzen' : '↺ Reset Progress';
@@ -196,21 +246,22 @@ var MenuScene = new Phaser.Class({
     var noLabel      = (LANG === 'de') ? 'Nein' : 'No';
 
     var resetBg = self.add.graphics();
+    var resetY = 578;
     function drawResetBg(hover) {
       resetBg.clear();
       var col = hover ? 0xcc2222 : 0xaa1111;
       resetBg.fillStyle(0x1a0900, 1);
-      resetBg.fillRoundedRect(480 - 105, 544 - 20 + 4, 210, 40, 7);
+      resetBg.fillRoundedRect(480 - 105, resetY - 20 + 4, 210, 40, 7);
       resetBg.fillStyle(col, 1);
-      resetBg.fillRoundedRect(480 - 105, 544 - 20, 210, 40, 7);
+      resetBg.fillRoundedRect(480 - 105, resetY - 20, 210, 40, 7);
       resetBg.fillStyle(hover ? 0xdd4444 : 0xcc2222, 1);
-      resetBg.fillRoundedRect(480 - 100, 544 - 16, 200, 7, 3);
+      resetBg.fillRoundedRect(480 - 100, resetY - 16, 200, 7, 3);
       resetBg.lineStyle(2, 0x1a0900, 1);
-      resetBg.strokeRoundedRect(480 - 105, 544 - 20, 210, 40, 7);
+      resetBg.strokeRoundedRect(480 - 105, resetY - 20, 210, 40, 7);
     }
     drawResetBg(false);
 
-    var resetText = self.add.text(480, 544, resetLabel, {
+    var resetText = self.add.text(480, resetY, resetLabel, {
       fontFamily: 'Arial Black, Arial', fontSize: '16px',
       color: '#ffffff', stroke: '#1a0900', strokeThickness: 3
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
@@ -221,16 +272,16 @@ var MenuScene = new Phaser.Class({
       resetBg.destroy();
       resetText.destroy();
 
-      self.add.text(480, 526, confirmLabel, {
+      self.add.text(480, resetY - 18, confirmLabel, {
         fontFamily: 'Arial', fontSize: '14px', color: '#ffffff',
         stroke: '#000000', strokeThickness: 3
       }).setOrigin(0.5);
 
-      makeMarioBtn(self, 420, 558, yesLabel,
+      makeMarioBtn(self, 420, resetY + 14, yesLabel,
         function() { Progress.reset(); self.scene.restart(); },
         { w: 90, h: 38, fontSize: '18px', color: 0xcc1111 }
       );
-      makeMarioBtn(self, 540, 558, noLabel,
+      makeMarioBtn(self, 540, resetY + 14, noLabel,
         function() { self.scene.restart(); },
         { w: 90, h: 38, fontSize: '18px', color: 0x555555 }
       );

@@ -1,4 +1,4 @@
-var CACHE = 'buchstabengeist-v7';
+var CACHE = 'buchstabengeist-v8';
 var ASSETS = [
   '/buchstabengeist/',
   '/buchstabengeist/index.html',
@@ -27,6 +27,22 @@ self.addEventListener('activate', function(e) {
 });
 
 self.addEventListener('fetch', function(e) {
+  // For navigation requests, don't intercept if we can't guarantee a response —
+  // a rejected respondWith() causes ERR_FAILED in the browser.
+  if (e.request.mode === 'navigate') {
+    e.respondWith(
+      caches.match(e.request).then(function(r) {
+        return r || fetch(e.request).catch(function() {
+          // Network failed and nothing cached — let browser show its own error
+          // rather than ERR_FAILED by returning a minimal fallback.
+          return new Response('<!DOCTYPE html><title>Offline</title><p>Game unavailable offline.</p>', {
+            headers: { 'Content-Type': 'text/html' }
+          });
+        });
+      })
+    );
+    return;
+  }
   e.respondWith(
     caches.match(e.request).then(function(r) { return r || fetch(e.request); })
   );

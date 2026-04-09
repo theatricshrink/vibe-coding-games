@@ -192,6 +192,17 @@
       </div>
       <div class="platform-unavailable" id="card-bg-unavail" style="display:none;"></div>
     </a>
+    <a class="card" href="./irrlichter/index.html" data-supports-browser="true" data-supports-mobile="true">
+      <div class="card-emoji">🔦</div>
+      <div class="card-title" id="card-il-title"></div>
+      <div class="card-desc"  id="card-il-desc"></div>
+      <div class="card-btn"   id="card-il-btn"></div>
+      <div class="card-platforms">
+        <span class="platform-badge supported" id="il-badge-browser">🖥️ Browser</span>
+        <span class="platform-badge supported" id="il-badge-mobile">📱 Mobile</span>
+      </div>
+      <div class="platform-unavailable" id="card-il-unavail" style="display:none;"></div>
+    </a>
     <!-- add more cards here -->
   </div>
 
@@ -210,6 +221,8 @@
         wtDesc:     'Bereise die Welt und lerne Geografie!',
         bgTitle:    'Buchstabengeist',
         bgDesc:     'Fresse die Buchstabengeister in der richtigen Reihenfolge!',
+        ilTitle:    'Irrlichter',
+        ilDesc:     'Duell im Labyrinth! Finde das Irrlicht vor deinem Gegner!',
         play:       'Spielen →',
         unavailMobile:  '⚠ Nicht für Mobilgeräte verfügbar',
         unavailBrowser: '⚠ Nicht für Desktop verfügbar'
@@ -225,6 +238,8 @@
         wtDesc:     'Travel the world and learn geography!',
         bgTitle:    'Buchstabengeist',
         bgDesc:     'Eat the letter ghosts in the right order to spell words!',
+        ilTitle:    'Irrlichter',
+        ilDesc:     'Labyrinth duel! Find the will-o\'-wisp before your opponent!',
         play:       'Play →',
         unavailMobile:  '⚠ Not available on mobile',
         unavailBrowser: '⚠ Not available on desktop'
@@ -276,6 +291,9 @@
       document.getElementById('card-bg-title').textContent   = s.bgTitle;
       document.getElementById('card-bg-desc').textContent    = s.bgDesc;
       document.getElementById('card-bg-btn').textContent     = s.play;
+      document.getElementById('card-il-title').textContent   = s.ilTitle;
+      document.getElementById('card-il-desc').textContent    = s.ilDesc;
+      document.getElementById('card-il-btn').textContent     = s.play;
       document.getElementById('btn-de').className = 'lang-btn' + (lang === 'de' ? ' active' : '');
       document.getElementById('btn-en').className = 'lang-btn' + (lang === 'en' ? ' active' : '');
 

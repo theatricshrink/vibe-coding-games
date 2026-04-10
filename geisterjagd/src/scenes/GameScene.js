@@ -191,12 +191,15 @@ var GameScene = new Phaser.Class({
 
   _createExitBtn: function() {
     var self = this;
-    var btn = this.add.text(8, 545, '← ' + t('toMenu'), {
-      fontFamily: 'monospace', fontSize: '11px', color: '#444455'
-    }).setInteractive({ useHandCursor: true });
-    btn.on('pointerover', function() { btn.setColor('#cc44ff'); });
-    btn.on('pointerout',  function() { btn.setColor('#444455'); });
-    btn.on('pointerup',   function() { self.scene.start('MenuScene'); });
+    var bg = this.add.rectangle(38, 547, 72, 18, 0x1a001a)
+      .setStrokeStyle(1, 0x884499)
+      .setInteractive({ useHandCursor: true });
+    var label = this.add.text(38, 547, '← ' + t('toMenu'), {
+      fontFamily: 'monospace', fontSize: '11px', color: '#cc44ff'
+    }).setOrigin(0.5);
+    bg.on('pointerover', function() { bg.setFillColor(0x330044); label.setColor('#ffffff'); });
+    bg.on('pointerout',  function() { bg.setFillColor(0x1a001a); label.setColor('#cc44ff'); });
+    bg.on('pointerup',   function() { self.scene.start('MenuScene'); });
   },
 
   _getInputDir: function() {

@@ -275,11 +275,11 @@
         var supportsBrowser = card.getAttribute('data-supports-browser') === 'true';
         var supported = isMobile ? supportsMobile : supportsBrowser;
 
-        // Highlight the current platform's badge
+        // Set badge classes based on support — always, not just for current platform
         var browserBadge = card.querySelector('[id$="-badge-browser"]');
         var mobileBadge  = card.querySelector('[id$="-badge-mobile"]');
-        if (browserBadge && !isMobile) browserBadge.classList.add('current');
-        if (mobileBadge  && isMobile)  mobileBadge.classList.add('current');
+        if (browserBadge) browserBadge.className = 'platform-badge ' + (supportsBrowser ? 'supported' : 'unsupported') + (!isMobile ? ' current' : '');
+        if (mobileBadge)  mobileBadge.className  = 'platform-badge ' + (supportsMobile  ? 'supported' : 'unsupported') + ( isMobile  ? ' current' : '');
 
         if (!supported) {
           card.classList.add('platform-disabled');

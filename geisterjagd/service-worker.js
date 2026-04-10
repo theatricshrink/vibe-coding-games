@@ -1,6 +1,16 @@
 var CACHE_NAME = 'geisterjagd-v1';
 var CACHE_URLS = [
   '/geisterjagd/index.html',
+  '/geisterjagd/src/i18n/lang.js',
+  '/geisterjagd/src/i18n/strings.js',
+  '/geisterjagd/src/utils/BoardGrid.js',
+  '/geisterjagd/src/utils/GhostAI.js',
+  '/geisterjagd/src/utils/Audio.js',
+  '/geisterjagd/src/scenes/BootScene.js',
+  '/geisterjagd/src/scenes/MenuScene.js',
+  '/geisterjagd/src/scenes/GameScene.js',
+  '/geisterjagd/src/scenes/GameOverScene.js',
+  '/geisterjagd/src/main.js',
   'https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js'
 ];
 

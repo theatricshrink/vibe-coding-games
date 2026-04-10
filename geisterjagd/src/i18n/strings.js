@@ -18,7 +18,9 @@ var STRINGS = {
     toMenu:        'MENÜ',
     backLabel:     '← Übersicht',
     bonus:         'BONUS!',
-    fail:          'Gemischt!'
+    fail:          'Gemischt!',
+    rule1:         'Ziehe Linien, um Geister einzusperren',
+    rule2:         'Gleiche Farbe: ×3 Pkt  ·  Gemischt / keiner: ×1 Pkt'
   },
   en: {
     title:         'Ghost Hunt',
@@ -39,7 +41,9 @@ var STRINGS = {
     toMenu:        'MENU',
     backLabel:     '← Overview',
     bonus:         'BONUS!',
-    fail:          'Mixed!'
+    fail:          'Mixed!',
+    rule1:         'Draw lines from border to border to trap ghosts',
+    rule2:         'Same color: ×3 pts  ·  Mixed / none: ×1 pt'
   }
 };
 

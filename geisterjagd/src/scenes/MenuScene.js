@@ -24,10 +24,18 @@ var MenuScene = new Phaser.Class({
     }).setOrigin(0.5);
 
     // Animated ghost decoration
-    var ghost = this.add.circle(cx, 210, 18, 0xcc44ff, 0.9);
-    var glow  = this.add.circle(cx, 210, 30, 0xcc44ff, 0.25);
+    var ghost = this.add.circle(cx, 178, 13, 0xcc44ff, 0.9);
+    var glow  = this.add.circle(cx, 178, 22, 0xcc44ff, 0.25);
     this.tweens.add({ targets: glow, scaleX: 2.2, scaleY: 2.2, alpha: 0, duration: 1400, repeat: -1, ease: 'Sine.out' });
-    this.tweens.add({ targets: ghost, y: 205, duration: 800, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+    this.tweens.add({ targets: ghost, y: 174, duration: 800, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+
+    // How to play
+    this.add.text(cx, 210, t('rule1'), {
+      fontFamily: 'monospace', fontSize: '14px', color: '#aaaacc'
+    }).setOrigin(0.5);
+    this.add.text(cx, 232, t('rule2'), {
+      fontFamily: 'monospace', fontSize: '13px', color: '#886699'
+    }).setOrigin(0.5);
 
     // Difficulty heading
     this.add.text(cx, 265, LANG === 'de' ? 'Schwierigkeit:' : 'Difficulty:', {

@@ -281,8 +281,8 @@ var GameScene = new Phaser.Class({
       }
 
       // Store per-cell color for permanent fill
-      var regionFill = region.bonusType === 'bonus' ? (GHOST_HEX[region.color] || 0x223322)
-                     : region.bonusType === 'fail'  ? 0x444444
+      var regionFill = region.bonusType === 'fail' ? 0x444444
+                     : region.color               ? (GHOST_HEX[region.color] || 0x223322)
                      : 0x223322;
       for (var rci = 0; rci < region.cells.length; rci++) {
         this.cellColorMap[region.cells[rci].col + ',' + region.cells[rci].row] = regionFill;
@@ -312,10 +312,9 @@ var GameScene = new Phaser.Class({
 
   _flashRegion: function(region) {
     var gfx    = this.overlayGfx;
-    var color  = 0x888888;
-    if (region.bonusType === 'bonus') {
-      color = GHOST_HEX[region.color] || 0xcc44ff;
-    }
+    var color = region.bonusType === 'fail' ? 0x888888
+              : region.color               ? (GHOST_HEX[region.color] || 0xcc44ff)
+              : 0x888888;
     gfx.fillStyle(color, 0.6);
     for (var i = 0; i < region.cells.length; i++) {
       gfx.fillRect(

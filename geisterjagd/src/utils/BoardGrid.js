@@ -128,7 +128,9 @@ BoardGrid.prototype.closeArea = function(ghostPositions) {
     var bonusType = 'none';
     var bonusColor = null;
     var score = cells.length;
-    if (trapped.length >= 2) {
+    if (trapped.length === 1) {
+      bonusColor = trapped[0].color; // color the area but no score bonus
+    } else if (trapped.length >= 2) {
       var allSame = true;
       var firstColor = trapped[0].color;
       for (var ti = 1; ti < trapped.length; ti++) {

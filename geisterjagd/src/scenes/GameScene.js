@@ -68,8 +68,11 @@ var GameScene = new Phaser.Class({
     // HUD
     this._createHUD();
 
-    // Mobile D-pad
+    // Mobile D-pad (touch only, bottom-right)
     this._createDpad();
+
+    // Exit to menu button (bottom-left)
+    this._createExitBtn();
 
     // Input direction from d-pad
     this.dpadDir = { dx: 0, dy: 0 };
@@ -160,10 +163,12 @@ var GameScene = new Phaser.Class({
   },
 
   _createDpad: function() {
+    if (!this.sys.game.device.input.touch) return;
+
     var self  = this;
     var bSize = 44;
-    var cx    = 480;
-    var cy    = 530;
+    var cx    = 895;
+    var cy    = 488;
 
     function makeBtn(x, y, label, dx, dy) {
       var btn = self.add.rectangle(x, y, bSize, bSize, 0x222233)
@@ -182,6 +187,16 @@ var GameScene = new Phaser.Class({
     makeBtn(cx,           cy + bSize + 4, '▼', 0,  1);
     makeBtn(cx - bSize - 4, cy,           '◀',-1,  0);
     makeBtn(cx + bSize + 4, cy,           '▶', 1,  0);
+  },
+
+  _createExitBtn: function() {
+    var self = this;
+    var btn = this.add.text(8, 545, '← ' + t('toMenu'), {
+      fontFamily: 'monospace', fontSize: '11px', color: '#444455'
+    }).setInteractive({ useHandCursor: true });
+    btn.on('pointerover', function() { btn.setColor('#cc44ff'); });
+    btn.on('pointerout',  function() { btn.setColor('#444455'); });
+    btn.on('pointerup',   function() { self.scene.start('MenuScene'); });
   },
 
   _getInputDir: function() {

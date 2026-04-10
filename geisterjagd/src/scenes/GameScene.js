@@ -50,6 +50,7 @@ var GameScene = new Phaser.Class({
     );
 
     this.isDrawing = false;
+    this.cellColorMap = {}; // col+','+row → fill color hex
 
     // Movement timing
     this.moveTimer    = 0;
@@ -279,6 +280,14 @@ var GameScene = new Phaser.Class({
         this.ghostTimers.splice(idx, 1);
       }
 
+      // Store per-cell color for permanent fill
+      var regionFill = region.bonusType === 'bonus' ? (GHOST_HEX[region.color] || 0x223322)
+                     : region.bonusType === 'fail'  ? 0x444444
+                     : 0x223322;
+      for (var rci = 0; rci < region.cells.length; rci++) {
+        this.cellColorMap[region.cells[rci].col + ',' + region.cells[rci].row] = regionFill;
+      }
+
       // Visual + audio feedback
       this._flashRegion(region);
 
@@ -349,11 +358,11 @@ var GameScene = new Phaser.Class({
       gfx.fillRect(0,                     r * CELL_SIZE, CELL_SIZE, CELL_SIZE);
       gfx.fillRect((GCOLS-1) * CELL_SIZE, r * CELL_SIZE, CELL_SIZE, CELL_SIZE);
     }
-    // Claimed interior cells
-    gfx.fillStyle(0x223322, 1);
+    // Claimed interior cells — use per-cell color (ghost color, gray, or default green)
     for (var cc = 1; cc < GCOLS - 1; cc++) {
       for (var rr = 1; rr < GROWS - 1; rr++) {
         if (this.board.isClaimed(cc, rr)) {
+          gfx.fillStyle(this.cellColorMap[cc + ',' + rr] || 0x223322, 1);
           gfx.fillRect(cc * CELL_SIZE, rr * CELL_SIZE, CELL_SIZE, CELL_SIZE);
         }
       }

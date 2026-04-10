@@ -1,0 +1,17 @@
+{
+  "name": "Geisterjagd",
+  "short_name": "Geisterjagd",
+  "description": "Trap the ghosts — but only matching colors score big!",
+  "start_url": "/geisterjagd/",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#000000",
+  "theme_color": "#cc44ff",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' fill='%23000000'/><circle cx='96' cy='96' r='40' fill='%23cc44ff' opacity='0.9'/><circle cx='80' cy='88' r='8' fill='%23ffffff'/><circle cx='112' cy='88' r='8' fill='%23ffffff'/></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}

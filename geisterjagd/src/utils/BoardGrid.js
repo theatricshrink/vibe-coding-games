@@ -80,30 +80,28 @@ BoardGrid.prototype.closeArea = function(ghostPositions) {
   }
   this.drawingCells = [];
 
-  // 2. Find connected components of unclaimed cells using flood fill.
-  //    Components NOT touching the border are enclosed.
+  // 2. Find all connected components of unclaimed cells.
+  //    The largest component is the open area; all others are enclosed.
   var visited = new Array(this.cols * this.rows).fill(false);
-  var regions = [];
+  var allComponents = [];
 
   for (var c = 0; c < this.cols; c++) {
     for (var r = 0; r < this.rows; r++) {
       if (this.get(c, r) === CELL_UNCLAIMED && !visited[this._idx(c, r)]) {
-        var component = this._fillVisited(c, r, visited);
-        // Check if any cell in component touches the actual border (col 0, col last, row 0, row last)
-        var touchesBorder = false;
-        for (var j = 0; j < component.length; j++) {
-          var cell = component[j];
-          if (cell.col === 0 || cell.col === this.cols - 1 ||
-              cell.row === 0 || cell.row === this.rows - 1) {
-            touchesBorder = true;
-            break;
-          }
-        }
-        if (!touchesBorder) {
-          regions.push(component);
-        }
+        allComponents.push(this._fillVisited(c, r, visited));
       }
     }
+  }
+
+  // Largest component = open area (not enclosed). Claim everything else.
+  var largestIdx = 0;
+  for (var ai = 1; ai < allComponents.length; ai++) {
+    if (allComponents[ai].length > allComponents[largestIdx].length) largestIdx = ai;
+  }
+
+  var regions = [];
+  for (var ci0 = 0; ci0 < allComponents.length; ci0++) {
+    if (ci0 !== largestIdx) regions.push(allComponents[ci0]);
   }
 
   // 3. For each enclosed region, find trapped ghosts, score it, claim it

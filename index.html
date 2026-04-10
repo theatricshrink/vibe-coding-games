@@ -203,6 +203,17 @@
       </div>
       <div class="platform-unavailable" id="card-il-unavail" style="display:none;"></div>
     </a>
+    <a class="card" href="./geisterjagd/index.html" data-supports-browser="true" data-supports-mobile="true">
+      <div class="card-emoji">🕸️</div>
+      <div class="card-title" id="card-gj-title"></div>
+      <div class="card-desc"  id="card-gj-desc"></div>
+      <div class="card-btn"   id="card-gj-btn"></div>
+      <div class="card-platforms">
+        <span class="platform-badge supported" id="gj-badge-browser">🖥️ Browser</span>
+        <span class="platform-badge supported" id="gj-badge-mobile">📱 Mobile</span>
+      </div>
+      <div class="platform-unavailable" id="card-gj-unavail" style="display:none;"></div>
+    </a>
     <!-- add more cards here -->
   </div>
 
@@ -224,6 +235,8 @@
         bgDesc:     'Fresse die Buchstabengeister in der richtigen Reihenfolge!',
         ilTitle:    'Irrlichter',
         ilDesc:     'Duell im Labyrinth! Finde das Irrlicht vor deinem Gegner!',
+        gjTitle:    'Geisterjagd',
+        gjDesc:     'Fange die Geister ein — aber nur gleiche Farben zählen!',
         play:       'Spielen →',
         unavailMobile:  '⚠ Nicht für Mobilgeräte verfügbar',
         unavailBrowser: '⚠ Nicht für Desktop verfügbar'
@@ -241,6 +254,8 @@
         bgDesc:     'Eat the letter ghosts in the right order to spell words!',
         ilTitle:    'Irrlichter',
         ilDesc:     'Labyrinth duel! Find the will-o\'-wisp before your opponent!',
+        gjTitle:    'Ghost Hunt',
+        gjDesc:     'Trap the ghosts — but only matching colors score big!',
         play:       'Play →',
         unavailMobile:  '⚠ Not available on mobile',
         unavailBrowser: '⚠ Not available on desktop'
@@ -295,6 +310,9 @@
       document.getElementById('card-il-title').textContent   = s.ilTitle;
       document.getElementById('card-il-desc').textContent    = s.ilDesc;
       document.getElementById('card-il-btn').textContent     = s.play;
+      document.getElementById('card-gj-title').textContent   = s.gjTitle;
+      document.getElementById('card-gj-desc').textContent    = s.gjDesc;
+      document.getElementById('card-gj-btn').textContent     = s.play;
       document.getElementById('btn-de').className = 'lang-btn' + (lang === 'de' ? ' active' : '');
       document.getElementById('btn-en').className = 'lang-btn' + (lang === 'en' ? ' active' : '');
 

@@ -200,7 +200,7 @@ var MenuScene = new Phaser.Class({
       return { bg: bg, txt: txt };
     }
 
-    var toggleY = 452;
+    var toggleY = 470;
 
     makeToggleBtn(self, 418, toggleY, lblNormal, !isEasy, function() {
       localStorage.setItem('weltreise_easy', 'false');

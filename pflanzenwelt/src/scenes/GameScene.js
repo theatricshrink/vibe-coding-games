@@ -104,11 +104,9 @@ var GameScene = new Phaser.Class({
     this._playerCol = 10;
     this._playerRow = 7;
     this._moving = false;
+    this._playerDir = 'down';
 
     this._playerGfx = this.add.graphics();
-    this._playerText = this.add.text(0, 0, '🧒', {
-      fontSize: '28px'
-    }).setDepth(1);
 
     this._drawPlayer();
     this._setupKeys();

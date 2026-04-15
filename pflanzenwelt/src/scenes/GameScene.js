@@ -126,17 +126,19 @@ var GameScene = new Phaser.Class({
 
   _drawPlayer: function() {
     this._playerGfx.clear();
-    this._playerGfx.fillStyle(0xf5a623, 1);
-    this._playerGfx.fillRect(
-      this._playerCol * TILE_SIZE + 6,
-      this._playerRow * TILE_SIZE + 6,
-      TILE_SIZE - 12,
-      TILE_SIZE - 12
-    );
-    this._playerText.setPosition(
-      this._playerCol * TILE_SIZE + 10,
-      this._playerRow * TILE_SIZE + 6
-    );
+    var grid = PLAYER_PIXELS[this._playerDir];
+    // Character is 32×40px (8 cols × 4px, 10 rows × 4px).
+    // Centre it in the 48×48 tile: 8px left margin, 4px top margin.
+    var ox = this._playerCol * TILE_SIZE + 8;
+    var oy = this._playerRow * TILE_SIZE + 4;
+    for (var r = 0; r < grid.length; r++) {
+      for (var c = 0; c < grid[r].length; c++) {
+        var code = grid[r][c];
+        if (code === '.') continue;
+        this._playerGfx.fillStyle(PLAYER_PALETTE[code], 1);
+        this._playerGfx.fillRect(ox + c * 4, oy + r * 4, 4, 4);
+      }
+    }
   },
 
   _setupKeys: function() {

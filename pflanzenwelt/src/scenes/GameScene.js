@@ -250,6 +250,12 @@ var GameScene = new Phaser.Class({
     if (newCol < 0 || newCol >= COLS || newRow < 0 || newRow >= ROWS) return;
     var tile = MAP[newRow][newCol];
     if (tile === 2 || tile === 3) return;
+
+    if (dr < 0) this._playerDir = 'up';
+    else if (dr > 0) this._playerDir = 'down';
+    else if (dc < 0) this._playerDir = 'left';
+    else if (dc > 0) this._playerDir = 'right';
+
     this._playerCol = newCol;
     this._playerRow = newRow;
     this._drawPlayer();

@@ -100,20 +100,20 @@ var GameScene = new Phaser.Class({
     this.add.rectangle(308, H / 2, 2, H, 0x2c4a2c);
 
     // ── Top bar ──
-    this.add.rectangle(W / 2, 36, W, 64, 0x0d1a0d);
+    this.add.rectangle(W / 2, 46, W, 64, 0x0d1a0d);
 
     var s = STRINGS[LANG];
-    this.add.text(20, 36, s.chainLabel, { fontSize: '22px' }).setOrigin(0, 0.5);
-    this._chainValueText = this.add.text(44, 36, '0', {
+    this.add.text(20, 46, s.chainLabel, { fontSize: '22px' }).setOrigin(0, 0.5);
+    this._chainValueText = this.add.text(62, 46, '0', {
       fontSize: '22px', color: '#f5e642', fontStyle: 'bold'
     }).setOrigin(0, 0.5);
 
-    this.add.text(130, 36, s.bestLabel, { fontSize: '22px' }).setOrigin(0, 0.5);
-    this._bestValueText = this.add.text(154, 36, String(this._bestChain), {
+    this.add.text(130, 46, s.bestLabel, { fontSize: '22px' }).setOrigin(0, 0.5);
+    this._bestValueText = this.add.text(172, 46, String(this._bestChain), {
       fontSize: '22px', color: '#aed9b8'
     }).setOrigin(0, 0.5);
 
-    this._constraintText = this.add.text(W / 2, 36, '', {
+    this._constraintText = this.add.text(W / 2, 46, '', {
       fontSize: '18px', color: '#f5e642'
     }).setOrigin(0.5, 0.5);
 

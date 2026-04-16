@@ -103,12 +103,12 @@ var GameScene = new Phaser.Class({
     this.add.rectangle(W / 2, 46, W, 64, 0x0d1a0d);
 
     var s = STRINGS[LANG];
-    this.add.text(20, 46, s.chainLabel, { fontSize: '22px' }).setOrigin(0, 0.5);
+    this.add.text(20, 46, s.chainLabel, { fontSize: '22px' }).setOrigin(0, 0.5).setPadding(0, 8, 0, 0);
     this._chainValueText = this.add.text(62, 46, '0', {
       fontSize: '22px', color: '#f5e642', fontStyle: 'bold'
     }).setOrigin(0, 0.5);
 
-    this.add.text(130, 46, s.bestLabel, { fontSize: '22px' }).setOrigin(0, 0.5);
+    this.add.text(130, 46, s.bestLabel, { fontSize: '22px' }).setOrigin(0, 0.5).setPadding(0, 8, 0, 0);
     this._bestValueText = this.add.text(172, 46, String(this._bestChain), {
       fontSize: '22px', color: '#aed9b8'
     }).setOrigin(0, 0.5);

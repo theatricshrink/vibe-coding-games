@@ -420,7 +420,7 @@ var GameScene = new Phaser.Class({
     this._nextLetter     = this._nextWordBuffer ? this._nextWordBuffer.word[0] : null;
 
     this._updateTopBar();
-    this.time.delayedCall(1200, function() { self._startWord(); });
+    this.time.delayedCall(2200, function() { self._startWord(); });
   },
 
   // ── Called when the 6th wrong guess is made ─────────────────────────────────

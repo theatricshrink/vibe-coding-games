@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="de" id="html-root">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Roboträtsel</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: #1a1a2e; }
+    #game-container {
+      position: fixed;
+      top: env(safe-area-inset-top, 0px);
+      right: env(safe-area-inset-right, 0px);
+      bottom: env(safe-area-inset-bottom, 0px);
+      left: env(safe-area-inset-left, 0px);
+    }
+    #back-btn {
+      position: fixed; top: 10px; left: 12px; z-index: 100;
+      color: #52b788; font-family: sans-serif; font-size: 13px;
+      text-decoration: none; opacity: 0.7;
+    }
+    #back-btn:hover { opacity: 1; color: #f5e642; }
+  </style>
+</head>
+<body>
+  <div id="game-container"></div>
+  <a id="back-btn" href="../index.html"></a>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js"></script>
+  <script src="src/i18n/lang.js"></script>
+  <script>
+    document.getElementById('html-root').lang = LANG;
+    document.getElementById('back-btn').textContent = LANG === 'en' ? '← Overview' : '← Übersicht';
+  </script>
+  <script src="src/data/words.js"></script>
+  <script src="src/i18n/strings.js"></script>
+  <script src="src/utils/wordPool.js"></script>
+  <script src="src/scenes/StartScene.js"></script>
+  <script src="src/scenes/GameScene.js"></script>
+  <script src="src/scenes/WinScene.js"></script>
+  <script src="main.js"></script>
+</body>
+</html>

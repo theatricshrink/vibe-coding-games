@@ -32,11 +32,11 @@ var StartScene = new Phaser.Class({
 
     var lines = STRINGS[LANG].instructions;
     for (var i = 0; i < lines.length; i++) {
-      this.add.text(230, 268 + i * 52, lines[i][0], {
+      this.add.text(100, 268 + i * 52, lines[i][0], {
         fontSize: '24px'
       }).setOrigin(0.5);
-      this.add.text(272, 268 + i * 52, lines[i][1], {
-        fontSize: '18px', color: '#dddddd'
+      this.add.text(140, 268 + i * 52, lines[i][1], {
+        fontSize: '18px', color: '#dddddd', wordWrap: { width: 750 }
       }).setOrigin(0, 0.5);
     }
 

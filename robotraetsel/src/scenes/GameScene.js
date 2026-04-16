@@ -401,6 +401,7 @@ var GameScene = new Phaser.Class({
 
     // Win condition: chain of 10
     if (this._chainLength >= 10) {
+      this._updateTopBar();
       this.time.delayedCall(800, function() {
         self.scene.start('WinScene', { best: self._bestChain });
       });

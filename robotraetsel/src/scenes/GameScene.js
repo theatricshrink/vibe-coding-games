@@ -16,7 +16,7 @@ var ROBOT_PALETTE = {
 // 6 parts, assembled in order on wrong guesses.
 // ox/oy = pixel offset from (ROBOT_X, ROBOT_Y). Each pixel = ROBOT_CELL × ROBOT_CELL.
 var ROBOT_PARTS = [
-  { id: 'antenna', ox: 28, oy: 0, pixels: [
+  { id: 'antenna', ox: 20, oy: 0, pixels: [
     ['.','R','.'],
     ['.','D','.'],
     ['.','D','.']
@@ -121,7 +121,7 @@ var GameScene = new Phaser.Class({
     this._robotGfx = this.add.graphics();
 
     // ── "Wrong guesses" label ──
-    this._wrongLabel = this.add.text(154, 320, '', {
+    this._wrongLabel = this.add.text(132, 320, '', {
       fontSize: '16px', color: '#e53e3e'
     }).setOrigin(0.5);
 

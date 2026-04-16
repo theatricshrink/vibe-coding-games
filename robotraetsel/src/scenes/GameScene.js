@@ -84,15 +84,16 @@ var GameScene = new Phaser.Class({
     var W = 960, H = 720;
 
     // Retrieve persisted best chain
-    this._bestChain   = parseInt(localStorage.getItem('robotraetsel_best') || '0', 10);
-    this._chainLength = 0;
-    this._wrongCount  = 0;
-    this._guessed     = {};
-    this._hintUsed    = false;
-    this._nextLetter  = null;
-    this._slotTexts   = [];
-    this._slotRects   = [];
-    this._keyButtons  = {};
+    this._bestChain     = parseInt(localStorage.getItem('robotraetsel_best') || '0', 10);
+    this._chainLength   = 0;
+    this._wrongCount    = 0;
+    this._guessed       = {};
+    this._hintUsed      = false;
+    this._nextLetter    = null;
+    this._nextWordBuffer = null;
+    this._slotTexts     = [];
+    this._slotRects     = [];
+    this._keyButtons    = {};
 
     // ── Static background ──
     this.add.rectangle(W / 2, H / 2, W, H, 0x1a1a2e);
@@ -175,7 +176,12 @@ var GameScene = new Phaser.Class({
 
   // ── Start a new word ────────────────────────────────────────────────────────
   _startWord: function() {
-    this._currentWord = this._wordPool.draw(this._chainLength, this._nextLetter);
+    if (this._nextWordBuffer) {
+      this._currentWord    = this._nextWordBuffer;
+      this._nextWordBuffer = null;
+    } else {
+      this._currentWord = this._wordPool.draw(this._chainLength, this._nextLetter);
+    }
     this._wrongCount  = 0;
     this._guessed     = {};
     this._hintUsed    = false;
@@ -396,17 +402,22 @@ var GameScene = new Phaser.Class({
       localStorage.setItem('robotraetsel_best', String(this._bestChain));
     }
 
-    // Set chain constraint: next word starts with last letter of solved word
-    this._nextLetter = word[word.length - 1];
-
     // Win condition: chain of 10
     if (this._chainLength >= 10) {
+      this._nextLetter = null;
       this._updateTopBar();
       this.time.delayedCall(800, function() {
         self.scene.start('WinScene', { best: self._bestChain });
       });
       return;
     }
+
+    // Pre-draw the next word now so we can show its actual starting letter.
+    // WordPool.draw may silently drop the constraint (fallback) — showing the
+    // real first letter prevents a false promise in the UI.
+    var constraintLetter = word[word.length - 1];
+    this._nextWordBuffer = this._wordPool.draw(this._chainLength, constraintLetter);
+    this._nextLetter     = this._nextWordBuffer ? this._nextWordBuffer.word[0] : null;
 
     this._updateTopBar();
     this.time.delayedCall(1200, function() { self._startWord(); });
@@ -461,8 +472,9 @@ var GameScene = new Phaser.Class({
       sub.destroy();
 
       // Reset chain
-      self._chainLength = 0;
-      self._nextLetter  = null;
+      self._chainLength    = 0;
+      self._nextLetter     = null;
+      self._nextWordBuffer = null;
       self._updateTopBar();
       self._startWord();
     });

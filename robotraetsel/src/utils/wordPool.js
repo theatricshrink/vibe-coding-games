@@ -32,6 +32,9 @@ WordPool.prototype.draw = function(chainLength, startLetter) {
     pool = this._remaining.filter(inBucket);
   }
 
+  // Guard: no words exist for this bucket in the language
+  if (pool.length === 0) return null;
+
   var word = pool[Math.floor(Math.random() * pool.length)];
   this._remaining.splice(this._remaining.indexOf(word), 1);
   return word;

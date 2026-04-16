@@ -60,10 +60,15 @@ drawn[pool.draw(0, null).word] = true;
 drawn[pool.draw(0, null).word] = true;
 assert(Object.keys(drawn).length === 3, 'no replacement: 3 unique words before reset');
 
-// Test 8: pool resets after exhaustion and continues drawing
+// Test 8: pool resets after exhaustion and re-draws previously seen words
 pool = new WordPool(testWords, 'de');
-pool.draw(0, null); pool.draw(0, null); pool.draw(0, null); // exhaust short bucket
+var w8a = pool.draw(0, null).word;
+var w8b = pool.draw(0, null).word;
+var w8c = pool.draw(0, null).word;
 var wAfterReset = pool.draw(0, null);
-assert(wAfterReset && wAfterReset.lang === 'de', 'pool resets after exhaustion');
+assert(
+  wAfterReset && (wAfterReset.word === w8a || wAfterReset.word === w8b || wAfterReset.word === w8c),
+  'pool resets after exhaustion and re-draws previously seen words'
+);
 
 console.log('\nAll wordPool tests passed.');

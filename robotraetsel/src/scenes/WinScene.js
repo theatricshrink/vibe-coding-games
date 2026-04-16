@@ -7,7 +7,7 @@ var WinScene = new Phaser.Class({
   },
 
   init: function(data) {
-    this._best = data && data.best ? data.best : 0;
+    this._best = (data && data.best !== undefined) ? data.best : 0;
   },
 
   create: function() {

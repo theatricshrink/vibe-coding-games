@@ -279,10 +279,11 @@ var GameScene = new Phaser.Class({
     }
 
     // Physical keyboard — A-Z only (umlauts via on-screen buttons)
-    this.input.keyboard.on('keydown', function(event) {
+    this._keydownHandler = function(event) {
       var letter = event.key.toUpperCase();
       if (/^[A-ZÄÖÜ]$/.test(letter)) self._onGuess(letter);
-    });
+    };
+    this.input.keyboard.on('keydown', this._keydownHandler);
   },
 
   // ── Re-enable all keyboard buttons and reset colours ────────────────────────
@@ -319,6 +320,157 @@ var GameScene = new Phaser.Class({
       if (this._wrongCount >= 6) {
         this._onGameOver();
       }
+    }
+  },
+
+  // ── Build the hint button ───────────────────────────────────────────────────
+  _buildHintButton: function() {
+    var self = this;
+    var bx   = 630, by = 570;
+    this._hintBg = this.add.rectangle(bx, by, 200, 48, 0x1b3a5c)
+      .setInteractive()
+      .setStrokeStyle(2, 0x63b3ed);
+    this._hintLbl = this.add.text(bx, by, STRINGS[LANG].hintBtn, {
+      fontSize: '20px', color: '#63b3ed'
+    }).setOrigin(0.5);
+
+    this._hintBg.on('pointerover', function() {
+      if (self._hintBg.input && self._hintBg.input.enabled) {
+        self._hintBg.setFillStyle(0x2a5480);
+      }
+    });
+    this._hintBg.on('pointerout', function() {
+      if (self._hintBg.input && self._hintBg.input.enabled) {
+        self._hintBg.setFillStyle(0x1b3a5c);
+      }
+    });
+    this._hintBg.on('pointerdown', function() { self._useHint(); });
+  },
+
+  // ── Enable/disable hint button based on state ────────────────────────────────
+  _resetHintButton: function() {
+    this._hintBg.setInteractive().setFillStyle(0x1b3a5c).setAlpha(1);
+    this._hintLbl.setColor('#63b3ed');
+  },
+
+  _updateHintButtonState: function() {
+    // Disable if already used this word, or if using it would trigger game over
+    if (this._hintUsed || this._wrongCount >= 5) {
+      this._hintBg.removeInteractive().setAlpha(0.35);
+      this._hintLbl.setColor('#445566');
+    }
+  },
+
+  // ── Use the hint: reveal category, add one wrong guess ──────────────────────
+  _useHint: function() {
+    if (this._hintUsed || this._wrongCount >= 5) return;
+    this._hintUsed = true;
+
+    var cat = STRINGS[LANG].categories[this._currentWord.category];
+    this._categoryText.setText(STRINGS[LANG].hintUsed + ' ' + cat);
+
+    // Cost: one robot part
+    this._wrongCount++;
+    this._drawRobot(this._wrongCount);
+    this._updateHintButtonState();
+
+    if (this._wrongCount >= 6) {
+      this._onGameOver();
+    }
+  },
+
+  // ── Called when the word is fully guessed ───────────────────────────────────
+  _onWordSolved: function() {
+    var self = this;
+    var word = this._currentWord.word;
+
+    // Flash slots green
+    for (var i = 0; i < this._slotTexts.length; i++) {
+      this._slotTexts[i].setColor('#52e888');
+    }
+
+    // Increment chain and persist best
+    this._chainLength++;
+    if (this._chainLength > this._bestChain) {
+      this._bestChain = this._chainLength;
+      localStorage.setItem('robotraetsel_best', String(this._bestChain));
+    }
+
+    // Set chain constraint: next word starts with last letter of solved word
+    this._nextLetter = word[word.length - 1];
+
+    // Win condition: chain of 10
+    if (this._chainLength >= 10) {
+      this.time.delayedCall(800, function() {
+        self.scene.start('WinScene', { best: self._bestChain });
+      });
+      return;
+    }
+
+    this._updateTopBar();
+    this.time.delayedCall(1200, function() { self._startWord(); });
+  },
+
+  // ── Called when the 6th wrong guess is made ─────────────────────────────────
+  _onGameOver: function() {
+    var self = this;
+    // Disable all input
+    for (var letter in this._keyButtons) {
+      this._keyButtons[letter].bg.removeInteractive();
+    }
+    this._hintBg.removeInteractive();
+
+    this._revealWord();
+
+    // Shake the robot graphics
+    this.tweens.add({
+      targets: this._robotGfx,
+      x: '+=12',
+      yoyo: true,
+      repeat: 4,
+      duration: 60,
+      onComplete: function() {
+        self._robotGfx.setPosition(0, 0); // reset after shake
+        self._showTakeover();
+      }
+    });
+  },
+
+  // ── World domination overlay ─────────────────────────────────────────────────
+  _showTakeover: function() {
+    var self = this;
+    var W = 960, H = 720;
+    var s = STRINGS[LANG];
+
+    var overlay = this.add.rectangle(W / 2, H / 2, W, H, 0xcc0000, 0.92).setDepth(20);
+    var title   = this.add.text(W / 2, H / 2 - 60, s.takeover, {
+      fontSize: '58px', color: '#ffffff', fontStyle: 'bold'
+    }).setOrigin(0.5).setDepth(21).setAlpha(0);
+    var sub = this.add.text(W / 2, H / 2 + 40, s.takeoverSub, {
+      fontSize: '26px', color: '#ffcccc'
+    }).setOrigin(0.5).setDepth(21).setAlpha(0);
+
+    this.tweens.add({
+      targets: [title, sub], alpha: 1, duration: 300
+    });
+
+    this.time.delayedCall(2200, function() {
+      overlay.destroy();
+      title.destroy();
+      sub.destroy();
+
+      // Reset chain
+      self._chainLength = 0;
+      self._nextLetter  = null;
+      self._updateTopBar();
+      self._startWord();
+    });
+  },
+
+  // ── Scene shutdown: remove keyboard listener to prevent accumulation ─────────
+  shutdown: function() {
+    if (this._keydownHandler) {
+      this.input.keyboard.off('keydown', this._keydownHandler);
     }
   }
 });

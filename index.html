@@ -214,6 +214,17 @@
       </div>
       <div class="platform-unavailable" id="card-gj-unavail" style="display:none;"></div>
     </a>
+    <a class="card" href="./robotraetsel/index.html" data-supports-browser="true" data-supports-mobile="true">
+      <div class="card-emoji">🤖</div>
+      <div class="card-title" id="card-rr-title"></div>
+      <div class="card-desc"  id="card-rr-desc"></div>
+      <div class="card-btn"   id="card-rr-btn"></div>
+      <div class="card-platforms">
+        <span class="platform-badge supported" id="rr-badge-browser">🖥️ Browser</span>
+        <span class="platform-badge supported" id="rr-badge-mobile">📱 Mobile</span>
+      </div>
+      <div class="platform-unavailable" id="card-rr-unavail" style="display:none;"></div>
+    </a>
     <!-- add more cards here -->
   </div>
 
@@ -237,6 +248,8 @@
         ilDesc:     'Duell im Labyrinth! Finde das Irrlicht vor deinem Gegner!',
         gjTitle:    'Geisterjagd',
         gjDesc:     'Fange die Geister ein — aber nur gleiche Farben zählen!',
+        rrTitle: 'Roboträtsel',
+        rrDesc:  'Rate Wörter, bevor der Roboter die Welt übernimmt!',
         play:       'Spielen →',
         unavailMobile:  '⚠ Nicht für Mobilgeräte verfügbar',
         unavailBrowser: '⚠ Nicht für Desktop verfügbar'
@@ -256,6 +269,8 @@
         ilDesc:     'Labyrinth duel! Find the will-o\'-wisp before your opponent!',
         gjTitle:    'Ghost Hunt',
         gjDesc:     'Trap the ghosts — but only matching colors score big!',
+        rrTitle: 'Robot Riddle',
+        rrDesc:  'Guess the word before the robot takes over the world!',
         play:       'Play →',
         unavailMobile:  '⚠ Not available on mobile',
         unavailBrowser: '⚠ Not available on desktop'
@@ -313,6 +328,9 @@
       document.getElementById('card-gj-title').textContent   = s.gjTitle;
       document.getElementById('card-gj-desc').textContent    = s.gjDesc;
       document.getElementById('card-gj-btn').textContent     = s.play;
+      document.getElementById('card-rr-title').textContent   = s.rrTitle;
+      document.getElementById('card-rr-desc').textContent    = s.rrDesc;
+      document.getElementById('card-rr-btn').textContent     = s.play;
       document.getElementById('btn-de').className = 'lang-btn' + (lang === 'de' ? ' active' : '');
       document.getElementById('btn-en').className = 'lang-btn' + (lang === 'en' ? ' active' : '');
 

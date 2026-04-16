@@ -171,5 +171,154 @@ var GameScene = new Phaser.Class({
     } else {
       this._constraintText.setText('');
     }
+  },
+
+  // ── Start a new word ────────────────────────────────────────────────────────
+  _startWord: function() {
+    this._currentWord = this._wordPool.draw(this._chainLength, this._nextLetter);
+    this._wrongCount  = 0;
+    this._guessed     = {};
+    this._hintUsed    = false;
+    this._nextLetter  = null;
+
+    this._robotGfx.clear();
+    this._wrongLabel.setText('');
+    this._categoryText.setText('');
+    this._resetHintButton();
+    this._buildWordSlots();
+    this._resetKeyboard();
+    this._updateTopBar();
+  },
+
+  // ── Build letter slots for the current word ─────────────────────────────────
+  _buildWordSlots: function() {
+    var i;
+    for (i = 0; i < this._slotTexts.length; i++) { this._slotTexts[i].destroy(); }
+    for (i = 0; i < this._slotRects.length; i++) { this._slotRects[i].destroy(); }
+    this._slotTexts = [];
+    this._slotRects = [];
+
+    var word = this._currentWord.word;
+    var n    = word.length;
+    var slotW = n <= 8 ? 50 : 38;
+    var gap   = n <= 8 ? 8  : 4;
+    var totalW = n * slotW + (n - 1) * gap;
+    var startX = 630 - totalW / 2;  // 630 = centre of right panel (310-950)
+    var slotY  = 220;
+    var fontSize = n <= 8 ? '30px' : '22px';
+
+    for (i = 0; i < n; i++) {
+      var cx = startX + i * (slotW + gap) + slotW / 2;
+      // underline bar
+      var rect = this.add.rectangle(cx, slotY + 28, slotW - 4, 3, 0x8888aa);
+      // letter text (hidden until guessed)
+      var txt = this.add.text(cx, slotY, '', {
+        fontSize: fontSize, color: '#ffffff', fontStyle: 'bold'
+      }).setOrigin(0.5, 0);
+      this._slotTexts.push(txt);
+      this._slotRects.push(rect);
+    }
+  },
+
+  // ── Reveal all correctly-guessed letters in slots ───────────────────────────
+  _updateWordSlots: function() {
+    var word = this._currentWord.word;
+    for (var i = 0; i < word.length; i++) {
+      if (this._guessed[word[i]]) {
+        this._slotTexts[i].setText(word[i]);
+      }
+    }
+  },
+
+  // ── Reveal ALL letters (called on game over so player sees the word) ─────────
+  _revealWord: function() {
+    var word = this._currentWord.word;
+    for (var i = 0; i < word.length; i++) {
+      this._slotTexts[i].setText(word[i]).setColor('#ff9999');
+    }
+  },
+
+  // ── Check if every letter in the word has been guessed ──────────────────────
+  _isWordSolved: function() {
+    var word = this._currentWord.word;
+    for (var i = 0; i < word.length; i++) {
+      if (!this._guessed[word[i]]) return false;
+    }
+    return true;
+  },
+
+  // ── Build on-screen A-Z (+ ÄÖÜ in DE) keyboard ─────────────────────────────
+  _buildKeyboard: function() {
+    var self  = this;
+    var rows  = LANG === 'de' ? LETTERS_DE : LETTERS_EN;
+    var BW    = 48, BH = 44, GAP = 4;
+    var panelCX = 630;  // horizontal centre of right panel
+    var startY  = 330;
+
+    for (var ri = 0; ri < rows.length; ri++) {
+      var row    = rows[ri];
+      var rowW   = row.length * BW + (row.length - 1) * GAP;
+      var startX = panelCX - rowW / 2;
+
+      for (var ci = 0; ci < row.length; ci++) {
+        (function(letter, x, y) {
+          var bg = self.add.rectangle(x + BW / 2, y + BH / 2, BW - 2, BH - 2, 0x2c5f2e)
+            .setInteractive()
+            .setStrokeStyle(1, 0x52b788);
+          var lbl = self.add.text(x + BW / 2, y + BH / 2, letter, {
+            fontSize: '18px', color: '#ffffff'
+          }).setOrigin(0.5);
+
+          bg.on('pointerover', function() { bg.setFillStyle(0x3d7a25); });
+          bg.on('pointerout',  function() { bg.setFillStyle(0x2c5f2e); });
+          bg.on('pointerdown', function() { self._onGuess(letter); });
+
+          self._keyButtons[letter] = { bg: bg, lbl: lbl };
+        })(row[ci], startX + ci * (BW + GAP), startY + ri * (BH + GAP));
+      }
+    }
+
+    // Physical keyboard — A-Z only (umlauts via on-screen buttons)
+    this.input.keyboard.on('keydown', function(event) {
+      var letter = event.key.toUpperCase();
+      if (/^[A-ZÄÖÜ]$/.test(letter)) self._onGuess(letter);
+    });
+  },
+
+  // ── Re-enable all keyboard buttons and reset colours ────────────────────────
+  _resetKeyboard: function() {
+    for (var letter in this._keyButtons) {
+      var btn = this._keyButtons[letter];
+      btn.bg.setFillStyle(0x2c5f2e).setInteractive().setAlpha(1);
+      btn.lbl.setColor('#ffffff');
+    }
+  },
+
+  // ── Process a letter guess ──────────────────────────────────────────────────
+  _onGuess: function(letter) {
+    if (this._guessed[letter]) return;
+    if (!this._keyButtons[letter]) return;  // ignore letters not in our alphabet
+    this._guessed[letter] = true;
+
+    // Grey out keyboard button
+    var btn = this._keyButtons[letter];
+    btn.bg.removeInteractive().setFillStyle(0x555555).setAlpha(0.5);
+    btn.lbl.setColor('#888888');
+
+    if (this._currentWord.word.indexOf(letter) !== -1) {
+      // ── Correct guess ──
+      this._updateWordSlots();
+      if (this._isWordSolved()) {
+        this._onWordSolved();
+      }
+    } else {
+      // ── Wrong guess ──
+      this._wrongCount++;
+      this._drawRobot(this._wrongCount);
+      this._updateHintButtonState();
+      if (this._wrongCount >= 6) {
+        this._onGameOver();
+      }
+    }
   }
 });

@@ -31,8 +31,7 @@ var PlatformPool = (function() {
         var labels = [];
         for (var j = 0; j < 3; j++) {
           var img = scene.physics.add.image(-9999, -9999, 'plat_t1')
-            .setImmovable(true)
-            .setGravityY(-700);
+            .setImmovable(true);
           img.body.allowGravity = false;
           img.setDepth(1);
           platforms.push(img);

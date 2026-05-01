@@ -46,8 +46,7 @@ var GameScene = new Phaser.Class({
     this._astronaut.body.setGravityY(0);
     this._astronaut.setDepth(5);
 
-    // Camera: manual control — only scrolls up
-    this._minScrollY = this.cameras.main.scrollY;
+
 
     // Keyboard input
     this._cursors = this.input.keyboard.createCursorKeys();
@@ -105,7 +104,7 @@ var GameScene = new Phaser.Class({
   _onLand: function(astronaut, platform) {
     if (!this._gameActive) return;
     if (platform.isNeutral) {
-      astronaut.body.setVelocityY(-530);
+      astronaut.body.setVelocityY(-580);
     } else if (platform.isCorrect) {
       astronaut.body.setVelocityY(-750);
       this._flashPlatform(platform, 0x00ff88);
@@ -270,12 +269,8 @@ var GameScene = new Phaser.Class({
     if (this._astronaut.x < -20)  this._astronaut.x = 500;
     if (this._astronaut.x > 500)  this._astronaut.x = -20;
 
-    // Camera: only scroll up
-    var targetScrollY = this._astronaut.y - 680;
-    if (targetScrollY < this._minScrollY) {
-      this._minScrollY = targetScrollY;
-      this.cameras.main.scrollY = this._minScrollY;
-    }
+    // Camera: follow astronaut in both directions
+    this.cameras.main.scrollY = this._astronaut.y - 500;
 
     // Update height
     var h = Math.max(0, Math.floor((this._startY - this._astronaut.y) / this._pixelsPerMetre));
@@ -293,20 +288,23 @@ var GameScene = new Phaser.Class({
       this._highestPlatformY -= 400;
     }
 
-    // Recycle rows below camera
+    // Recycle rows below camera; track lowest surviving neutral Y for fall detection
     var camBottom = camTop + 854;
+    var lowestNeutralY = this._startY + 30;
     var self = this;
     PlatformPool.getAllRows().forEach(function(row) {
       if (row.yPos > camBottom + 200) {
         PlatformPool.recycleRow(row);
+      } else if (row.yPos > lowestNeutralY) {
+        lowestNeutralY = row.yPos;
       }
     });
 
     // Refresh question display
     this._refreshQuestion();
 
-    // Detect fall off screen bottom
-    if (this._astronaut.y > camBottom + 50 && this._gameActive) {
+    // Detect fall: astronaut dropped more than 300px below lowest neutral platform
+    if (this._astronaut.y > lowestNeutralY + 300 && this._gameActive) {
       this._onFallOffScreen();
     }
   },

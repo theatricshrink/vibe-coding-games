@@ -2,7 +2,7 @@ var PlatformPool = (function() {
   var PLATFORM_W  = 110;
   var PLATFORM_H  = 18;
   var NEUTRAL_W   = 150;
-  var ANSWER_OFFSET = 150;
+  var ANSWER_OFFSET = 200;
   var POOL_SIZE   = 15;
 
   var ZONE_CENTERS = [80, 240, 400];

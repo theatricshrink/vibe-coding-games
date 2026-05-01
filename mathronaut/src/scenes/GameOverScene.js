@@ -30,8 +30,8 @@ var GameOverScene = new Phaser.Class({
 
     // Floating astronaut (bouncing tween)
     var astro = this.add.circle(W / 2, 220, 42, 0xffffff);
-    this.add.circle(W / 2, 208, 26, 0x87ceeb);
-    this.tweens.add({ targets: [astro], y: 230, yoyo: true, repeat: -1, duration: 1200, ease: 'Sine.easeInOut' });
+    var helmet = this.add.circle(W / 2, 208, 26, 0x87ceeb);
+    this.tweens.add({ targets: [astro, helmet], y: '+=10', yoyo: true, repeat: -1, duration: 1200, ease: 'Sine.easeInOut' });
 
     // Game over title
     this.add.text(W / 2, 310, t('gameOver'), {

@@ -225,6 +225,17 @@
       </div>
       <div class="platform-unavailable" id="card-rr-unavail" style="display:none;"></div>
     </a>
+    <a class="card" href="./mathronaut/index.html" data-supports-browser="true" data-supports-mobile="true">
+      <div class="card-emoji">🚀</div>
+      <div class="card-title" id="card-mn-title"></div>
+      <div class="card-desc"  id="card-mn-desc"></div>
+      <div class="card-btn"   id="card-mn-btn"></div>
+      <div class="card-platforms">
+        <span class="platform-badge supported" id="mn-badge-browser">🖥️ Browser</span>
+        <span class="platform-badge supported" id="mn-badge-mobile">📱 Mobile</span>
+      </div>
+      <div class="platform-unavailable" id="card-mn-unavail" style="display:none;"></div>
+    </a>
     <!-- add more cards here -->
   </div>
 
@@ -250,6 +261,8 @@
         gjDesc:     'Fange die Geister ein — aber nur gleiche Farben zählen!',
         rrTitle:    'Roboträtsel',
         rrDesc:     'Rate Wörter, bevor der Roboter die Welt übernimmt!',
+        mnTitle:    'Mathronaut',
+        mnDesc:     'Mathe trifft Weltraum! Spring auf die richtige Antwort und klettere zu den Sternen.',
         play:       'Spielen →',
         unavailMobile:  '⚠ Nicht für Mobilgeräte verfügbar',
         unavailBrowser: '⚠ Nicht für Desktop verfügbar'
@@ -271,6 +284,8 @@
         gjDesc:     'Trap the ghosts — but only matching colors score big!',
         rrTitle:    'Robot Riddle',
         rrDesc:     'Guess the word before the robot takes over the world!',
+        mnTitle:    'Mathronaut',
+        mnDesc:     'Math meets space! Jump on the right answer and climb to the stars.',
         play:       'Play →',
         unavailMobile:  '⚠ Not available on mobile',
         unavailBrowser: '⚠ Not available on desktop'
@@ -331,6 +346,9 @@
       document.getElementById('card-rr-title').textContent   = s.rrTitle;
       document.getElementById('card-rr-desc').textContent    = s.rrDesc;
       document.getElementById('card-rr-btn').textContent     = s.play;
+      document.getElementById('card-mn-title').textContent   = s.mnTitle;
+      document.getElementById('card-mn-desc').textContent    = s.mnDesc;
+      document.getElementById('card-mn-btn').textContent     = s.play;
       document.getElementById('btn-de').className = 'lang-btn' + (lang === 'de' ? ' active' : '');
       document.getElementById('btn-en').className = 'lang-btn' + (lang === 'en' ? ' active' : '');
 

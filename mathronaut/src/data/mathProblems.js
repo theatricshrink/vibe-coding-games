@@ -1,0 +1,1 @@
+var MATH_PROBLEMS = {};

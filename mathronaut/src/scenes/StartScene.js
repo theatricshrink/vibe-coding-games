@@ -1,0 +1,1 @@
+var StartScene = new Phaser.Class({ Extends: Phaser.Scene, initialize: function() { Phaser.Scene.call(this, { key: 'StartScene' }); }, create: function() { this.add.text(240, 427, 'Mathronaut', { fontSize: '32px', color: '#fff' }).setOrigin(0.5); } });

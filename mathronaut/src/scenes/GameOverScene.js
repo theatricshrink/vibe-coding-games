@@ -1,0 +1,1 @@
+var GameOverScene = new Phaser.Class({ Extends: Phaser.Scene, initialize: function() { Phaser.Scene.call(this, { key: 'GameOverScene' }); }, create: function() { this.add.text(240, 427, 'Game Over', { fontSize: '32px', color: '#fff' }).setOrigin(0.5); } });

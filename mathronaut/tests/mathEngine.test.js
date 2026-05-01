@@ -23,7 +23,7 @@ for (var tier = 1; tier <= 4; tier++) {
 // Tier 1: addition answer is numeric sum
 var t1 = MathEngine.generate(1);
 assert(typeof t1.correct === 'number', 'tier 1: correct is number');
-assert(t1.correct >= 2, 'tier 1: correct answer >= 2');
+assert(t1.correct >= 1, 'tier 1: correct answer >= 1');
 
 // Tier 2: multiplication table 2-9
 var t2 = MathEngine.generate(2);

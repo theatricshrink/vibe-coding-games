@@ -17,7 +17,7 @@ var MathEngine = (function() {
   function generateT1() {
     var a = randInt(2, 20), b = randInt(2, 15);
     var op = Math.random() < 0.5 ? '+' : '-';
-    if (op === '-' && b > a) { var tmp = a; a = b; b = tmp; }
+    if (op === '-' && b >= a) { var tmp = a; a = b; b = tmp; }
     var correct = op === '+' ? a + b : a - b;
     var candidates = [correct + 1, correct - 1, correct + 2, correct - 2];
     var distractors = uniqueDistractors(correct, candidates.filter(function(v) { return v > 0; }));

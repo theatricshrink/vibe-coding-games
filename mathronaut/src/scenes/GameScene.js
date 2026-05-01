@@ -12,7 +12,7 @@ var GameScene = new Phaser.Class({
     this._startY = 750;
     this._pixelsPerMetre = 5;
     this._currentHeight = 0;
-    this._highestPlatformY = this._startY - 130;
+    this._highestPlatformY = this._startY + 30;
     this._gameActive = true;
 
     // DifficultyManager instance
@@ -83,9 +83,9 @@ var GameScene = new Phaser.Class({
 
   _spawnInitialRows: function() {
     var tier = this._difficulty.getTier(0);
-    for (var i = 0; i < 12; i++) {
+    for (var i = 0; i < 8; i++) {
       PlatformPool.getNextRow(this._highestPlatformY, tier);
-      this._highestPlatformY -= 130;
+      this._highestPlatformY -= 400;
     }
   },
 
@@ -104,7 +104,9 @@ var GameScene = new Phaser.Class({
 
   _onLand: function(astronaut, platform) {
     if (!this._gameActive) return;
-    if (platform.isCorrect) {
+    if (platform.isNeutral) {
+      astronaut.body.setVelocityY(-530);
+    } else if (platform.isCorrect) {
       astronaut.body.setVelocityY(-750);
       this._flashPlatform(platform, 0x00ff88);
       this._spawnStarBurst(platform.x, platform.y);
@@ -218,11 +220,11 @@ var GameScene = new Phaser.Class({
   _refreshQuestion: function() {
     var rows = PlatformPool.getAllRows();
     if (rows.length === 0) return;
-    var camTop = this.cameras.main.scrollY;
+    var astroY = this._astronaut.y;
     var nearest = null;
     var nearestDist = Infinity;
     rows.forEach(function(row) {
-      var dist = Math.abs(row.yPos - camTop);
+      var dist = Math.abs(row.yPos - astroY);
       if (dist < nearestDist) { nearestDist = dist; nearest = row; }
     });
     if (nearest) this._questionText.setText(nearest.question);
@@ -285,10 +287,10 @@ var GameScene = new Phaser.Class({
 
     // Spawn new rows as camera scrolls up
     var camTop = this.cameras.main.scrollY;
-    while (this._highestPlatformY > camTop - 400) {
+    while (this._highestPlatformY > camTop - 500) {
       var tier = this._difficulty.getTier(this._currentHeight);
       PlatformPool.getNextRow(this._highestPlatformY, tier);
-      this._highestPlatformY -= 130;
+      this._highestPlatformY -= 400;
     }
 
     // Recycle rows below camera

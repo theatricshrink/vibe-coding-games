@@ -179,7 +179,7 @@ var GameScene = new Phaser.Class({
         y: y + Math.sin(angle) * 40,
         alpha: 0, scale: 0,
         duration: 350, ease: 'Power2',
-        onComplete: function() { star.destroy(); }
+        onComplete: function(tween, targets) { targets[0].destroy(); }
       });
     }
   },

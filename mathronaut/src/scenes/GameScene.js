@@ -15,6 +15,7 @@ var GameScene = new Phaser.Class({
     this._highestPlatformY = this._startY + 30;
     this._gameActive = true;
     this._wrongCooldown = false;
+    this._currentLevelY = this._startY;
 
     this._difficulty = DifficultyManager.create();
     var self = this;
@@ -107,10 +108,13 @@ var GameScene = new Phaser.Class({
 
   _onLand: function(astronaut, platform) {
     if (!this._gameActive) return;
-    if (platform.isNeutral) return;
+    if (platform.isNeutral) {
+      this._currentLevelY = platform.y;
+      return;
+    }
     if (this._wrongCooldown) return;
     if (platform.isCorrect) {
-      astronaut.body.setVelocityY(-450);
+      this._currentLevelY = platform.y;
       this._flashPlatform(platform, 0x00ff88);
       this._spawnStarBurst(platform.x, platform.y);
     } else {
@@ -231,9 +235,17 @@ var GameScene = new Phaser.Class({
     var astroY = this._astronaut.y;
     var nearest = null, nearestDist = Infinity;
     rows.forEach(function(row) {
-      var dist = Math.abs(row.yPos - astroY);
-      if (dist < nearestDist) { nearestDist = dist; nearest = row; }
+      if (row.yPos >= astroY) {
+        var dist = row.yPos - astroY;
+        if (dist < nearestDist) { nearestDist = dist; nearest = row; }
+      }
     });
+    if (!nearest) {
+      rows.forEach(function(row) {
+        var dist = Math.abs(row.yPos - astroY);
+        if (dist < nearestDist) { nearestDist = dist; nearest = row; }
+      });
+    }
     if (nearest) this._questionText.setText(nearest.question);
   },
 
@@ -272,9 +284,9 @@ var GameScene = new Phaser.Class({
     if (this._cursors.right.isDown || this._touchRight) vx =  180;
     this._astronaut.body.setVelocityX(vx);
 
-    // Jetpack thrust
+    // Jetpack thrust — ceiling is 260px above the last platform landed on
     var thrusting = this._touchThrust || this._spaceKey.isDown || this._cursors.up.isDown;
-    if (thrusting) {
+    if (thrusting && this._astronaut.y > this._currentLevelY - 260) {
       this._astronaut.body.setVelocityY(Math.max(this._astronaut.body.velocity.y - 15, -200));
     }
 

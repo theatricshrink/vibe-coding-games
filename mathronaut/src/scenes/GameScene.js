@@ -9,13 +9,13 @@ var GameScene = new Phaser.Class({
     var W = 480, H = 854;
     this._mode = data.mode || 'normal';
     this._lives = 3;
-    this._startY = 750;
+    this._startY = 720;
     this._pixelsPerMetre = 5;
     this._currentHeight = 0;
     this._highestPlatformY = this._startY + 30;
     this._gameActive = true;
+    this._wrongCooldown = false;
 
-    // DifficultyManager instance
     this._difficulty = DifficultyManager.create();
     var self = this;
     this._difficulty.onTierChange(function(tier) {
@@ -23,10 +23,8 @@ var GameScene = new Phaser.Class({
       self._updateBgColor(tier);
     });
 
-    // Background rectangle (fixed to camera)
     this._bg = this.add.rectangle(W / 2, H / 2, W, H, 0x0d1b2a).setScrollFactor(0).setDepth(0);
 
-    // Astronaut texture
     if (!this.textures.exists('astronaut')) {
       var g = this.add.graphics();
       g.fillStyle(0xffffff);
@@ -40,44 +38,51 @@ var GameScene = new Phaser.Class({
       g.destroy();
     }
 
-    // Astronaut physics body
     this._astronaut = this.physics.add.sprite(W / 2, this._startY, 'astronaut');
     this._astronaut.setCollideWorldBounds(false);
-    this._astronaut.body.setGravityY(0);
     this._astronaut.setDepth(5);
 
+    this._flame = this.add.graphics().setDepth(4);
 
-
-    // Keyboard input
     this._cursors = this.input.keyboard.createCursorKeys();
+    this._spaceKey = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
-    // Touch input state
-    this._touchLeft  = false;
-    this._touchRight = false;
-    this.input.on('pointerdown', function(ptr) {
-      if (ptr.x < W / 2) self._touchLeft  = true;
-      else                self._touchRight = true;
-    });
-    this.input.on('pointerup', function(ptr) {
-      if (ptr.x < W / 2) self._touchLeft  = false;
-      else                self._touchRight = false;
-    });
+    this._touchLeft   = false;
+    this._touchRight  = false;
+    this._touchThrust = false;
+    this._setupTouchInput();
 
-    // Platform pool
     PlatformPool.init(this);
     this._spawnInitialRows();
-
-    // Physics collider between astronaut and all pool platforms
     this._setupCollider();
-
-    // HUD (all setScrollFactor(0))
     this._buildHUD();
 
-    // Zone banner text (hidden initially)
-    this._zoneBanner = this.add.text(W / 2, 110, '', {
+    this._zoneBanner = this.add.text(W / 2, 120, '', {
       fontSize: '20px', color: '#f5e642', fontFamily: 'Arial', fontStyle: 'bold',
       backgroundColor: '#000000aa', padding: { x: 12, y: 6 }
     }).setOrigin(0.5).setScrollFactor(0).setDepth(20).setAlpha(0);
+  },
+
+  _setupTouchInput: function() {
+    var self = this;
+    this.input.on('pointerdown', function() { self._updateTouchButtons(); });
+    this.input.on('pointerup',   function() { self._updateTouchButtons(); });
+    this.input.on('pointermove', function(ptr) { if (ptr.isDown) self._updateTouchButtons(); });
+  },
+
+  _updateTouchButtons: function() {
+    var W = 480, H = 854, BTN_Y = H - 100;
+    this._touchLeft   = false;
+    this._touchThrust = false;
+    this._touchRight  = false;
+    var pointers = this.input.manager.pointers;
+    for (var i = 0; i < pointers.length; i++) {
+      var ptr = pointers[i];
+      if (!ptr.isDown || ptr.y < BTN_Y) continue;
+      if      (ptr.x < W / 3)       this._touchLeft   = true;
+      else if (ptr.x < 2 * W / 3)   this._touchThrust = true;
+      else                           this._touchRight  = true;
+    }
   },
 
   _spawnInitialRows: function() {
@@ -90,8 +95,7 @@ var GameScene = new Phaser.Class({
 
   _setupCollider: function() {
     var self = this;
-    var allPlatforms = PlatformPool.getPlatformGroup();
-    allPlatforms.forEach(function(plat) {
+    PlatformPool.getPlatformGroup().forEach(function(plat) {
       self.physics.add.collider(
         self._astronaut, plat,
         function(astro, p) { self._onLand(astro, p); },
@@ -103,10 +107,10 @@ var GameScene = new Phaser.Class({
 
   _onLand: function(astronaut, platform) {
     if (!this._gameActive) return;
-    if (platform.isNeutral) {
-      astronaut.body.setVelocityY(-580);
-    } else if (platform.isCorrect) {
-      astronaut.body.setVelocityY(-750);
+    if (platform.isNeutral) return;
+    if (this._wrongCooldown) return;
+    if (platform.isCorrect) {
+      astronaut.body.setVelocityY(-450);
       this._flashPlatform(platform, 0x00ff88);
       this._spawnStarBurst(platform.x, platform.y);
     } else {
@@ -115,6 +119,7 @@ var GameScene = new Phaser.Class({
   },
 
   _wrongLanding: function(platform) {
+    this._wrongCooldown = true;
     this._crumblePlatform(platform);
     if (this._mode === 'hard') {
       this._triggerGameOver();
@@ -124,7 +129,8 @@ var GameScene = new Phaser.Class({
       if (this._lives <= 0) {
         this._triggerGameOver();
       } else {
-        this._respawnAbove(platform.y);
+        var self = this;
+        this.time.delayedCall(600, function() { self._wrongCooldown = false; });
       }
     }
   },
@@ -145,11 +151,6 @@ var GameScene = new Phaser.Class({
     this.cameras.main.shake(120, 0.005);
     this._astronaut.setTint(0xff4444);
     this.time.delayedCall(300, function() { self._astronaut.clearTint(); });
-  },
-
-  _respawnAbove: function(failedY) {
-    this._astronaut.setPosition(240, failedY - 200);
-    this._astronaut.body.setVelocityY(-600);
   },
 
   _triggerGameOver: function() {
@@ -186,27 +187,35 @@ var GameScene = new Phaser.Class({
   },
 
   _buildHUD: function() {
-    var W = 480;
-    // Question band background
-    this.add.rectangle(W / 2, 35, W, 60, 0x000000, 0.65).setScrollFactor(0).setDepth(15);
+    var W = 480, H = 854;
 
-    // Question text
+    this.add.rectangle(W / 2, 35, W, 60, 0x000000, 0.65).setScrollFactor(0).setDepth(15);
     this._questionText = this.add.text(W / 2, 35, '', {
       fontSize: '28px', color: '#ffffff', fontFamily: 'Arial', fontStyle: 'bold'
     }).setOrigin(0.5).setScrollFactor(0).setDepth(16);
 
-    // Height display
     this._heightText = this.add.text(12, 70, '🚀 0m', {
       fontSize: '18px', color: '#aed9b8', fontFamily: 'Arial'
     }).setScrollFactor(0).setDepth(16);
 
-    // Hearts (Normal mode only)
     this._heartsText = this.add.text(W - 12, 70, '', {
       fontSize: '20px', fontFamily: 'Arial'
     }).setOrigin(1, 0).setScrollFactor(0).setDepth(16);
     this._updateHearts();
 
-    // Show first question
+    // Jetpack control buttons fixed to bottom of screen
+    var btnY = H - 38;
+    var btnW = W / 3 - 6;
+    var btnH = 68;
+
+    this.add.rectangle(W / 6,     btnY, btnW, btnH, 0x1a2a4a, 0.6).setScrollFactor(0).setDepth(15);
+    this.add.rectangle(W / 2,     btnY, btnW, btnH, 0x1a3a1a, 0.6).setScrollFactor(0).setDepth(15);
+    this.add.rectangle(5 * W / 6, btnY, btnW, btnH, 0x1a2a4a, 0.6).setScrollFactor(0).setDepth(15);
+
+    this.add.text(W / 6,     btnY, '◀', { fontSize: '30px', color: '#aed9b8', fontFamily: 'Arial' }).setOrigin(0.5).setScrollFactor(0).setDepth(16);
+    this.add.text(W / 2,     btnY, '🚀', { fontSize: '30px', fontFamily: 'Arial' }).setOrigin(0.5).setScrollFactor(0).setDepth(16);
+    this.add.text(5 * W / 6, btnY, '▶', { fontSize: '30px', color: '#aed9b8', fontFamily: 'Arial' }).setOrigin(0.5).setScrollFactor(0).setDepth(16);
+
     this._refreshQuestion();
   },
 
@@ -220,8 +229,7 @@ var GameScene = new Phaser.Class({
     var rows = PlatformPool.getAllRows();
     if (rows.length === 0) return;
     var astroY = this._astronaut.y;
-    var nearest = null;
-    var nearestDist = Infinity;
+    var nearest = null, nearestDist = Infinity;
     rows.forEach(function(row) {
       var dist = Math.abs(row.yPos - astroY);
       if (dist < nearestDist) { nearestDist = dist; nearest = row; }
@@ -230,8 +238,7 @@ var GameScene = new Phaser.Class({
   },
 
   _showZoneBanner: function(tier) {
-    var key = 'zoneT' + tier;
-    this._zoneBanner.setText(t(key));
+    this._zoneBanner.setText(t('zoneT' + tier));
     this._zoneBanner.setAlpha(1);
     this.tweens.add({
       targets: this._zoneBanner,
@@ -259,20 +266,41 @@ var GameScene = new Phaser.Class({
   update: function() {
     if (!this._gameActive) return;
 
-    var HSPEED = 220;
+    // Horizontal movement
     var vx = 0;
-    if (this._cursors.left.isDown  || this._touchLeft)  vx = -HSPEED;
-    if (this._cursors.right.isDown || this._touchRight) vx =  HSPEED;
+    if (this._cursors.left.isDown  || this._touchLeft)  vx = -180;
+    if (this._cursors.right.isDown || this._touchRight) vx =  180;
     this._astronaut.body.setVelocityX(vx);
+
+    // Jetpack thrust
+    var thrusting = this._touchThrust || this._spaceKey.isDown || this._cursors.up.isDown;
+    if (thrusting) {
+      this._astronaut.body.setVelocityY(Math.max(this._astronaut.body.velocity.y - 15, -200));
+    }
+
+    // Cap fall speed
+    if (this._astronaut.body.velocity.y > 350) {
+      this._astronaut.body.setVelocityY(350);
+    }
+
+    // Jetpack flame (drawn in world space, positioned over astronaut)
+    this._flame.clear();
+    if (thrusting) {
+      var fx = this._astronaut.x, fy = this._astronaut.y + 26;
+      this._flame.fillStyle(0xff6600, 0.9);
+      this._flame.fillCircle(fx - 7, fy, 4 + Math.random() * 4);
+      this._flame.fillStyle(0xffcc00, 0.7);
+      this._flame.fillCircle(fx + 7, fy, 3 + Math.random() * 3);
+    }
 
     // Screen wrap
     if (this._astronaut.x < -20)  this._astronaut.x = 500;
     if (this._astronaut.x > 500)  this._astronaut.x = -20;
 
-    // Camera: follow astronaut in both directions
+    // Camera: follow astronaut
     this.cameras.main.scrollY = this._astronaut.y - 500;
 
-    // Update height
+    // Height
     var h = Math.max(0, Math.floor((this._startY - this._astronaut.y) / this._pixelsPerMetre));
     if (h !== this._currentHeight) {
       this._currentHeight = h;
@@ -280,7 +308,7 @@ var GameScene = new Phaser.Class({
       this._difficulty.update(h);
     }
 
-    // Spawn new rows as camera scrolls up
+    // Spawn new rows ahead of camera
     var camTop = this.cameras.main.scrollY;
     while (this._highestPlatformY > camTop - 500) {
       var tier = this._difficulty.getTier(this._currentHeight);
@@ -288,7 +316,7 @@ var GameScene = new Phaser.Class({
       this._highestPlatformY -= 400;
     }
 
-    // Recycle rows below camera; track lowest surviving neutral Y for fall detection
+    // Recycle rows below camera; track lowest surviving neutral for fall detection
     var camBottom = camTop + 854;
     var lowestNeutralY = this._startY + 30;
     var self = this;
@@ -300,10 +328,8 @@ var GameScene = new Phaser.Class({
       }
     });
 
-    // Refresh question display
     this._refreshQuestion();
 
-    // Detect fall: astronaut dropped more than 300px below lowest neutral platform
     if (this._astronaut.y > lowestNeutralY + 300 && this._gameActive) {
       this._onFallOffScreen();
     }
@@ -320,9 +346,8 @@ var GameScene = new Phaser.Class({
       if (this._lives <= 0) {
         this._triggerGameOver();
       } else {
-        // Respawn near top of current camera view
         this._astronaut.setPosition(240, this.cameras.main.scrollY + 300);
-        this._astronaut.body.setVelocityY(-600);
+        this._astronaut.body.setVelocityY(-400);
       }
     }
   }

@@ -96,6 +96,7 @@ var PlatformPool = (function() {
         var xPos = ZONE_CENTERS[j] + Math.floor(Math.random() * jitter * 2) - jitter;
         var yOff = Math.floor(Math.random() * 50) - 25;
         row.platforms[j + 1].setTexture(textureKey);
+        row.platforms[j + 1].clearTint();
         row.platforms[j + 1].setPosition(xPos, answerBaseY + yOff);
         row.platforms[j + 1].body.reset(xPos, answerBaseY + yOff);
         row.platforms[j + 1].isCorrect = (j === correctIndex);

@@ -172,82 +172,45 @@ var GameScene = new Phaser.Class({
   _correctLanding: function(platform) {
     var self = this;
 
-    // Gold scale-pulse on the correct platform
-    platform.setTint(0xffd700);
-    this.tweens.add({
-      targets: platform,
-      scaleX: 1.5, scaleY: 1.5,
-      duration: 140, ease: 'Back.Out',
-      yoyo: true,
-      onComplete: function() { platform.clearTint(); platform.setScale(1); }
-    });
+    // Flash white then settle to green
+    platform.setTint(0xffffff);
+    this.time.delayedCall(90, function() { platform.setTint(0x00cc55); });
 
-    // Floating checkmark
-    var check = this.add.text(platform.x, platform.y - 10, '✓', {
-      fontSize: '30px', color: '#00ff88', fontFamily: 'Arial', fontStyle: 'bold'
-    }).setOrigin(0.5).setDepth(12);
-    this.tweens.add({
-      targets: check, y: platform.y - 85, alpha: 0,
-      duration: 700, ease: 'Power2',
-      onComplete: function() { check.destroy(); }
-    });
-
-    // Expanding ring burst
-    this._spawnRingBurst(platform.x, platform.y);
-
-    // Fly wrong platforms off screen
+    // Find the row and handle labels
     var row = PlatformPool.getRowForPlatform(platform);
     if (row) {
       for (var j = 1; j <= 3; j++) {
         var p = row.platforms[j];
-        if (p !== platform) {
-          this._dismissWrongPlatform(p, row.labels[j]);
+        if (p === platform) {
+          // Append checkmark to the correct answer label
+          row.labels[j].setText('✓ ' + row.labels[j].text);
+        } else {
+          self._dismissWrongPlatform(p, row.labels[j]);
         }
       }
     }
   },
 
   _dismissWrongPlatform: function(platform, label) {
-    platform.body.enable = false;
     var flyX = platform.x < 240 ? platform.x - 180 : platform.x + 180;
     this.tweens.add({
       targets: platform,
-      x: flyX, alpha: 0, scaleX: 0.2, scaleY: 0.2,
-      duration: 380, ease: 'Power2',
+      x: flyX, alpha: 0, scaleX: 0.3, scaleY: 0.3,
+      duration: 350, ease: 'Power2',
       onComplete: function() {
         platform.setAlpha(1);
         platform.setScale(1);
         platform.setPosition(-9999, -9999);
         platform.body.reset(-9999, -9999);
-        platform.body.enable = true;
       }
     });
     if (label) {
       this.tweens.add({
         targets: label,
         x: flyX, alpha: 0,
-        duration: 380, ease: 'Power2',
+        duration: 350, ease: 'Power2',
         onComplete: function() { label.setAlpha(1); label.setPosition(-9999, -9999); }
       });
-    }
-  },
-
-  _spawnRingBurst: function(x, y) {
-    for (var r = 0; r < 3; r++) {
-      (function(idx, scene) {
-        var ring = scene.add.graphics().setDepth(10);
-        scene.tweens.addCounter({
-          from: 0, to: 1,
-          duration: 500, delay: idx * 110, ease: 'Power1',
-          onUpdate: function(tween) {
-            var v = tween.getValue();
-            ring.clear();
-            ring.lineStyle(Math.max(0.5, 3 * (1 - v)), 0x00ff88, 1 - v);
-            ring.strokeCircle(x, y, 12 + (50 + idx * 20) * v);
-          },
-          onComplete: function() { ring.destroy(); }
-        });
-      })(r, this);
     }
   },
 

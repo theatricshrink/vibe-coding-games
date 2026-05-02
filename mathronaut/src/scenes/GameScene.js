@@ -115,8 +115,7 @@ var GameScene = new Phaser.Class({
     if (this._wrongCooldown) return;
     if (platform.isCorrect) {
       this._currentLevelY = platform.y;
-      this._flashPlatform(platform, 0x00ff88);
-      this._spawnStarBurst(platform.x, platform.y);
+      this._correctLanding(platform);
     } else {
       this._wrongLanding(platform);
     }
@@ -170,23 +169,85 @@ var GameScene = new Phaser.Class({
     });
   },
 
-  _flashPlatform: function(platform, color) {
-    platform.setTint(color);
-    this.time.delayedCall(200, function() { platform.clearTint(); });
+  _correctLanding: function(platform) {
+    var self = this;
+
+    // Gold scale-pulse on the correct platform
+    platform.setTint(0xffd700);
+    this.tweens.add({
+      targets: platform,
+      scaleX: 1.5, scaleY: 1.5,
+      duration: 140, ease: 'Back.Out',
+      yoyo: true,
+      onComplete: function() { platform.clearTint(); platform.setScale(1); }
+    });
+
+    // Floating checkmark
+    var check = this.add.text(platform.x, platform.y - 10, '✓', {
+      fontSize: '30px', color: '#00ff88', fontFamily: 'Arial', fontStyle: 'bold'
+    }).setOrigin(0.5).setDepth(12);
+    this.tweens.add({
+      targets: check, y: platform.y - 85, alpha: 0,
+      duration: 700, ease: 'Power2',
+      onComplete: function() { check.destroy(); }
+    });
+
+    // Expanding ring burst
+    this._spawnRingBurst(platform.x, platform.y);
+
+    // Fly wrong platforms off screen
+    var row = PlatformPool.getRowForPlatform(platform);
+    if (row) {
+      for (var j = 1; j <= 3; j++) {
+        var p = row.platforms[j];
+        if (p !== platform) {
+          this._dismissWrongPlatform(p, row.labels[j]);
+        }
+      }
+    }
   },
 
-  _spawnStarBurst: function(x, y) {
-    for (var i = 0; i < 6; i++) {
-      var angle = (Math.PI * 2 / 6) * i;
-      var star = this.add.circle(x, y, 4, 0xf5e642).setDepth(10);
+  _dismissWrongPlatform: function(platform, label) {
+    platform.body.enable = false;
+    var flyX = platform.x < 240 ? platform.x - 180 : platform.x + 180;
+    this.tweens.add({
+      targets: platform,
+      x: flyX, alpha: 0, scaleX: 0.2, scaleY: 0.2,
+      duration: 380, ease: 'Power2',
+      onComplete: function() {
+        platform.setAlpha(1);
+        platform.setScale(1);
+        platform.setPosition(-9999, -9999);
+        platform.body.reset(-9999, -9999);
+        platform.body.enable = true;
+      }
+    });
+    if (label) {
       this.tweens.add({
-        targets: star,
-        x: x + Math.cos(angle) * 40,
-        y: y + Math.sin(angle) * 40,
-        alpha: 0, scale: 0,
-        duration: 350, ease: 'Power2',
-        onComplete: function(tween, targets) { targets[0].destroy(); }
+        targets: label,
+        x: flyX, alpha: 0,
+        duration: 380, ease: 'Power2',
+        onComplete: function() { label.setAlpha(1); label.setPosition(-9999, -9999); }
       });
+    }
+  },
+
+  _spawnRingBurst: function(x, y) {
+    for (var r = 0; r < 3; r++) {
+      (function(idx, scene) {
+        var ring = scene.add.graphics().setDepth(10);
+        scene.tweens.addCounter({
+          from: 0, to: 1,
+          duration: 500, delay: idx * 110, ease: 'Power1',
+          onUpdate: function(tween) {
+            var v = tween.getValue();
+            ring.clear();
+            ring.lineStyle(Math.max(0.5, 3 * (1 - v)), 0x00ff88, 1 - v);
+            ring.strokeCircle(x, y, 12 + (50 + idx * 20) * v);
+          },
+          onComplete: function() { ring.destroy(); }
+        });
+      })(r, this);
     }
   },
 

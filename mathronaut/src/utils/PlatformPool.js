@@ -140,6 +140,16 @@ var PlatformPool = (function() {
         row.platforms.forEach(function(p) { platforms.push(p); });
       });
       return platforms;
+    },
+
+    getRowForPlatform: function(platform) {
+      for (var i = 0; i < this._pool.length; i++) {
+        var row = this._pool[i];
+        for (var j = 0; j < row.platforms.length; j++) {
+          if (row.platforms[j] === platform) return row;
+        }
+      }
+      return null;
     }
   };
 })();

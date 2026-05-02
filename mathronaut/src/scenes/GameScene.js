@@ -15,6 +15,7 @@ var GameScene = new Phaser.Class({
     this._highestPlatformY = this._startY + 30;
     this._gameActive = true;
     this._wrongCooldown = false;
+    this._correctJustLanded = false;
     this._currentLevelY = this._startY;
 
     this._difficulty = DifficultyManager.create();
@@ -113,10 +114,11 @@ var GameScene = new Phaser.Class({
       return;
     }
     if (this._wrongCooldown) return;
+    if (this._correctJustLanded) return;
     if (platform.isCorrect) {
-      // Mark as neutral immediately so repeated collider calls are no-ops
       platform.isCorrect = false;
       platform.isNeutral = true;
+      this._correctJustLanded = true;
       this._currentLevelY = platform.y;
       this._correctLanding(platform);
     } else {
@@ -179,19 +181,20 @@ var GameScene = new Phaser.Class({
     platform.setTint(0xffffff);
     this.time.delayedCall(90, function() { platform.setTint(0x00cc55); });
 
-    // Find the row and handle labels
+    // Dismiss wrong platforms and clear correctJustLanded after brief window
     var row = PlatformPool.getRowForPlatform(platform);
     if (row) {
       for (var j = 1; j <= 3; j++) {
         var p = row.platforms[j];
         if (p === platform) {
-          // Append checkmark to the correct answer label
           row.labels[j].setText('✓ ' + row.labels[j].text);
         } else {
+          p.body.enable = false;
           self._dismissWrongPlatform(p, row.labels[j]);
         }
       }
     }
+    this.time.delayedCall(400, function() { self._correctJustLanded = false; });
   },
 
   _dismissWrongPlatform: function(platform, label) {
@@ -202,6 +205,7 @@ var GameScene = new Phaser.Class({
       x: flyX, alpha: 0, scaleX: 0.3, scaleY: 0.3,
       duration: 350, ease: 'Power2',
       onComplete: function() {
+        platform.body.enable = true;
         platform.setAlpha(1);
         platform.setScale(1);
         platform.setPosition(-9999, -9999);

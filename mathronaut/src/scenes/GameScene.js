@@ -87,9 +87,9 @@ var GameScene = new Phaser.Class({
   },
 
   _spawnInitialRows: function() {
-    var tier = this._difficulty.getTier(0);
     for (var i = 0; i < 8; i++) {
-      PlatformPool.getNextRow(this._highestPlatformY, tier);
+      var alt = Math.max(0, Math.floor((this._startY - this._highestPlatformY) / this._pixelsPerMetre));
+      PlatformPool.getNextRow(this._highestPlatformY, this._difficulty.getTier(alt));
       this._highestPlatformY -= 400;
     }
   },
@@ -340,11 +340,11 @@ var GameScene = new Phaser.Class({
       this._difficulty.update(h);
     }
 
-    // Spawn new rows ahead of camera
+    // Spawn new rows ahead of camera; tier is based on each platform's own altitude
     var camTop = this.cameras.main.scrollY;
     while (this._highestPlatformY > camTop - 500) {
-      var tier = this._difficulty.getTier(this._currentHeight);
-      PlatformPool.getNextRow(this._highestPlatformY, tier);
+      var platAlt = Math.max(0, Math.floor((this._startY - this._highestPlatformY) / this._pixelsPerMetre));
+      PlatformPool.getNextRow(this._highestPlatformY, this._difficulty.getTier(platAlt));
       this._highestPlatformY -= 400;
     }
 

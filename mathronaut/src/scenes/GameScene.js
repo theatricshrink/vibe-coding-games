@@ -114,6 +114,9 @@ var GameScene = new Phaser.Class({
     }
     if (this._wrongCooldown) return;
     if (platform.isCorrect) {
+      // Mark as neutral immediately so repeated collider calls are no-ops
+      platform.isCorrect = false;
+      platform.isNeutral = true;
       this._currentLevelY = platform.y;
       this._correctLanding(platform);
     } else {
@@ -192,6 +195,7 @@ var GameScene = new Phaser.Class({
   },
 
   _dismissWrongPlatform: function(platform, label) {
+    if (label) { label.setVisible(false); label.setPosition(-9999, -9999); }
     var flyX = platform.x < 240 ? platform.x - 180 : platform.x + 180;
     this.tweens.add({
       targets: platform,
@@ -204,14 +208,6 @@ var GameScene = new Phaser.Class({
         platform.body.reset(-9999, -9999);
       }
     });
-    if (label) {
-      this.tweens.add({
-        targets: label,
-        x: flyX, alpha: 0,
-        duration: 350, ease: 'Power2',
-        onComplete: function() { label.setAlpha(1); label.setPosition(-9999, -9999); }
-      });
-    }
   },
 
   _buildHUD: function() {

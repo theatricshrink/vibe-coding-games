@@ -7,17 +7,17 @@ var GameScene = new Phaser.Class({
 
   create: function(data) {
     var W = 480, H = 854;
-    this._mode = data.mode || 'normal';
-    this._lives = 3;
+    this._mode = data.mode || 'easy';
     this._startY = 720;
     this._pixelsPerMetre = 5;
     this._currentHeight = 0;
     this._highestPlatformY = this._startY + 30;
     this._gameActive = true;
-    this._wrongCooldown = false;
     this._correctJustLanded = false;
     this._landingQueue = [];
     this._currentLevelY = this._startY;
+    this._deathZoneY = (this._mode === 'hard') ? this._startY + 800 : null;
+    this._deathZoneGraphic = (this._mode === 'hard') ? this.add.graphics().setDepth(8) : null;
 
     this._difficulty = DifficultyManager.create();
     var self = this;
@@ -122,7 +122,7 @@ var GameScene = new Phaser.Class({
     if (this._landingQueue.length === 0) return;
     var queue = this._landingQueue;
     this._landingQueue = [];
-    if (this._wrongCooldown || this._correctJustLanded) return;
+    if (this._correctJustLanded) return;
 
     var correct = null;
     for (var i = 0; i < queue.length; i++) {
@@ -140,20 +140,8 @@ var GameScene = new Phaser.Class({
   },
 
   _wrongLanding: function(platform) {
-    this._wrongCooldown = true;
     this._crumblePlatform(platform);
-    if (this._mode === 'hard') {
-      this._triggerGameOver();
-    } else {
-      this._lives--;
-      this._updateHearts();
-      if (this._lives <= 0) {
-        this._triggerGameOver();
-      } else {
-        var self = this;
-        this.time.delayedCall(600, function() { self._wrongCooldown = false; });
-      }
-    }
+    this._triggerGameOver();
   },
 
   _crumblePlatform: function(platform) {
@@ -239,11 +227,6 @@ var GameScene = new Phaser.Class({
       fontSize: '18px', color: '#aed9b8', fontFamily: 'Arial'
     }).setScrollFactor(0).setDepth(16);
 
-    this._heartsText = this.add.text(W - 12, 70, '', {
-      fontSize: '20px', fontFamily: 'Arial'
-    }).setOrigin(1, 0).setScrollFactor(0).setDepth(16);
-    this._updateHearts();
-
     // Jetpack control buttons fixed to bottom of screen
     var btnY = H - 38;
     var btnW = W / 3 - 6;
@@ -258,12 +241,6 @@ var GameScene = new Phaser.Class({
     this.add.text(5 * W / 6, btnY, '▶', { fontSize: '30px', color: '#aed9b8', fontFamily: 'Arial' }).setOrigin(0.5).setScrollFactor(0).setDepth(16);
 
     this._refreshQuestion();
-  },
-
-  _updateHearts: function() {
-    if (this._mode === 'normal') {
-      this._heartsText.setText('❤️'.repeat(this._lives));
-    }
   },
 
   _refreshQuestion: function() {
@@ -312,10 +289,30 @@ var GameScene = new Phaser.Class({
     });
   },
 
-  update: function() {
+  update: function(time, delta) {
     if (!this._gameActive) return;
 
     this._resolveLandingQueue();
+
+    // Hard mode: rising gravitational death zone
+    if (this._deathZoneGraphic) {
+      var riseSpeed = (60 + this._currentHeight * 0.05) * (delta / 1000);
+      this._deathZoneY -= riseSpeed;
+
+      if (this._astronaut.y > this._deathZoneY) {
+        this._triggerGameOver();
+        return;
+      }
+
+      var pulse = 0.55 + 0.45 * Math.sin(time * 0.006);
+      this._deathZoneGraphic.clear();
+      this._deathZoneGraphic.fillStyle(0x0d0020, 0.88);
+      this._deathZoneGraphic.fillRect(0, this._deathZoneY, 480, 2000);
+      this._deathZoneGraphic.lineStyle(6, 0xaa00ff, pulse);
+      this._deathZoneGraphic.lineBetween(0, this._deathZoneY, 480, this._deathZoneY);
+      this._deathZoneGraphic.lineStyle(2, 0xff66ff, pulse * 0.6);
+      this._deathZoneGraphic.lineBetween(0, this._deathZoneY - 8, 480, this._deathZoneY - 8);
+    }
 
     // Horizontal movement
     var vx = 0;
@@ -389,17 +386,6 @@ var GameScene = new Phaser.Class({
   _onFallOffScreen: function() {
     if (!this._gameActive) return;
     this.cameras.main.shake(120, 0.005);
-    if (this._mode === 'hard') {
-      this._triggerGameOver();
-    } else {
-      this._lives--;
-      this._updateHearts();
-      if (this._lives <= 0) {
-        this._triggerGameOver();
-      } else {
-        this._astronaut.setPosition(240, this.cameras.main.scrollY + 300);
-        this._astronaut.body.setVelocityY(-400);
-      }
-    }
+    this._triggerGameOver();
   }
 });

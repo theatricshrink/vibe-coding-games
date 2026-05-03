@@ -8,7 +8,7 @@ var StartScene = new Phaser.Class({
   create: function() {
     var W = 480, H = 854;
     var self = this;
-    this._selectedMode = 'normal';
+    this._selectedMode = 'easy';
 
     // Background
     this.add.rectangle(W / 2, H / 2, W, H, 0x0d1b2a);
@@ -31,18 +31,18 @@ var StartScene = new Phaser.Class({
     this.add.circle(W / 2, 248, 30, 0x87ceeb);
 
     // Mode buttons
-    this._btnNormal = this._makeButton(W / 2, 400, t('modeNormal'), '#52b788', function() {
-      self._selectMode('normal');
+    this._btnEasy = this._makeButton(W / 2, 400, t('modeEasy'), '#52b788', function() {
+      self._selectMode('easy');
     });
     this._btnHard = this._makeButton(W / 2, 470, t('modeHard'), '#e07070', function() {
       self._selectMode('hard');
     });
-    this._selectMode('normal');
+    this._selectMode('easy');
 
     // Best scores
-    var bestNormal = localStorage.getItem('mathronaut_best_normal') || null;
-    var bestHard   = localStorage.getItem('mathronaut_best_hard')   || null;
-    this.add.text(W / 2, 550, t('bestNormal') + ' ' + (bestNormal ? bestNormal + t('metres') : t('noRecord')), {
+    var bestEasy = localStorage.getItem('mathronaut_best_easy') || null;
+    var bestHard = localStorage.getItem('mathronaut_best_hard') || null;
+    this.add.text(W / 2, 550, t('bestEasy') + ' ' + (bestEasy ? bestEasy + t('metres') : t('noRecord')), {
       fontSize: '18px', color: '#aed9b8', fontFamily: 'Arial'
     }).setOrigin(0.5);
     this.add.text(W / 2, 582, t('bestHard') + ' ' + (bestHard ? bestHard + t('metres') : t('noRecord')), {
@@ -74,7 +74,7 @@ var StartScene = new Phaser.Class({
 
   _selectMode: function(mode) {
     this._selectedMode = mode;
-    this._btnNormal.setBackgroundColor(mode === 'normal' ? '#1a5c3a' : '#223344');
-    this._btnHard.setBackgroundColor(mode === 'hard'   ? '#5c1a1a' : '#223344');
+    this._btnEasy.setBackgroundColor(mode === 'easy' ? '#1a5c3a' : '#223344');
+    this._btnHard.setBackgroundColor(mode === 'hard' ? '#5c1a1a' : '#223344');
   }
 });

@@ -196,28 +196,6 @@ var GameScene = new Phaser.Class({
       }
     }
     this.time.delayedCall(400, function() { self._correctJustLanded = false; });
-
-    // Hide correct platform once astronaut has launched off it (100px above)
-    var checkDeparted = function() {
-      if (!self._gameActive) return;
-      if (self._astronaut.y < platform.y - 100) {
-        platform.clearTint();
-        platform.setVisible(false);
-        platform.body.reset(-9999, -9999);
-        if (row) {
-          for (var k = 1; k <= 3; k++) {
-            if (row.platforms[k] === platform && row.labels[k]) {
-              row.labels[k].setVisible(false);
-              row.labels[k].setPosition(-9999, -9999);
-              break;
-            }
-          }
-        }
-      } else {
-        self.time.delayedCall(100, checkDeparted);
-      }
-    };
-    this.time.delayedCall(100, checkDeparted);
   },
 
   _dismissWrongPlatform: function(platform, label) {

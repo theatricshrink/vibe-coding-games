@@ -115,13 +115,20 @@ var GameScene = new Phaser.Class({
     this.ghostTimers  = [];
     var ghostSpeed = cfg.speed; // steps per second
     for (var i = 0; i < cfg.ghosts; i++) {
-      // Random interior unclaimed position
+      // Random interior unclaimed position, distinct from all already-spawned ghosts
       var col, row, attempts = 0;
       do {
         col = 2 + Math.floor(Math.random() * (GCOLS - 4));
         row = 2 + Math.floor(Math.random() * (GROWS - 4));
         attempts++;
-      } while (this.board.get(col, row) !== CELL_UNCLAIMED && attempts < 200);
+        var occupied = false;
+        for (var j = 0; j < this.ghosts.length; j++) {
+          if (this.ghosts[j].col === col && this.ghosts[j].row === row) {
+            occupied = true;
+            break;
+          }
+        }
+      } while ((this.board.get(col, row) !== CELL_UNCLAIMED || occupied) && attempts < 200);
 
       var color = colors[i % colors.length];
       var ghost = new GhostAI(col, row, color);
@@ -287,7 +294,9 @@ var GameScene = new Phaser.Class({
           }
         }
       }
-      // Remove sprites for trapped ghosts (in reverse to preserve indices)
+      // Remove sprites for trapped ghosts (in reverse to preserve indices).
+      // Deduplicate first — two ghosts at the same position produce duplicate indices.
+      trappedIds = trappedIds.filter(function(id, pos) { return trappedIds.indexOf(id) === pos; });
       trappedIds.sort(function(a, b) { return b - a; });
       for (var ti2 = 0; ti2 < trappedIds.length; ti2++) {
         var idx = trappedIds[ti2];

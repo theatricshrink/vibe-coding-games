@@ -197,34 +197,27 @@ var GameScene = new Phaser.Class({
     }
     this.time.delayedCall(400, function() { self._correctJustLanded = false; });
 
-    // Fade out correct platform and its label after green feedback registers
-    this.time.delayedCall(600, function() {
-      self.tweens.add({
-        targets: platform, alpha: 0, duration: 300,
-        onComplete: function() {
-          platform.clearTint();
-          platform.setAlpha(1);
-          platform.setVisible(false);
-          platform.body.reset(-9999, -9999);
-        }
-      });
-      if (row) {
-        for (var k = 1; k <= 3; k++) {
-          if (row.platforms[k] === platform && row.labels[k]) {
-            var lbl = row.labels[k];
-            self.tweens.add({
-              targets: lbl, alpha: 0, duration: 300,
-              onComplete: function() {
-                lbl.setAlpha(1);
-                lbl.setVisible(false);
-                lbl.setPosition(-9999, -9999);
-              }
-            });
-            break;
+    // Hide correct platform once astronaut has launched off it (100px above)
+    var checkDeparted = function() {
+      if (!self._gameActive) return;
+      if (self._astronaut.y < platform.y - 100) {
+        platform.clearTint();
+        platform.setVisible(false);
+        platform.body.reset(-9999, -9999);
+        if (row) {
+          for (var k = 1; k <= 3; k++) {
+            if (row.platforms[k] === platform && row.labels[k]) {
+              row.labels[k].setVisible(false);
+              row.labels[k].setPosition(-9999, -9999);
+              break;
+            }
           }
         }
+      } else {
+        self.time.delayedCall(100, checkDeparted);
       }
-    });
+    };
+    this.time.delayedCall(100, checkDeparted);
   },
 
   _dismissWrongPlatform: function(platform, label) {

@@ -89,10 +89,10 @@ var GameScene = new Phaser.Class({
   },
 
   _spawnInitialRows: function() {
-    for (var i = 0; i < 8; i++) {
+    for (var i = 0; i < 10; i++) {
       var alt = Math.max(0, Math.floor((this._startY - this._highestPlatformY) / this._pixelsPerMetre));
-      PlatformPool.getNextRow(this._highestPlatformY, this._difficulty.getTier(alt));
-      this._highestPlatformY -= 400;
+      PlatformPool.getNextRow(this._highestPlatformY, this._difficulty.getTier(alt), i === 0);
+      this._highestPlatformY -= 250;
     }
   },
 
@@ -247,16 +247,19 @@ var GameScene = new Phaser.Class({
     var rows = PlatformPool.getAllRows();
     if (rows.length === 0) return;
     var astroY = this._astronaut.y;
+    // Show question for nearest answer zone that is above the astronaut (row.yPos - 200 < astroY).
+    // This transitions immediately when the astronaut lands on the correct answer.
     var nearest = null, nearestDist = Infinity;
     rows.forEach(function(row) {
-      if (row.yPos >= astroY) {
-        var dist = row.yPos - astroY;
+      var ansY = row.yPos - 200;
+      if (ansY < astroY) {
+        var dist = astroY - ansY;
         if (dist < nearestDist) { nearestDist = dist; nearest = row; }
       }
     });
     if (!nearest) {
       rows.forEach(function(row) {
-        var dist = Math.abs(row.yPos - astroY);
+        var dist = Math.abs(row.yPos - 200 - astroY);
         if (dist < nearestDist) { nearestDist = dist; nearest = row; }
       });
     }
@@ -322,7 +325,7 @@ var GameScene = new Phaser.Class({
 
     // Jetpack thrust — ceiling is 260px above the last platform landed on
     var thrusting = this._touchThrust || this._spaceKey.isDown || this._cursors.up.isDown;
-    if (thrusting && this._astronaut.y > this._currentLevelY - 260) {
+    if (thrusting && this._astronaut.y > this._currentLevelY - 280) {
       this._astronaut.body.setVelocityY(Math.max(this._astronaut.body.velocity.y - 15, -200));
     }
 
@@ -356,12 +359,12 @@ var GameScene = new Phaser.Class({
       this._difficulty.update(h);
     }
 
-    // Spawn new rows ahead of camera; tier is based on each platform's own altitude
+    // Spawn new rows ahead of camera; tier based on platform altitude; no neutral after row 0
     var camTop = this.cameras.main.scrollY;
     while (this._highestPlatformY > camTop - 500) {
       var platAlt = Math.max(0, Math.floor((this._startY - this._highestPlatformY) / this._pixelsPerMetre));
-      PlatformPool.getNextRow(this._highestPlatformY, this._difficulty.getTier(platAlt));
-      this._highestPlatformY -= 400;
+      PlatformPool.getNextRow(this._highestPlatformY, this._difficulty.getTier(platAlt), false);
+      this._highestPlatformY -= 250;
     }
 
     // Recycle rows below camera; track lowest surviving neutral for fall detection

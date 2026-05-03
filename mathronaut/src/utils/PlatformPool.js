@@ -65,7 +65,7 @@ var PlatformPool = (function() {
       }
     },
 
-    getNextRow: function(yPos, tier) {
+    getNextRow: function(yPos, tier, spawnNeutral) {
       var row = null;
       for (var i = 0; i < this._pool.length; i++) {
         if (!this._pool[i].active) { row = this._pool[i]; break; }
@@ -80,13 +80,19 @@ var PlatformPool = (function() {
       }
       var correctIndex = answers.indexOf(problem.correct);
 
-      // Neutral launch pad: centered at x=240
-      row.platforms[0].setTexture('plat_neutral');
-      row.platforms[0].setPosition(240, yPos);
-      row.platforms[0].body.reset(240, yPos);
-      row.platforms[0].isNeutral = true;
-      row.platforms[0].isCorrect = false;
-      row.platforms[0].setVisible(true);
+      // Neutral launch pad: only for the first row
+      if (spawnNeutral) {
+        row.platforms[0].setTexture('plat_neutral');
+        row.platforms[0].setPosition(240, yPos);
+        row.platforms[0].body.reset(240, yPos);
+        row.platforms[0].isNeutral = true;
+        row.platforms[0].isCorrect = false;
+        row.platforms[0].setVisible(true);
+      } else {
+        row.platforms[0].setPosition(-9999, -9999);
+        row.platforms[0].body.reset(-9999, -9999);
+        row.platforms[0].setVisible(false);
+      }
 
       // Answer platforms: 150px above neutral, with ±25px Y jitter each
       var textureKey = 'plat_t' + tier;

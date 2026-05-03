@@ -16,6 +16,7 @@ var GameScene = new Phaser.Class({
     this._gameActive = true;
     this._wrongCooldown = false;
     this._correctJustLanded = false;
+    this._landingQueue = [];
     this._currentLevelY = this._startY;
 
     this._difficulty = DifficultyManager.create();
@@ -113,16 +114,28 @@ var GameScene = new Phaser.Class({
       this._currentLevelY = platform.y;
       return;
     }
-    if (this._wrongCooldown) return;
-    if (this._correctJustLanded) return;
-    if (platform.isCorrect) {
-      platform.isCorrect = false;
-      platform.isNeutral = true;
+    // Queue for batch resolution in update() — correct beats wrong even if wrong fires first
+    this._landingQueue.push(platform);
+  },
+
+  _resolveLandingQueue: function() {
+    if (this._landingQueue.length === 0) return;
+    var queue = this._landingQueue;
+    this._landingQueue = [];
+    if (this._wrongCooldown || this._correctJustLanded) return;
+
+    var correct = null;
+    for (var i = 0; i < queue.length; i++) {
+      if (queue[i].isCorrect) { correct = queue[i]; break; }
+    }
+    if (correct) {
+      correct.isCorrect = false;
+      correct.isNeutral = true;
       this._correctJustLanded = true;
-      this._currentLevelY = platform.y;
-      this._correctLanding(platform);
+      this._currentLevelY = correct.y;
+      this._correctLanding(correct);
     } else {
-      this._wrongLanding(platform);
+      this._wrongLanding(queue[0]);
     }
   },
 
@@ -301,6 +314,8 @@ var GameScene = new Phaser.Class({
 
   update: function() {
     if (!this._gameActive) return;
+
+    this._resolveLandingQueue();
 
     // Horizontal movement
     var vx = 0;
